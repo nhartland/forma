@@ -390,7 +390,7 @@ end
 
 ------------------------------- Segment generators --------------------------------------------------------------
 
---- Generate a list of contiguous 'segments' or sub-patterns
+--- Generate a list of contiguous 'segments' or sub-patterns.
 -- This performs a series of flood-fill operations until all
 -- pattern points are accounted for in the sub-patterns
 -- @param ip pattern for which the segments are to be extracted
@@ -436,7 +436,7 @@ function pattern.enclosed(ip, dirs)
     return enclosed
 end
 
---- Generate voronoi segments of a given domain from a given set of points
+--- Generate voronoi tesselations of points in a domain.
 -- @param points the set of seed points for the tesselation
 -- @param domain the domain of the tesselation
 -- @param measure the measure used to judge distance between points
@@ -645,7 +645,7 @@ end
 
 -----------------------------------------------------------------------------------------------------
 
---- Find the maximal rectangular area within a pattern
+--- Find the maximal rectangular area within a pattern.
 -- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529
 -- @param ip pattern for rectangle finding
 -- @return min, max of largest subrectangle
@@ -701,7 +701,7 @@ function pattern.maxrectangle(ip)
 	return best_ll, best_ur
 end
 
---- Returns the pattern associated with the maximum rectangle of another pattern
+--- Returns the maximum rectangle of a source pattern.
 -- The returned pattern is in the same coordinate system as the parent.
 -- @param ip pattern for rectangle finding
 -- @return rectangle pattern followed by it's min, max
@@ -714,7 +714,7 @@ end
 
 --------------------------------------------------------------------------------------
 
--- binary space partition splitting - internal function
+-- Binary space partition splitting - internal function
 local function bspSplit(rules, min, max, outpatterns)
 	local size = max - min + point.new(1,1)
 	local volume = size.x*size.y
@@ -744,9 +744,10 @@ local function bspSplit(rules, min, max, outpatterns)
 	end
 end
 
---- Performs a binary space partition upon a given pattern, returning the
--- partitioned subpatterns. This works by finding all the contiguous rectangular
--- volumes in the input pattern and running a binary space partition on all of them.
+--- Performs a binary space partition upon a given pattern.
+-- This works by finding all the contiguous rectangular volumes in the input
+-- pattern and running a binary space partition on all of them. The partitions
+-- are inserted into a provided table.
 -- @param rules the set of rules for the BSP - threshold room asymmetry (deviat) and threshold volume (volume)
 -- @param ip the pattern for which the BSP will be run over
 -- @param sps a table of subpatterns into which the BSP subpatterns will be inserted
@@ -767,7 +768,7 @@ end
 
 --------------------------------------------------------------------------------------
 
---- Finds a position where pattern a can fit into pattern b and returns the shift required
+--- Returns a point where one pattern can fit into another.
 -- This operation does not allow for rotations
 -- @param a the tile to be packed
 -- @param b the domain which we are searching for packing solutions
@@ -796,8 +797,8 @@ function pattern.packtile(a,b)
 	return nil
 end
 
---- Center-weighted version of pattern.packtile, tries to fit
--- pattern a into as close as possible to pattern b's centre
+--- Center-weighted version of pattern.packtile. 
+-- Tries to fit pattern a into as close as possible to pattern b's centre
 -- @param a the tile to be packed
 -- @param b the domain which we are searching for packing solutions
 -- @return a point in b where a can be placed
