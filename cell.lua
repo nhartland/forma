@@ -5,6 +5,7 @@ local cell= {}
 local thispath = select('1', ...):match(".+%.") or ""
 local pattern = require(thispath .. 'pattern')
 local rule = require(thispath .. 'rule')
+local util = require(thispath .. 'util')
 
 -- Cellular automata --------------------------------------------------------------------------------
 --- Cellular automata iteration.
@@ -38,16 +39,15 @@ function cell.grow(prevp, domain, ruleset)
 	assert(getmetatable(domain) == pattern, "forma.cell: iterate requires a pattern as a second argument")
     local testdomain = pattern.intersection(pattern.edge(prevp), domain)
     local testpoints = testdomain.pointset
-    local acceptable = {}
+    util.fisher_yates(testpoints)
     for i=1, #testpoints, 1 do 
        if rule.check(ruleset, prevp, testpoints[i]) == true then
-           table.insert(acceptable, testpoints[i])
+           local nextp = pattern.clone(prevp)
+           pattern.insert(nextp, testpoints[i].x, testpoints[i].y)
+	       return nextp, false
        end
     end
-    if #acceptable == 0 then return prevp, true end
-    local nextp = pattern.clone(prevp)
-    local selp = acceptable[math.random(#acceptable)]
-    pattern.insert(nextp, selp.x, selp.y)
-	return nextp, false
+    return prevp, true
 end
+
 return cell
