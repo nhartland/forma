@@ -3,7 +3,8 @@
 local pattern = {}
 
 local thispath = select('1', ...):match(".+%.") or ""
-local point = require(thispath .. 'point')
+local neighbourhood = require(thispath .. 'neighbourhood')
+local point         = require(thispath .. 'point')
 
 -------------------------------------------- Pattern creation --------------------------------------------
 
@@ -264,7 +265,7 @@ end
 -- Note that this will *not* necessarily generate a hull, it just returns the
 -- inactive neighbours of the provided pattern.
 -- @param ip pattern for which the edges should be calculated
--- @param dirs defines which directions to scan in to determine edges (default 8)
+-- @param dirs defines which neighbourhood to scan in to determine edges (default 8/moore)
 -- @return the forma.pattern represeting the edge of ip
 function pattern.edge(ip, dirs)
 	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
@@ -274,7 +275,7 @@ function pattern.edge(ip, dirs)
 	ep.offchar = ip.offchar
 
 	-- Default is eight
-	dirs = dirs or point.dirEight
+	dirs = dirs or neighbourhood.moore()
 	for i=1, #ip.pointset, 1 do
 		for j=1, #dirs, 1 do
 			local vpr = ip.pointset[i] + dirs[j]
@@ -293,7 +294,7 @@ end
 -- This is simmilar to pattern.edge, but will return tiles that are /internal/
 -- to the provided pattern.
 -- @param ip pattern for which the surface should be calculated
--- @param dirs defines which directions to scan in to determine edges (default 8)
+-- @param dirs defines which neighbourhood to scan in to determine edges (default 8/moore)
 -- @return the forma.pattern represeting the surface of ip
 function pattern.surface(ip, dirs)
 	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
@@ -303,7 +304,7 @@ function pattern.surface(ip, dirs)
 	sp.offchar = ip.offchar
 
 	-- Default is eight
-	dirs = dirs or point.dirEight
+	dirs = dirs or neighbourhood.moore()
 	for i=1, #ip.pointset, 1 do
 		local foundEdge = false
         local v = ip.pointset[i]
@@ -369,12 +370,12 @@ end
 --- Returns the contiguous sub-pattern of ip that surrounts point pt
 -- @param ip pattern upon which the flood fill is to be performed
 -- @param ipt specifies where the flood fill should begin
--- @param dirs defines which directions to scan in while flood-filling (default 8)
+-- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a forma.pattern consisting of the contiguous segment about point
 function pattern.floodfill(ip, ipt, dirs)
 	assert(getmetatable(ip) == pattern, "pattern.floodfill requires a pattern as the first argument")
 	assert(ipt, "pattern.floodfill requires a point as the second argument")
-	dirs = dirs or point.dirEight
+	dirs = dirs or neighbourhood.moore()
 	local retpat = pattern.new()
 	local function ff(pt)
 		if pattern.point(ip, pt.x, pt.y) ~= nil 
@@ -394,11 +395,11 @@ end
 -- This performs a series of flood-fill operations until all
 -- pattern points are accounted for in the sub-patterns
 -- @param ip pattern for which the segments are to be extracted
--- @param dirs defines which directions to scan in while flood-filling (default 8)
+-- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
 function pattern.segments(ip, dirs)
 	assert(getmetatable(ip) == pattern, "pattern.segments requires a pattern as the first argument")
-	dirs = dirs or point.dirEight
+	dirs = dirs or neighbourhood.moore()
 	local wp = pattern.clone(ip)
 	local segs = {}
 	while pattern.size(wp) > 0 do
@@ -413,11 +414,11 @@ end
 -- Enclosed areas are the inactive areas of a pattern which are
 -- completely surrounded by active areas
 -- @param ip pattern for which the enclosed areas should be computed
--- @param dirs defines which directions to scan in while flood-filling (default 4)
+-- @param dirs defines which directions to scan in while flood-filling (default 4/vn)
 -- @return a list of forma.patterns comprising the enclosed areas of ip
 function pattern.enclosed(ip, dirs)
 	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
-	dirs = dirs or point.dirFour
+	dirs = dirs or neighbourhood.von_neumann()
     local xs = ip.max.x - ip.min.x
     local ys = ip.max.y - ip.min.y
     local sq = pattern.square(xs, ys)

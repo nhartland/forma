@@ -126,7 +126,7 @@ function point.euclidean(a,b)
 end
 
 -- Neighbouring points of a source
--- @param dirs a table of directions (e.g point.dirFour)
+-- @param dirs a table of directions (e.g forma.neighbourhood)
 -- @return a function which takes a point and returns it's neighbours
 function point.neighbours(dirs)
 	assert(type(dirs) == "table")
@@ -141,31 +141,6 @@ function point.neighbours(dirs)
 		return t
 	end
 end
-
---- List of cardinal directions represented as forma.point tables
-point.dirFour = {}
-table.insert(point.dirFour, point.new(1,0))
-table.insert(point.dirFour, point.new(0,1))
-table.insert(point.dirFour, point.new(-1,0))
-table.insert(point.dirFour, point.new(0,-1))
-
---- List of diagonal directions represented as forma.point tables
-point.dirDiag = {}
-table.insert(point.dirDiag, point.new(1,1))
-table.insert(point.dirDiag, point.new(1,-1))
-table.insert(point.dirDiag, point.new(-1,-1))
-table.insert(point.dirDiag, point.new(-1,1))
-
---- List of all directions represented as forma.point tables
-point.dirEight = {}
-table.insert(point.dirEight, point.new(1,0))
-table.insert(point.dirEight, point.new(0,1))
-table.insert(point.dirEight, point.new(-1,0))
-table.insert(point.dirEight, point.new(0,-1))
-table.insert(point.dirEight, point.new(1,1))
-table.insert(point.dirEight, point.new(1,-1))
-table.insert(point.dirEight, point.new(-1,-1))
-table.insert(point.dirEight, point.new(-1,1))
 
 return point
 
