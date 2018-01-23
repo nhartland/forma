@@ -1,21 +1,18 @@
---- Definition of neighbourhood tiling categorisations
--- @module forma.categories
+--- Definition of neighbourhood tiling categorisations.
 -- Categorises points in a pattern according to their neighbourhood
 -- configuration.  For each point in a forma.pattern, there are a finite number
 -- of possible configurations of neighbouring points. Specifically, each point
 -- has 2^n possible neighbourhood configurations where n is the number of
 -- points in the neighbourhood. This module categorised points according to
 -- which type of neighbourhood they are in.
+-- @module forma.categories
 
--- This is used primarily with the Von-Neumann neighbourhood to convert
--- edges of e.g walls from X  to └
---                         XX
 local categories = {}
 
 local thispath = select('1', ...):match(".+%.") or ""
 local pattern = require(thispath .. 'pattern')
 
---- A helper method return utf8 characters for the 16 possible von neumann categories
+--- utf8 characters for the 16 possible von neumann categories
 function categories.von_neumann_utf8()
    return {'┼','├','┴','┤','┬','─','┘','└','│','┌','┐','╷','╴','╶','╵','.'}
 end
