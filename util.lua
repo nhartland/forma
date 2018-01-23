@@ -47,8 +47,13 @@ end
 -- chars per segment.
 -- @param domain the basic patterns from which the segments are drawn.
 -- @param segments the table of segments to be drawn.
--- @param chars the characters to be printed for each segment.
+-- @param chars the characters to be printed for each segment (optional).
 function util.pretty_print(domain, segments, chars)
+    -- If no dictionary is supplied generate a new one (starting from '0')
+    if chars == nil then
+        chars = {}
+        for i=1, #segments, 1 do table.insert(chars, string.char(i+47)) end
+    end
     print('$')
     -- Print out the segments to a map
     for i=domain.min.y, domain.max.y,1 do

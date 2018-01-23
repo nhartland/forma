@@ -22,7 +22,7 @@ until converged == true or pattern.size(rn) == 10
 
 -- Add some symmetry and smear pattern
 rn = pattern.hreflect(rn)
-sm = pattern.smear(rn, 3)
+local sm = pattern.smear(rn, 3)
 
 -- Print to stdout
 rn.onchar, rn.offchar = "X"," "
