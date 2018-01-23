@@ -52,7 +52,7 @@ function util.pretty_print(domain, segments, chars)
     print('$')
     -- Print out the segments to a map
     for i=domain.min.y, domain.max.y,1 do
-        local string = '.'
+        local string = ' '
         for j=domain.min.x, domain.max.x,1 do
             local token = ' '
             for k,v in ipairs(segments) do
