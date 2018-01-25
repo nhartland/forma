@@ -1,5 +1,5 @@
 -- voronoi.lua
--- Demonstration of voronoi tesselation 
+-- Demonstration of voronoi tesselation
 
 local point   = require('point')
 local util    = require('util')

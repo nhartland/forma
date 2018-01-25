@@ -64,7 +64,7 @@ function util.pretty_print(domain, segments, chars)
             for k,v in ipairs(segments) do
             if pattern.point(v, j, i) ~= nil then token = chars[k] end end
             string = string .. token
-        end 
+        end
         print(string)
     end
 end

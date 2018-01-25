@@ -24,4 +24,4 @@ repeat
     rflct = pattern.hreflect(rflct)
     rflct = pattern.hreflect(rflct)
     if converged == true then print(rflct) end
-until converged == true 
+until converged == true

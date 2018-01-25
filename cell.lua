@@ -40,7 +40,7 @@ function cell.grow(prevp, domain, ruleset)
     local testdomain = pattern.intersection(pattern.edge(prevp), domain)
     local testpoints = testdomain.pointset
     util.fisher_yates(testpoints)
-    for i=1, #testpoints, 1 do 
+    for i=1, #testpoints, 1 do
        if rule.check(ruleset, prevp, testpoints[i]) == true then
            local nextp = pattern.clone(prevp)
            pattern.insert(nextp, testpoints[i].x, testpoints[i].y)

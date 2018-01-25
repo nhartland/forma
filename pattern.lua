@@ -20,7 +20,7 @@ function pattern.new()
 	self.onchar  = '1'
 
     self.size = 0 -- Compatibility
-	self.pointset = {} 
+	self.pointset = {}
     self.pointmap = {}
 	return setmetatable(self, pattern)
 end
@@ -31,7 +31,7 @@ end
 function pattern.clone(ip)
 	local self = pattern.new()
 
-	for i=1, #ip.pointset, 1 do 
+	for i=1, #ip.pointset, 1 do
         local v = ip.pointset[i]
 		pattern.insert(self, v.x, v.y)
 	end
@@ -99,7 +99,7 @@ function pattern.__add(a,b)
 	assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
 
 	local c = pattern.clone(a)
-	for i=1, #b.pointset, 1 do 
+	for i=1, #b.pointset, 1 do
         local v = b.pointset[i]
 		if pattern.point(c, v.x, v.y) == nil then
 			pattern.insert(c, v.x, v.y)
@@ -121,7 +121,7 @@ function pattern.__sub(a,b)
 	c.onchar = a.onchar
 	c.offchar = a.offchar
 
-	for i=1, #a.pointset, 1 do 
+	for i=1, #a.pointset, 1 do
         local v = a.pointset[i]
 		if pattern.point(b, v.x, v.y) == nil then
 			pattern.insert(c, v.x, v.y)
@@ -145,21 +145,21 @@ function pattern.__eq(a,b)
 	if a.max.x ~= b.max.x then return false end
 	if a.max.y ~= b.max.y then return false end
 	-- Slower checks
-	for i=1, #a.pointset, 1 do 
+	for i=1, #a.pointset, 1 do
         local v = a.pointset[i]
 		if pattern.point(b, v.x, v.y) == nil then return false end
 	end
 	return true
 end
 
---- Determine the number of points in a pattern 
--- @param ip pattern for size check 
+--- Determine the number of points in a pattern
+-- @param ip pattern for size check
 function pattern.size( ip )
     return #ip.pointset
 end
 
 -- Return a copy of the internal pointset
--- @param ip pattern for copying 
+-- @param ip pattern for copying
 function pattern.pointlist(ip)
     local newlist = {}
     for i=1, #ip.pointset, 1 do
@@ -230,8 +230,8 @@ function pattern.random(domain, pr, rng)
 	local p = pattern.new()
     for i = 1, #domain.pointset, 1 do
 		if rng() < pr then
-            local point = domain.pointset[i]
-			pattern.insert(p, point.x, point.y)
+            local rpoint = domain.pointset[i]
+			pattern.insert(p, rpoint.x, rpoint.y)
 		end
 	end
 	return p
@@ -363,7 +363,7 @@ function pattern.sum(...)
     local patterns = {...}
     assert(#patterns > 1, "pattern.sum requires at least two patterns as arguments")
 	local sum = pattern.clone(patterns[1])
-	for i=2, #patterns, 1 do 
+	for i=2, #patterns, 1 do
         local v = patterns[i]
 		assert(getmetatable(v) == pattern, "pattern.sum requires a pattern as an argument")
 		for j=1, #v.pointset, 1 do
@@ -388,7 +388,7 @@ function pattern.floodfill(ip, ipt, dirs)
 	dirs = dirs or neighbourhood.moore()
 	local retpat = pattern.new()
 	local function ff(pt)
-		if pattern.point(ip, pt.x, pt.y) ~= nil 
+		if pattern.point(ip, pt.x, pt.y) ~= nil
         and pattern.point(retpat, pt.x, pt.y) == nil then
 		    pattern.insert(retpat, pt.x, pt.y)
 			for i=1, #dirs, 1 do ff(pt + dirs[i]) end
@@ -458,7 +458,6 @@ function pattern.voronoi(points, domain, measure)
     assert(pattern.size(points) > 0, "forma.voronoi: segments requires at least one target point/seed")
     local domainset = domain.pointset
     local pointset  = points.pointset
-    local selected  = pattern.new()          -- Already selected
     local segments  = {}
 	for i=1, #pointset, 1 do
         local v = pointset[i]
@@ -469,7 +468,7 @@ function pattern.voronoi(points, domain, measure)
         local dp = domainset[i]
         local min_point = 1
         local min_dist  = measure(dp, pointset[1])
-	    for j=2, #pointset, 1 do 
+	    for j=2, #pointset, 1 do
             local distance = measure(dp, pointset[j])
             if distance < min_dist then
                 min_point = j
@@ -588,10 +587,9 @@ function pattern.unsmear(ip, ss)
 		for i=1, #ip.pointset, 1 do
             local v = ip.pointset[i]
             if pattern.point(remove, v.x, v.y) == nil then
-			    local completeBlock = true
 			    for j=1, #block.pointset, 1 do
-			    	local iv = v + block.pointset[j]
-			    	if pattern.point(ip, iv.x, iv.y) == nil then 
+                    local iv = v + block.pointset[j]
+                    if pattern.point(ip, iv.x, iv.y) == nil then
                        pattern.insert(remove, v.x, v.y)
                        foundTile = true
                        break
@@ -601,7 +599,7 @@ function pattern.unsmear(ip, ss)
 		end
 	end
     local unsmeared = ip - remove
-	return unsmeared 
+	return unsmeared
 end
 
 --- Enlarges a pattern by a specific factor
@@ -629,11 +627,11 @@ end
 
 -- Reflect a pattern vertically
 -- @param ip pattern for reflection
--- @return pattern which is reflected vertically 
+-- @return pattern which is reflected vertically
 function pattern.vreflect(ip)
 	assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
     local np = pattern.clone(ip)
-	for i=1, #ip.pointset, 1 do 
+	for i=1, #ip.pointset, 1 do
         local new_y = 2*ip.max.y - ip.pointset[i].y + 1
         pattern.insert(np, ip.pointset[i].x, new_y)
     end
@@ -643,11 +641,11 @@ end
 
 -- Reflect a pattern horizontally
 -- @param ip pattern for reflection
--- @return pattern which is reflected horizontally 
+-- @return pattern which is reflected horizontally
 function pattern.hreflect(ip)
 	assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
     local np = pattern.clone(ip)
-	for i=1, #ip.pointset, 1 do 
+	for i=1, #ip.pointset, 1 do
         local new_x = 2*ip.max.x - ip.pointset[i].x + 1
         pattern.insert(np, new_x, ip.pointset[i].y)
     end
@@ -793,7 +791,7 @@ function pattern.packtile(a,b)
 	-- point to fix coordinate systems
 	local hinge = pattern.rpoint(a)
 	-- Loop over possible positions in b
-	for i=1, #b.pointset, 1 do 
+	for i=1, #b.pointset, 1 do
 		local coordshift = b.pointset[i] - hinge -- Get coordinate transformation
 		local tiles = true
 		for j=1, #a.pointset, 1 do
@@ -810,7 +808,7 @@ function pattern.packtile(a,b)
 	return nil
 end
 
---- Center-weighted version of pattern.packtile. 
+--- Center-weighted version of pattern.packtile.
 -- Tries to fit pattern a into as close as possible to pattern b's centre
 -- @param a the tile to be packed
 -- @param b the domain which we are searching for packing solutions

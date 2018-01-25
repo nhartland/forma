@@ -1,5 +1,5 @@
 -- manor.lua
--- Use of a few different functions to generate some sort of outline 
+-- Use of a few different functions to generate some sort of outline
 
 local cell = require('cell')
 local rule = require('rule')
