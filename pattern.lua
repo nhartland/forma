@@ -258,6 +258,16 @@ function pattern.com(ip)
 	table.sort(allpoints, distance_to_com)
 	return point.clone(allpoints[1])
 end
+---------------------------------- Sorting helpers ---------------------------------------------------
+
+--- Size comparator for two patterns.
+-- Useful for table.sort to rank patterns by size (number of points)
+-- @param pa the first pattern for comparison
+-- @param pb the second pattern for comparison
+-- @return pa.size > pb.size
+function pattern.size_sort(pa, pb)
+    return pa.size > pb.size
+end
 
 ---------------------------------- Patterns based on other patterns ----------------------------------
 
