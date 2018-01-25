@@ -726,14 +726,14 @@ end
 --------------------------------------------------------------------------------------
 
 -- Binary space partition splitting - internal function
-local function bspSplit(rules, min, max, outpatterns)
+local function bspSplit(rng, rules, min, max, outpatterns)
 	local size = max - min + point.new(1,1)
 	local volume = size.x*size.y
 	local deviat = math.max(size.x, size.y)/math.min(size.x, size.y)
 
 	if  deviat > rules.deviat or volume > rules.volume then
 		local r1max, r2min
-		local ran = 0.2*math.random()+ 0.4
+		local ran = 0.2*rng()+ 0.4
 		if size.x > size.y then
 			local xch = math.floor((size.x-1)*ran)
 			r1max = min + point.new( xch, size.y-1)
@@ -762,16 +762,18 @@ end
 -- @param rules the set of rules for the BSP - threshold room asymmetry (deviat) and threshold volume (volume)
 -- @param ip the pattern for which the BSP will be run over
 -- @param sps a table of subpatterns into which the BSP subpatterns will be inserted
-function pattern.bsp(rules, ip, sps)
+-- @param rng (optional) A random number generating table, following the signature of math.random.
+function pattern.bsp(rules, ip, sps, rng)
 	assert(rules, "pattern.bsp requires a ruleset!")
 	assert(rules.deviat, "pattern.bsp rules must specify a deviat")
 	assert(rules.volume, "pattern.bsp rules must specify a volume")
 	assert(getmetatable(ip) == pattern, "pattern.maxrectangle requires a pattern as an argument")
+	if rng == nil then rng = math.random end
 	if sps == nil then sps = {} end
 	local available = pattern.clone(ip)
 	while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
 		local min, max = pattern.maxrectangle(available)
-		bspSplit(rules, min, max, sps)
+		bspSplit(rng, rules, min, max, sps)
 		for i=1, #sps, 1 do available = available - sps[i] end
 	end
 end
