@@ -33,13 +33,14 @@ end
 -- @param prevp the previous iteration of the pattern
 -- @param domain the points in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
+-- @param rng a (optional) random number generator (syntax as per math.random).
 -- @return the next iteration, and a bool specifying if convergence has been reached.
-function cell.grow(prevp, domain, ruleset)
+function cell.grow(prevp, domain, ruleset, rng)
 	assert(getmetatable(prevp)  == pattern, "forma.cell: iterate requires a pattern as a first argument")
 	assert(getmetatable(domain) == pattern, "forma.cell: iterate requires a pattern as a second argument")
     local testdomain = pattern.intersection(pattern.edge(prevp), domain)
     local testpoints = testdomain.pointset
-    util.fisher_yates(testpoints)
+    util.fisher_yates(testpoints, rng)
     for i=1, #testpoints, 1 do
        if rule.check(ruleset, prevp, testpoints[i]) == true then
            local nextp = pattern.clone(prevp)
