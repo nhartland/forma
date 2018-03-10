@@ -812,7 +812,7 @@ end
 -- Tries to fit pattern a into as close as possible to pattern b's centre
 -- @param a the tile to be packed
 -- @param b the domain which we are searching for packing solutions
--- @return a point in b where a can be placed
+-- @return a point in b where a can be placed, nil if no solution found
 function pattern.packtile_centre(a,b)
 	-- point to fix coordinate systems
 	local hinge = pattern.com(a)
