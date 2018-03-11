@@ -29,6 +29,7 @@ end
 -- @param ip input pattern for cloning
 -- @return new forma.pattern copy of ip
 function pattern.clone(ip)
+	assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
 	local self = pattern.new()
 
 	for i=1, #ip.pointset, 1 do
@@ -70,6 +71,9 @@ end
 -- @param r the radius of the circle to be drawn
 -- @return circular forma.pattern of radius r
 function pattern.circle(r)
+	assert(type(r) == 'number', 'pattern.circle requires a number for the radius')
+	assert(r >= 0, 'pattern.circle requires a positive number for the radius')
+
     local cp = pattern.new()
     local x, y = 0, r
     local p = 3 - 2*r
@@ -207,6 +211,8 @@ end
 -- @param y second coordinate of new point
 function pattern.insert( ip, x, y )
 	assert(getmetatable(ip) == pattern, "pattern.insert requires a pattern as the first argument")
+	assert(type(x) == 'number', 'pattern.insert requires a number for the x coordinate')
+	assert(type(y) == 'number', 'pattern.insert requires a number for the y coordinate')
 
 	local key = x..':'..y
 	assert(ip.pointmap[key] == nil, "pattern.insert cannot duplicate points")
