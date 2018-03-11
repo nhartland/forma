@@ -64,6 +64,39 @@ function pattern.square(x,y)
 	return sqPattern
 end
 
+--- Basic circular pattern
+-- http://willperone.net/Code/codecircle.php suggests a faster method
+-- might be worth a look
+-- @param r the radius of the circle to be drawn
+-- @return circular forma.pattern of radius r
+function pattern.circle(r)
+    local cp = pattern.new()
+    local x, y = 0, r
+    local p = 3 - 2*r
+    if r == 0 then return cp end
+
+    -- insert_over needed here because this algorithm duplicates some points
+    while (y >= x) do
+        pattern.insert_over(cp, -x, -y)
+        pattern.insert_over(cp, -y, -x)
+        pattern.insert_over(cp,  y, -x)
+        pattern.insert_over(cp,  x, -y)
+        pattern.insert_over(cp, -x,  y)
+        pattern.insert_over(cp, -y,  x)
+        pattern.insert_over(cp,  y,  x)
+        pattern.insert_over(cp,  x,  y)
+
+        x = x + 1
+        if p < 0 then
+            p = p + 4*x + 6
+        else
+            y = y - 1
+            p = p + 4*(x - y) + 10
+        end
+    end
+    return cp
+end
+
 -------------------------------------------- Pattern methods --------------------------------------------
 
 --- Pattern tostring.
@@ -188,6 +221,20 @@ function pattern.insert( ip, x, y )
 	ip.min.y = math.min(ip.min.y, y)
 end
 
+--- Point insertion into a pattern without failing if point already exists.
+-- This function differs only from pattern.insert by first checking if the point
+-- already exists in the pointset. Therefore bypassing the assert.
+-- @param ip pattern for point insertion
+-- @param x first coordinate of new point
+-- @param y second coordinate of new point
+-- @return true if the insert was sucessful, false if not
+function pattern.insert_over( ip, x, y )
+    if pattern.point(ip, x, y) == nil then
+       pattern.insert(ip, x, y)
+       return true
+    end
+    return false
+end
 --- Pattern point method
 -- @param ip pattern for point check
 -- @param x first coordinate of point to be returned
