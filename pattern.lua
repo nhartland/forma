@@ -205,6 +205,14 @@ function pattern.pointlist(ip)
     return newlist
 end
 
+--- Generate the pointmap key from coordinates
+-- This handles the wierd -0 behaviour
+local function coordinates_to_key(x, y)
+    if x == -0 then x = 0 end
+    if y == -0 then y = 0 end
+	return x..':'..y
+end
+
 --- Point insertion into a pattern.
 -- @param ip pattern for point insertion
 -- @param x first coordinate of new point
@@ -214,7 +222,7 @@ function pattern.insert( ip, x, y )
 	assert(type(x) == 'number', 'pattern.insert requires a number for the x coordinate')
 	assert(type(y) == 'number', 'pattern.insert requires a number for the y coordinate')
 
-	local key = x..':'..y
+	local key = coordinates_to_key(x, y)
 	assert(ip.pointmap[key] == nil, "pattern.insert cannot duplicate points")
 	ip.pointmap[key] = point.new(x,y)
     table.insert(ip.pointset, ip.pointmap[key])
@@ -251,7 +259,8 @@ function pattern.point(ip, x, y)
 	assert(type(x) == 'number', 'pattern.point requires a number for the x coordinate')
 	assert(type(y) == 'number', 'pattern.point requires a number for the y coordinate')
 
-	return ip.pointmap[x..':'..y]
+	local key = coordinates_to_key(x, y)
+	return ip.pointmap[key]
 end
 
 --- Pattern random point method.

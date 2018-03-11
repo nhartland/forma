@@ -7,6 +7,8 @@ local point = {}
 -- @param y second coordinate
 -- @return new forma.point
 function point.new(x,y)
+    if x == -0 then x = 0 end
+    if y == -0 then y = 0 end
 	local self = { x = (x~=nil) and x or 0, y = (y~=nil) and y or 0 }
 	return setmetatable(self, point)
 end
