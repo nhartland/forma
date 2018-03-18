@@ -10,6 +10,8 @@ function point.new(x,y)
     if x == -0 then x = 0 end
     if y == -0 then y = 0 end
 	local self = { x = (x~=nil) and x or 0, y = (y~=nil) and y or 0 }
+    local valid = self.x == math.floor(self.x) and self.y == math.floor(self.y)
+    assert (valid, "point.new requires integer inputs")
 	return setmetatable(self, point)
 end
 
