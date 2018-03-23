@@ -310,11 +310,11 @@ function pattern.com(ip)
 	local com = point.new()
 	local allpoints = ip.pointset
 	for i=1, #allpoints, 1 do com = com + allpoints[i] end
-	com = com / #allpoints
+	local comx, comy = com.x / #allpoints, com.y / #allpoints
 
 	local function distance_to_com(a,b)
-		local adist = (a.x-com.x)*(a.x-com.x) + (a.y-com.y)*(a.y-com.y)
-		local bdist = (b.x-com.x)*(b.x-com.x) + (b.y-com.y)*(b.y-com.y)
+		local adist = (a.x-comx)*(a.x-comx) + (a.y-comy)*(a.y-comy)
+		local bdist = (b.x-comx)*(b.x-comx) + (b.y-comy)*(b.y-comy)
 		return adist < bdist
 	end
 	table.sort(allpoints, distance_to_com)
