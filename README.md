@@ -1,20 +1,17 @@
-forma
-=====
+`forma`
+=======
 
 This package is intended for the generation and manipulation of shapes on a two
-dimensional grid. It came about as part of my experiments in making roguelike
-games, and is therefore particuarly suited for the generation of roguelike
+dimensional grid. It came about as part of experiments in making roguelike
+games, and is therefore particularly suited for the generation of roguelike
 environments.
 
-Along with a set of useful tools, forma comes with a different way of thinking
-algorithmically about the generation of shapes, in terms of operations upon
-patterns.
-
-Several such operations are provided, such as pattern addition, subtraction,
-enlargement, smearing, reflection. Finding the outer hull of a pattern using an
-arbitary neighbourhood, finding the voronoi tesselation of a set of points in a
-pattern or finding the largest rectangle that can fit in a pattern are also
-useful tools provided.
+`forma` provides a basic data structure for 2-D grid shapes or `patterns` and a
+number of useful tools for their manipulation. Several such operations are
+provided, starting with basic operations such as pattern addition, subtraction
+and reflection. More involved operations, such as the finding of hulls using
+various neighbourhoods (e.g Moore, Von Neumann), or finding the Voronoi
+tesselation of a set of points in a pattern are also provided.
 
 Requirements
 ------------
