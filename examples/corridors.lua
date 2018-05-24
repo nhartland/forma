@@ -14,7 +14,7 @@ local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
 
-local sq = pattern.square(30,10)
+local sq = pattern.square(60,20)
 local tp = pattern.new()
 local seed = pattern.rpoint(sq)
 pattern.insert(tp, seed.x, seed.y)
