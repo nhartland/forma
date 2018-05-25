@@ -15,9 +15,10 @@ local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
 
 local sq = pattern.square(80,20)
-local tp = pattern.new()
 local seed = pattern.rpoint(sq)
-pattern.insert(tp, seed.x, seed.y)
+
+local tp = pattern.new()
+tp:insert(seed.x, seed.y)
 
 -- Complicated ruleset
 local moore = rule.new(neighbourhood.moore(),      "B12/S012345678")
