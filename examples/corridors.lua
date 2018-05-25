@@ -14,7 +14,7 @@ local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
 
-local sq = pattern.square(60,20)
+local sq = pattern.square(80,20)
 local tp = pattern.new()
 local seed = pattern.rpoint(sq)
 pattern.insert(tp, seed.x, seed.y)
@@ -31,10 +31,11 @@ local point_types = categories.generate(neighbourhood.von_neumann())
 repeat
 	local converged
 	tp, converged = cell.grow(tp, sq, ruleset)
-    local segments = categories.find_all(tp, point_types)
-	util.pretty_print(tp, segments, categories.von_neumann_utf8())
     ite = ite + 1
 until converged == true
+
+local segments = categories.find_all(tp, point_types)
+util.pretty_print(tp, segments, categories.von_neumann_utf8())
 
 print("Converged in " .. tostring(ite) .. " iterations")
 

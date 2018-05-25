@@ -10,7 +10,7 @@ local pattern = require('pattern')
 local neighbourhood = require('neighbourhood')
 math.randomseed( os.time() )
 
-local sq = pattern.square(12,5)
+local sq = pattern.square(10,5)
 local rp = pattern.rpoint(sq)
 local rn = pattern.new()
 pattern.insert(rn, rp.x, rp.y)
