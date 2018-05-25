@@ -6,6 +6,10 @@ local thispath = select('1', ...):match(".+%.") or ""
 local neighbourhood = require(thispath .. 'neighbourhood')
 local point         = require(thispath .. 'point')
 
+--- Pattern indexing
+-- For enabling syntax sugar pattern:method
+pattern.__index = pattern
+
 -------------------------------------------- Pattern creation --------------------------------------------
 
 --- Initialise a forma.pattern.
