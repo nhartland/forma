@@ -25,27 +25,6 @@ function pattern.new()
 	return setmetatable(self, pattern)
 end
 
---- Copy an existing forma.pattern.
--- @param ip input pattern for cloning
--- @return new forma.pattern copy of ip
-function pattern.clone(ip)
-	assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
-	local self = pattern.new()
-
-	for i=1, #ip.pointset, 1 do
-        local v = ip.pointset[i]
-		pattern.insert(self, v.x, v.y)
-	end
-
-    -- This is important, keep the stored limits, not the actual ones
-	self.max = point.new(ip.max.x, ip.max.y)
-	self.min = point.new(ip.min.x, ip.min.y)
-
-	self.offchar = ip.offchar
-	self.onchar  = ip.onchar
-
-	return self
-end
 
 --- Basic square pattern
 -- @param x size in x
@@ -187,6 +166,30 @@ function pattern.__eq(a,b)
 		if pattern.point(b, v.x, v.y) == nil then return false end
 	end
 	return true
+end
+
+-------------------------------------------- Pattern methods --------------------------------------------
+
+--- Copy an existing forma.pattern.
+-- @param ip input pattern for cloning
+-- @return new forma.pattern copy of ip
+function pattern.clone(ip)
+	assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
+	local self = pattern.new()
+
+	for i=1, #ip.pointset, 1 do
+        local v = ip.pointset[i]
+		pattern.insert(self, v.x, v.y)
+	end
+
+    -- This is important, keep the stored limits, not the actual ones
+	self.max = point.new(ip.max.x, ip.max.y)
+	self.min = point.new(ip.min.x, ip.min.y)
+
+	self.offchar = ip.offchar
+	self.onchar  = ip.onchar
+
+	return self
 end
 
 --- Determine the number of points in a pattern
@@ -438,110 +441,6 @@ function pattern.sum(...)
 	return sum
 end
 
-
---- Returns the contiguous sub-pattern of ip that surrounts point pt
--- @param ip pattern upon which the flood fill is to be performed
--- @param ipt specifies where the flood fill should begin
--- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
--- @return a forma.pattern consisting of the contiguous segment about point
-function pattern.floodfill(ip, ipt, dirs)
-	assert(getmetatable(ip) == pattern, "pattern.floodfill requires a pattern as the first argument")
-	assert(ipt, "pattern.floodfill requires a point as the second argument")
-	dirs = dirs or neighbourhood.moore()
-	local retpat = pattern.new()
-	local function ff(pt)
-		if pattern.point(ip, pt.x, pt.y) ~= nil
-        and pattern.point(retpat, pt.x, pt.y) == nil then
-		    pattern.insert(retpat, pt.x, pt.y)
-			for i=1, #dirs, 1 do ff(pt + dirs[i]) end
-		end
-		return
-	end
-	ff(ipt)
-	return retpat
-end
-
-------------------------------- Segment generators --------------------------------------------------------------
-
---- Generate a list of contiguous 'segments' or sub-patterns.
--- This performs a series of flood-fill operations until all
--- pattern points are accounted for in the sub-patterns
--- @param ip pattern for which the segments are to be extracted
--- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
--- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
-function pattern.segments(ip, dirs)
-	assert(getmetatable(ip) == pattern, "pattern.segments requires a pattern as the first argument")
-	dirs = dirs or neighbourhood.moore()
-	local wp = pattern.clone(ip)
-	local segs = {}
-	while pattern.size(wp) > 0 do
-		local ranpoint = pattern.rpoint(wp)
-		table.insert(segs, pattern.floodfill(wp, ranpoint, dirs))
-		wp = wp - segs[#segs]
-	end
-	return segs
-end
-
---- Returns a list of 'enclosed' segments of a pattern.
--- Enclosed areas are the inactive areas of a pattern which are
--- completely surrounded by active areas
--- @param ip pattern for which the enclosed areas should be computed
--- @param dirs defines which directions to scan in while flood-filling (default 4/vn)
--- @return a list of forma.patterns comprising the enclosed areas of ip
-function pattern.enclosed(ip, dirs)
-	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
-	dirs = dirs or neighbourhood.von_neumann()
-    local xs = ip.max.x - ip.min.x
-    local ys = ip.max.y - ip.min.y
-    local sq = pattern.square(xs, ys)
-    sq = pattern.shift(sq, ip.min.x, ip.min.y)
-    sq = sq - ip
-    local segments = pattern.segments(sq, dirs)
-    local enclosed = {}
-    for i=1, #segments,1 do
-        local segment = segments[i]
-        pattern.limiteval(segment)
-        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
-        and segment.max.x < ip.max.x-1 and segment.max.y < ip.max.y-1 then
-            table.insert(enclosed, segment)
-        end
-    end
-    return enclosed
-end
-
---- Generate voronoi tesselations of points in a domain.
--- @param points the set of seed points for the tesselation
--- @param domain the domain of the tesselation
--- @param measure the measure used to judge distance between points
--- @return a list of voronoi segments
-function pattern.voronoi(points, domain, measure)
-	assert(getmetatable(points) == pattern,  "forma.voronoi: segments requires a pattern as a first argument")
-	assert(getmetatable(domain) == pattern,  "forma.voronoi: segments requires a pattern as a second argument")
-    assert(pattern.size(points) > 0, "forma.voronoi: segments requires at least one target point/seed")
-    local domainset = domain.pointset
-    local pointset  = points.pointset
-    local segments  = {}
-	for i=1, #pointset, 1 do
-        local v = pointset[i]
-        assert(pattern.point(domain, v.x, v.y) ~= nil, "forma.voronoi: point outside of domain: " .. tostring(v))
-        segments[i] = pattern.new()
-    end
-	for i=1, #domainset, 1 do
-        local dp = domainset[i]
-        local min_point = 1
-        local min_dist  = measure(dp, pointset[1])
-	    for j=2, #pointset, 1 do
-            local distance = measure(dp, pointset[j])
-            if distance < min_dist then
-                min_point = j
-                min_dist = distance
-            end
-        end
-        pattern.insert(segments[min_point], dp.x,dp.y)
-    end
-    return segments
-end
-
 -------------------------------------------- Pattern mods --------------------------------------------
 
 --- Re-evaluate pattern limits.
@@ -714,7 +613,108 @@ function pattern.hreflect(ip)
     return np
 end
 
------------------------------------------------------------------------------------------------------
+------------------------------- Sub-pattern generators --------------------------------------------------------------
+
+--- Returns the contiguous sub-pattern of ip that surrounts point pt
+-- @param ip pattern upon which the flood fill is to be performed
+-- @param ipt specifies where the flood fill should begin
+-- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
+-- @return a forma.pattern consisting of the contiguous segment about point
+function pattern.floodfill(ip, ipt, dirs)
+	assert(getmetatable(ip) == pattern, "pattern.floodfill requires a pattern as the first argument")
+	assert(ipt, "pattern.floodfill requires a point as the second argument")
+	dirs = dirs or neighbourhood.moore()
+	local retpat = pattern.new()
+	local function ff(pt)
+		if pattern.point(ip, pt.x, pt.y) ~= nil
+        and pattern.point(retpat, pt.x, pt.y) == nil then
+		    pattern.insert(retpat, pt.x, pt.y)
+			for i=1, #dirs, 1 do ff(pt + dirs[i]) end
+		end
+		return
+	end
+	ff(ipt)
+	return retpat
+end
+
+--- Generate a list of contiguous 'segments' or sub-patterns.
+-- This performs a series of flood-fill operations until all
+-- pattern points are accounted for in the sub-patterns
+-- @param ip pattern for which the segments are to be extracted
+-- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
+-- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
+function pattern.segments(ip, dirs)
+	assert(getmetatable(ip) == pattern, "pattern.segments requires a pattern as the first argument")
+	dirs = dirs or neighbourhood.moore()
+	local wp = pattern.clone(ip)
+	local segs = {}
+	while pattern.size(wp) > 0 do
+		local ranpoint = pattern.rpoint(wp)
+		table.insert(segs, pattern.floodfill(wp, ranpoint, dirs))
+		wp = wp - segs[#segs]
+	end
+	return segs
+end
+
+--- Returns a list of 'enclosed' segments of a pattern.
+-- Enclosed areas are the inactive areas of a pattern which are
+-- completely surrounded by active areas
+-- @param ip pattern for which the enclosed areas should be computed
+-- @param dirs defines which directions to scan in while flood-filling (default 4/vn)
+-- @return a list of forma.patterns comprising the enclosed areas of ip
+function pattern.enclosed(ip, dirs)
+	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
+	dirs = dirs or neighbourhood.von_neumann()
+    local xs = ip.max.x - ip.min.x
+    local ys = ip.max.y - ip.min.y
+    local sq = pattern.square(xs, ys)
+    sq = pattern.shift(sq, ip.min.x, ip.min.y)
+    sq = sq - ip
+    local segments = pattern.segments(sq, dirs)
+    local enclosed = {}
+    for i=1, #segments,1 do
+        local segment = segments[i]
+        pattern.limiteval(segment)
+        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
+        and segment.max.x < ip.max.x-1 and segment.max.y < ip.max.y-1 then
+            table.insert(enclosed, segment)
+        end
+    end
+    return enclosed
+end
+
+--- Generate voronoi tesselations of points in a domain.
+-- @param points the set of seed points for the tesselation
+-- @param domain the domain of the tesselation
+-- @param measure the measure used to judge distance between points
+-- @return a list of voronoi segments
+function pattern.voronoi(points, domain, measure)
+	assert(getmetatable(points) == pattern,  "forma.voronoi: segments requires a pattern as a first argument")
+	assert(getmetatable(domain) == pattern,  "forma.voronoi: segments requires a pattern as a second argument")
+    assert(pattern.size(points) > 0, "forma.voronoi: segments requires at least one target point/seed")
+    local domainset = domain.pointset
+    local pointset  = points.pointset
+    local segments  = {}
+	for i=1, #pointset, 1 do
+        local v = pointset[i]
+        assert(pattern.point(domain, v.x, v.y) ~= nil, "forma.voronoi: point outside of domain: " .. tostring(v))
+        segments[i] = pattern.new()
+    end
+	for i=1, #domainset, 1 do
+        local dp = domainset[i]
+        local min_point = 1
+        local min_dist  = measure(dp, pointset[1])
+	    for j=2, #pointset, 1 do
+            local distance = measure(dp, pointset[j])
+            if distance < min_dist then
+                min_point = j
+                min_dist = distance
+            end
+        end
+        pattern.insert(segments[min_point], dp.x,dp.y)
+    end
+    return segments
+end
 
 --- Find the maximal rectangular area within a pattern.
 -- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529
