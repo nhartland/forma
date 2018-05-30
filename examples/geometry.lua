@@ -1,4 +1,4 @@
---- geometry.lua
+-- geometry.lua
 -- Some examples of geometry by rasterisation
 
 local pattern = require('pattern')

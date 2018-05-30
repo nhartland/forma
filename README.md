@@ -51,5 +51,5 @@ Testing
 -------
 
 Unit tests are provided for some methods with the
-[busted](https://github.com/Olivine-Labs/busted) framework. To run the tests use
-``` busted ./tests/* ```
+[luaunit](https://github.com/bluebird75/luaunit) framework. To run the tests use
+``` lua ./tests/<test>.lua ```

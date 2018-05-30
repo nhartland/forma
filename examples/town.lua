@@ -2,10 +2,10 @@
 -- Generates a plausible small town layout. Following a simmilar setup to the
 -- corridor example but with more post-processing.
 
-local cell = require('cell')
 local rule = require('rule')
 local util = require('util')
 local pattern = require('pattern')
+local automata = require('automata')
 local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
@@ -24,7 +24,7 @@ local ruleset = {diag2, diag, vn, moore}
 
 repeat
 	local converged
-	tp, converged = cell.grow(tp, sq, ruleset)
+	tp, converged = automata.grow(tp, sq, ruleset)
 until converged == true
 
 tp = pattern.edge(tp) -- Comment this out and you get the 'sewerage system'

@@ -1,6 +1,6 @@
 --- Pattern generation by Cellular Automata
--- @module forma.cell
-local cell= {}
+-- @module forma.automata
+local automata= {}
 
 local thispath = select('1', ...):match(".+%.") or ""
 local pattern = require(thispath .. 'pattern')
@@ -14,9 +14,9 @@ local util = require(thispath .. 'util')
 -- @param domain the points in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
 -- @return the next iteration, and a bool specifying if convergence has been reached.
-function cell.iterate(prevp, domain, ruleset)
-	assert(getmetatable(prevp) == pattern,  "forma.cell: iterate requires a pattern as a first argument")
-	assert(getmetatable(domain) == pattern, "forma.cell: iterate requires a pattern as a second argument")
+function automata.iterate(prevp, domain, ruleset)
+	assert(getmetatable(prevp) == pattern,  "forma.automata: iterate requires a pattern as a first argument")
+	assert(getmetatable(domain) == pattern, "forma.automata: iterate requires a pattern as a second argument")
 	local nextp = pattern.new()
     for i=1, #domain.pointset, 1 do
         local v = domain.pointset[i]
@@ -35,9 +35,9 @@ end
 -- @param ruleset a list of forma.rules for performing the CA on
 -- @param rng a (optional) random number generator (syntax as per math.random).
 -- @return the next iteration, and a bool specifying if convergence has been reached.
-function cell.grow(prevp, domain, ruleset, rng)
-	assert(getmetatable(prevp)  == pattern, "forma.cell: iterate requires a pattern as a first argument")
-	assert(getmetatable(domain) == pattern, "forma.cell: iterate requires a pattern as a second argument")
+function automata.grow(prevp, domain, ruleset, rng)
+	assert(getmetatable(prevp)  == pattern, "forma.automata: iterate requires a pattern as a first argument")
+	assert(getmetatable(domain) == pattern, "forma.automata: iterate requires a pattern as a second argument")
     local testdomain = pattern.intersection(pattern.edge(prevp), domain)
     local testpoints = testdomain.pointset
     util.fisher_yates(testpoints, rng)
@@ -51,4 +51,4 @@ function cell.grow(prevp, domain, ruleset, rng)
     return prevp, true
 end
 
-return cell
+return automata

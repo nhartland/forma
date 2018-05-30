@@ -1,4 +1,5 @@
---- Basic point handling
+--- A vector class defining the position of a cell
+-- This module defines a 'point', or an integer-valued 2D vector
 -- @module forma.point
 local point = {}
 
@@ -96,11 +97,11 @@ function point:clone()
 	return point.new(self.x, self.y)
 end
 
--- Minkowski distance between points
+-- Manhattan distance between points
 -- @param a first point
 -- @param b second point
 -- @return L1(a,b)
-function point.minkowski(a,b)
+function point.manhattan(a,b)
     return math.abs(a.x - b.x) + math.abs(a.y - b.y)
 end
 
