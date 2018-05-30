@@ -7,7 +7,6 @@ local pattern = require(thispath .. 'pattern')
 local rule = require(thispath .. 'rule')
 local util = require(thispath .. 'util')
 
--- Cellular automata --------------------------------------------------------------------------------
 --- Cellular automata iteration.
 -- Performs one CA tick on pattern prevp in the specified domain
 -- @param prevp the previous iteration of the pattern

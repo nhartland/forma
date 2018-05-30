@@ -8,6 +8,7 @@
 - Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tesselation) into separate module
 - Move primives (square, circle) into separate module
+- Merge forma.rule and forma.automata
 
 - Add wrapper functions so that
   point.insert(ip, z, y)
