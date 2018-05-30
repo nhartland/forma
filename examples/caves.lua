@@ -1,7 +1,6 @@
 -- caves.lua
 -- Demonstration of classic cellular-automata cave generation (4-5 rule)
 
-local rule = require('rule')
 local pattern = require('pattern')
 local subpattern = require('subpattern')
 local automata = require('automata')
@@ -13,7 +12,7 @@ local rn = subpattern.random(sq, 0.5)
 sq.onchar, sq.offchar = "∎", " "
 
 -- Moore neighbourhood rule
-local moore = rule.new(neighbourhood.moore(), "B5678/S45678")
+local moore = automata.rule(neighbourhood.moore(), "B5678/S45678")
 local ite = 0
 repeat
 	local converged

@@ -2,7 +2,6 @@
 -- Generates a plausible small town layout. Following a simmilar setup to the
 -- corridor example but with more post-processing.
 
-local rule = require('rule')
 local util = require('util')
 local pattern = require('pattern')
 local automata = require('automata')
@@ -16,10 +15,10 @@ local seed = pattern.rpoint(sq)
 pattern.insert(tp, seed.x, seed.y)
 
 -- Complicated ruleset
-local moore = rule.new(neighbourhood.moore(),      "B12/S012345678")
-local diag  = rule.new(neighbourhood.diagonal(),   "B0123/S01234")
-local diag2 = rule.new(neighbourhood.diagonal_2(), "B01/S01234")
-local vn    = rule.new(neighbourhood.von_neumann(),"B12/S01234")
+local moore = automata.rule(neighbourhood.moore(),      "B12/S012345678")
+local diag  = automata.rule(neighbourhood.diagonal(),   "B0123/S01234")
+local diag2 = automata.rule(neighbourhood.diagonal_2(), "B01/S01234")
+local vn    = automata.rule(neighbourhood.von_neumann(),"B12/S01234")
 local ruleset = {diag2, diag, vn, moore}
 
 repeat
