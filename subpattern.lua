@@ -21,7 +21,7 @@ function subpattern.random(ip, fr, rng)
 	assert(type(fr) == 'number', 'subpattern.random requires a number for the probability')
 	assert(fr >= 0 and fr <= 1 , 'subpattern.random requires a fraction 0 <= p <= 1')
     local n_subset = math.floor(fr*ip:size()) -- Number of cells in returned pattern
-	assert(n_subset > 1,  'subpattern.random requires a fraction and domain large enough to return a non-empty pattern')
+	assert(n_subset > 0,  'subpattern.random requires a fraction and domain large enough to return a non-empty pattern')
 	if rng == nil then rng = math.random end
     local cells = ip:pointlist()
     util.fisher_yates(cells, rng)
