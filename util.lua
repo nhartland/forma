@@ -3,7 +3,6 @@
 
 local util = {}
 local thispath = select('1', ...):match(".+%.") or ""
-local pattern = require(thispath .. 'pattern')
 
 --- C++ style pop-and-swap for unordered lists.
 -- @param lst input list.
