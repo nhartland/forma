@@ -1,4 +1,5 @@
---- Basic point handling
+--- A vector class defining the position of a cell
+-- This module defines a 'point', or an integer-valued 2D vector
 -- @module forma.point
 local point = {}
 

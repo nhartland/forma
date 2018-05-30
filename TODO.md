@@ -5,7 +5,6 @@
 - Improve documentation - specify how all pattern.X methods can also be
   called with standard lua sugar - ip:X
   
-- Rename 'point' -> 'cell'
 - Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tesselation) into separate module
 
@@ -13,8 +12,6 @@
   point.insert(ip, z, y)
   can use
   point.insert(ip, cell(z,y))
-
-- Make public
 
 - Improve testing:
   More tests!
