@@ -3,12 +3,13 @@
 
 local rule = require('rule')
 local pattern = require('pattern')
+local subpattern = require('subpattern')
 local automata = require('automata')
 local neighbourhood = require('neighbourhood')
 math.randomseed( os.time() )
 
 local sq = pattern.square(80,20)
-local rn = pattern.random(sq, 0.5)
+local rn = subpattern.random(sq, 0.5)
 sq.onchar, sq.offchar = "∎", " "
 
 -- Moore neighbourhood rule

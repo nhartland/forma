@@ -4,7 +4,6 @@ local pattern = {}
 
 local thispath = select('1', ...):match(".+%.") or ""
 local neighbourhood = require(thispath .. 'neighbourhood')
-local util          = require(thispath .. 'util')
 local point         = require(thispath .. 'point')
 
 --- Pattern indexing
@@ -283,29 +282,6 @@ function pattern.rpoint(ip, rng)
 	if rng == nil then rng = math.random end
 	local ipoint = rng(#ip.pointset)
 	return point.clone(ip.pointset[ipoint])
-end
-
---- Random subset of pattern.
--- For a given domain, returns a pattern sampling randomly from it, generating a random
--- subset with a fixed fraction of the size of the domain.
--- @param domain pattern for sampling a random pattern from
--- @param fr the fraction of the domain to be sampled
--- @param rng (optional ) a random number generator, following the signature of math.random.
--- @return a pattern of `fr*domain.size` points sampled randomly from domain
-function pattern.random(domain, fr, rng)
-	assert(getmetatable(domain) == pattern, "pattern.random requires a pattern as the first argument")
-	assert(type(fr) == 'number', 'pattern.random requires a number for the probability')
-	assert(fr >= 0 and fr <= 1 , 'pattern.random requires a fraction 0 <= p <= 1')
-    local n_subset = math.floor(fr*domain:size()) -- Number of cells in returned pattern
-	assert(n_subset > 1,  'pattern.random requires a fraction and domain large enough to return a non-empty pattern')
-	if rng == nil then rng = math.random end
-    local cells = domain:pointlist()
-    util.fisher_yates(cells, rng)
-	local p = pattern.new()
-    for i = 1, n_subset, 1 do
-	    p:insert(cells[i].x, cells[i].y)
-	end
-	return p
 end
 
 --- Pattern centre of mass point method.

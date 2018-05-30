@@ -8,8 +8,13 @@ local subpattern = require("subpattern")
 testSubPatterns = {}
 
 function testSubPatterns:setUp()
-    self.square = pattern.square(100)
-    self.seeds = self.square:random(0.1) -- For voronoi tesselation
+    self.square = pattern.square(10)
+    self.seeds = subpattern.random(self.square, 0.1) -- For voronoi tesselation
+end
+
+--- Test the random sampling of patterns
+function testSubPatterns:testRandom()
+    lu.assertEquals(pattern.size(self.seeds), 10)
 end
 
 -- Test Voronoi tesselation with various distance measures

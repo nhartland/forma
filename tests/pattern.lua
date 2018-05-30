@@ -26,13 +26,6 @@ function testPattern:testInsert()
     lu.assertEquals(self.test_pattern_1.min.y,-1)
 end
 
---- Test the random sampling of patterns
-function testPattern:testRandom()
-    local subset = self.test_pattern_2:random(0.1)
-    local required_points = math.floor(25*0.1)
-    lu.assertEquals(pattern.size(subset), required_points)
-end
-
 local runner = lu.LuaUnit.new()
 runner:setOutputType("tap")
 os.exit( runner:runSuite() )
