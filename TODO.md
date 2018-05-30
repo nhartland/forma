@@ -1,20 +1,22 @@
 # TODO
 
-- Correct bresenham circle algorithm to not duplicate points 
-- Add bresenham line drawing to raster
-- Improve documentation - specify how all pattern.X methods can also be
-  called with standard lua sugar - ip:X
+- Correct Bresenham circle algorithm to not duplicate points 
+- Add Bresenham line drawing to raster
   
 - Decouple a bit pattern methods from the underlying data structure
-- Move pattern packing (tesselation) into separate module
-- Move primives (square, circle) into separate module
-- Merge forma.rule and forma.automata
+- Move pattern packing (tessellation) into separate module
+- Move primitives (square, circle) into separate module
 
 - Add wrapper functions so that
   point.insert(ip, z, y)
   can use
   point.insert(ip, cell(z,y))
 
+- Add pattern import/export to json
+
+- Improve documentation - specify how all pattern.X methods can also be
+  called with standard lua sugar - ip:X
+
 - Improve testing:
-  More tests!
+  More tests! (Still lifes, oscillators for CA)
   coveralls.io
