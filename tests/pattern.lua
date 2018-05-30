@@ -1,37 +1,31 @@
 --- Tests of basic forma pattern functions
-require 'busted.runner'()
+local lu = require('tests/luaunit')
 
-describe("pattern test", function()
-    local pattern
-    local test_point_1 -- First test point
-    local test_point_2 -- Second test point
-    local test_point_3 -- Clone of the first point
+testPattern = {}
 
-    setup(function()
-        pattern = require("pattern")
-        test_pattern_1 = pattern.new()
-        test_pattern_2 = pattern.square(5)
-    end)
+function testPattern:setUp()
+    pattern = require("pattern")
+    self.test_pattern_1 = pattern.new()
+    self.test_pattern_2 = pattern.square(5)
+end
 
-    teardown(function()
-        pattern = nil
-        test_pattern_1 = nil
-        test_pattern_2 = nil
-    end)
+function testPattern:testConstructor()
+    lu.assertEquals(pattern.size(self.test_pattern_1),0)
+    lu.assertEquals(pattern.size(self.test_pattern_2),25)
+end
 
-    test("forma.point.new", function()
-        assert.are_equals(pattern.size(test_pattern_1),0)
-        assert.are_equals(pattern.size(test_pattern_2),25)
-    end)
+function testPattern:testInsert()
+    -- Test both insert methods
+    pattern.insert(self.test_pattern_1, 1, -1)
+    self.test_pattern_1:insert(-1, 1)
 
-    test("forma.point.insert", function()
-        pattern.insert(test_pattern_1, 1, -1)
-        pattern.insert(test_pattern_1, -1, 1)
-        assert.are_equals(pattern.size(test_pattern_1),2)
-        assert.are_equals(test_pattern_1.max.x,1)
-        assert.are_equals(test_pattern_1.max.y,1)
-        assert.are_equals(test_pattern_1.min.x,-1)
-        assert.are_equals(test_pattern_1.min.y,-1)
-    end)
+    lu.assertEquals(pattern.size(self.test_pattern_1),2)
+    lu.assertEquals(self.test_pattern_1.max.x,1)
+    lu.assertEquals(self.test_pattern_1.max.y,1)
+    lu.assertEquals(self.test_pattern_1.min.x,-1)
+    lu.assertEquals(self.test_pattern_1.min.y,-1)
+end
 
-end)
+local runner = lu.LuaUnit.new()
+runner:setOutputType("tap")
+os.exit( runner:runSuite() )

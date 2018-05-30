@@ -1,50 +1,42 @@
 --- Tests of basic forma point functions
-require 'busted.runner'()
+local lu = require('tests/luaunit')
 
-describe("point test", function()
-    local point
-    local test_point_1 -- First test point
-    local test_point_2 -- Second test point
-    local test_point_3 -- Clone of the first point
+testPoint = {}
 
-    setup(function()
-        point = require("point")
-        test_point_1 = point.new(1,2)
-        test_point_2 = point.new(2,3)
-        test_point_3 = point.clone(test_point_1)
-    end)
+function testPoint:setUp()
+    point = require("point")
+    self.test_point_1 = point.new(1,2)            -- First test point
+    self.test_point_2 = point.new(2,3)            -- Second test point
+    self.test_point_3 = point.clone(self.test_point_1) -- Clone of the first point
+end
 
-    teardown(function()
-        point = nil
-        test_point_1 = nil
-        test_point_2 = nil
-    end)
+function testPoint:testConstructor()
+    lu.assertEquals(self.test_point_1.x,1)
+    lu.assertEquals(self.test_point_1.y,2)
+end
 
-    test("forma.point.new", function()
-        assert.are_equals(test_point_1.x,1)
-        assert.are_equals(test_point_1.y,2)
-    end)
+function testPoint:testClone()
+    lu.assertEvalToTrue(self.test_point_1.x == self.test_point_3.x)
+    lu.assertEvalToTrue(self.test_point_1.y == self.test_point_3.y)
+    lu.assertEvalToTrue(self.test_point_1.v == self.test_point_3.v)
+    lu.assertEvalToTrue(self.test_point_1 == self.test_point_3)
+end
 
-    test("forma.point.clone", function()
-        assert.is_true(test_point_1.x == test_point_3.x)
-        assert.is_true(test_point_1.y == test_point_3.y)
-        assert.is_true(test_point_1.v == test_point_3.v)
-        assert.is_true(test_point_1 == test_point_3)
-    end)
+function testPoint:testMinkowski()
+    local d = point.minkowski(self.test_point_1, self.test_point_2)
+    lu.assertEvalToTrue(d == 2)
+end
 
-    test("forma.point.minkowski", function()
-        local d = point.minkowski(test_point_1, test_point_2)
-        assert.is_true(d == 2)
-    end)
+function testPoint:testChebyshev()
+    local d = point.chebyshev(self.test_point_1, self.test_point_2)
+    lu.assertEvalToTrue(d == 1)
+end
 
-    test("forma.point.chebyshev", function()
-        local d = point.chebyshev(test_point_1, test_point_2)
-        assert.is_true(d == 1)
-    end)
+function testPoint:testEuclidean2()
+    local d = point.euclidean2(self.test_point_1, self.test_point_2)
+    lu.assertEvalToTrue(d == 2)
+end
 
-    test("forma.point.euclidean2", function()
-        local d = point.euclidean2(test_point_1, test_point_2)
-        assert.is_true(d == 2)
-    end)
-
-end)
+local runner = lu.LuaUnit.new()
+runner:setOutputType("tap")
+os.exit( runner:runSuite() )
