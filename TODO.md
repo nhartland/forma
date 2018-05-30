@@ -6,4 +6,5 @@
   called with standard lua sugar - ip:X
   
 - Rename 'point' -> 'cell'
+- Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tesselation) into separate module

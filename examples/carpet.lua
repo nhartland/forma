@@ -2,11 +2,11 @@
 -- Demonstration of forma cellular automata growth methods
 -- Here a nice carpet pattern generator is specified
 
-local cell = require('cell')
 local rule = require('rule')
 local util = require('util')
-local categories = require('categories')
 local pattern = require('pattern')
+local automata = require('automata')
+local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed( os.time() )
 
@@ -21,7 +21,7 @@ rn:insert(rp.x, rp.y)
 local moore = rule.new(neighbourhood.moore(), "B12/S345678")
 repeat
 	local converged
-	rn, converged = cell.grow(rn, sq, {moore})
+	rn, converged = automata.grow(rn, sq, {moore})
     rn.onchar, rn.offchar = "X"," "
     local rflct = rn:hreflect()
     rflct = rflct:vreflect():vreflect()

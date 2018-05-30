@@ -6,10 +6,10 @@
 -- but the survival rule is ignored (all cells survive). Every iteration
 -- of the growth automata adds only one cell.
 
-local cell = require('cell')
 local rule = require('rule')
 local util = require('util')
 local pattern = require('pattern')
+local automata = require('automata')
 local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
@@ -31,7 +31,7 @@ local ite = 0
 local point_types = categories.generate(neighbourhood.von_neumann())
 repeat
 	local converged
-	tp, converged = cell.grow(tp, sq, ruleset)
+	tp, converged = automata.grow(tp, sq, ruleset)
     ite = ite + 1
 until converged == true
 
