@@ -22,8 +22,8 @@ function testPoint:testClone()
     lu.assertEvalToTrue(self.test_point_1 == self.test_point_3)
 end
 
-function testPoint:testMinkowski()
-    local d = point.minkowski(self.test_point_1, self.test_point_2)
+function testPoint:testManhattan()
+    local d = point.manhattan(self.test_point_1, self.test_point_2)
     lu.assertEvalToTrue(d == 2)
 end
 

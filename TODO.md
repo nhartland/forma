@@ -9,6 +9,13 @@
 - Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tesselation) into separate module
 
+- Add wrapper functions so that
+  point.insert(ip, z, y)
+  can use
+  point.insert(ip, cell(z,y))
+
+- Make public
 
 - Improve testing:
   More tests!
+  coveralls.io

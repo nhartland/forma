@@ -96,11 +96,11 @@ function point:clone()
 	return point.new(self.x, self.y)
 end
 
--- Minkowski distance between points
+-- Manhattan distance between points
 -- @param a first point
 -- @param b second point
 -- @return L1(a,b)
-function point.minkowski(a,b)
+function point.manhattan(a,b)
     return math.abs(a.x - b.x) + math.abs(a.y - b.y)
 end
 

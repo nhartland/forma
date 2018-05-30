@@ -84,26 +84,26 @@ function subpattern.voronoi(points, domain, measure)
 	assert(getmetatable(points) == pattern,  "forma.voronoi: segments requires a pattern as a first argument")
 	assert(getmetatable(domain) == pattern,  "forma.voronoi: segments requires a pattern as a second argument")
     assert(pattern.size(points) > 0, "forma.voronoi: segments requires at least one target point/seed")
-    local domainset = domain.pointset
-    local pointset  = points.pointset
+    local domaincells = domain:pointlist()
+    local seedcells   = points:pointlist()
     local segments  = {}
-	for i=1, #pointset, 1 do
-        local v = pointset[i]
+	for i=1, #seedcells, 1 do
+        local v = seedcells[i]
         assert(domain:has_cell(v.x, v.y), "forma.voronoi: point outside of domain: " .. tostring(v))
         segments[i] = pattern.new()
     end
-	for i=1, #domainset, 1 do
-        local dp = domainset[i]
+	for i=1, #domaincells, 1 do
+        local dp = domaincells[i]
         local min_point = 1
-        local min_dist  = measure(dp, pointset[1])
-	    for j=2, #pointset, 1 do
-            local distance = measure(dp, pointset[j])
+        local min_dist  = measure(dp, seedcells[1])
+	    for j=2, #seedcells, 1 do
+            local distance = measure(dp, seedcells[j])
             if distance < min_dist then
                 min_point = j
                 min_dist = distance
             end
         end
-        pattern.insert(segments[min_point], dp.x,dp.y)
+        segments[min_point]:insert(dp.x,dp.y)
     end
     return segments
 end
