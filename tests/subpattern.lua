@@ -28,7 +28,7 @@ function testSubPatterns:commonVoronoi(measure)
     voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
 
     -- Check for the correct number of segments
-    lu.assertEquals(#voronoi_segments, pattern.size(self.seeds))
+    lu.assertEquals(#voronoi_segments, self.seeds:size())
 
     -- Check that no segments overlap
     -- TODO: This part of the test is very slow, need to improve pattern.intersection
@@ -36,7 +36,7 @@ function testSubPatterns:commonVoronoi(measure)
         for j=i+1, #voronoi_segments, 1 do
             -- Compute intersection
             local int = pattern.intersection(voronoi_segments[i], voronoi_segments[j])
-            lu.assertEquals(int.size,  0)
+            lu.assertEquals(int:size(),  0)
         end
     end
 

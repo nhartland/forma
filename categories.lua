@@ -36,7 +36,7 @@ function categories.generate(neighbourhood)
         end
     end
     -- Sort by number of elements and return
-    table.sort(categorisation, function(a,b) return a.size > b.size end)
+    table.sort(categorisation, pattern.size_sort)
     return categorisation
 end
 
@@ -50,7 +50,7 @@ function categories.which(ip, point, icats)
         local category = icats[i]
         local shifted = pattern.shift(category, point.x, point.y)
         local inter   = pattern.intersection(ip, shifted)
-        if inter.size == category.size then return i end
+        if inter:size() == category:size() then return i end
     end
     assert(false, "categories.which cannot find a valid category")
 end

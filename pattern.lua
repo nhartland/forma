@@ -24,7 +24,6 @@ function pattern.new()
 	self.offchar = '0'
 	self.onchar  = '1'
 
-    self.size = 0 -- Compatibility
 	self.pointset = {}
     self.pointmap = {}
 	return setmetatable(self, pattern)
@@ -160,7 +159,7 @@ function pattern.__eq(a,b)
 	assert(getmetatable(a) == pattern, "pattern equality test requires a pattern as the first argument")
 	assert(getmetatable(b) == pattern, "pattern equality test requires a pattern as the second argument")
 	-- Easy and fast checks
-	if pattern.size(a) ~= pattern.size(b) then return false end
+	if a:size() ~= b:size() then return false end
 	if a.min.x ~= b.min.x then return false end
 	if a.min.y ~= b.min.y then return false end
 	if a.max.x ~= b.max.x then return false end
@@ -234,7 +233,6 @@ function pattern.insert( ip, x, y )
 	assert(ip.pointmap[key] == nil, "pattern.insert cannot duplicate points")
 	ip.pointmap[key] = point.new(x,y)
     table.insert(ip.pointset, ip.pointmap[key])
-    ip.size = ip.size + 1
 
 	-- reset pattern extent
 	ip.max.x = math.max(ip.max.x, x)
@@ -279,7 +277,7 @@ end
 -- @return a random point in the pattern
 function pattern.rpoint(ip, rng)
 	assert(getmetatable(ip) == pattern, "pattern.rpoint requires a pattern as the first argument")
-	assert(pattern.size(ip) > 0, 'pattern.rpoint requires a filled pattern!')
+	assert(ip:size() > 0, 'pattern.rpoint requires a filled pattern!')
 
 	-- Check RNG
 	if rng == nil then rng = math.random end
@@ -298,7 +296,7 @@ function pattern.random(domain, fr, rng)
 	assert(getmetatable(domain) == pattern, "pattern.random requires a pattern as the first argument")
 	assert(type(fr) == 'number', 'pattern.random requires a number for the probability')
 	assert(fr >= 0 and fr <= 1 , 'pattern.random requires a fraction 0 <= p <= 1')
-    local n_subset = math.floor(fr*domain.size) -- Number of cells in returned pattern
+    local n_subset = math.floor(fr*domain:size()) -- Number of cells in returned pattern
 	assert(n_subset > 1,  'pattern.random requires a fraction and domain large enough to return a non-empty pattern')
 	if rng == nil then rng = math.random end
     local cells = domain:pointlist()
@@ -316,7 +314,7 @@ end
 -- @return the centre of mass point in the pattern
 function pattern.com(ip)
 	assert(getmetatable(ip) == pattern, "pattern.com requires a pattern as the first argument")
-	assert(pattern.size(ip) > 0, 'pattern.com requires a filled pattern!')
+	assert(ip:size() > 0, 'pattern.com requires a filled pattern!')
 
 	local com = point.new()
 	local allpoints = ip.pointset
@@ -337,9 +335,9 @@ end
 -- Useful for table.sort to rank patterns by size (number of points)
 -- @param pa the first pattern for comparison
 -- @param pb the second pattern for comparison
--- @return pa.size > pb.size
+-- @return pa:size() > pb:size()
 function pattern.size_sort(pa, pb)
-    return pa.size > pb.size
+    return pa:size() > pb:size()
 end
 
 -------------------- Patterns based on other patterns --------------------
@@ -411,7 +409,7 @@ end
 -- @param ... patterns for intersection calculation
 -- @return the forma.pattern representing the intersection of the arguments
 function pattern.intersection(...)
-	local patterns = {...} table.sort(patterns, function(a,b) return pattern.size(a) < pattern.size(b) end)
+	local patterns = {...} table.sort(patterns, function(a,b) return a:size() < b:size() end)
     assert(#patterns > 1, "pattern.intersection requires at least two patterns as arguments")
 	local intpat = pattern.clone(patterns[1])
 	for i=2, #patterns, 1 do
@@ -631,7 +629,7 @@ end
 function pattern.packtile(a,b)
 	assert(getmetatable(a) == pattern, "pattern.packtile requires a pattern as a first argument")
 	assert(getmetatable(b) == pattern, "pattern.packtile requires a pattern as a second argument")
-	assert(pattern.size(a) > 0 , "pattern.packtile requires a non-empty pattern as a first argument")
+	assert(a:size() > 0 , "pattern.packtile requires a non-empty pattern as a first argument")
 	-- point to fix coordinate systems
 	local hinge = pattern.rpoint(a)
 	-- Loop over possible positions in b
