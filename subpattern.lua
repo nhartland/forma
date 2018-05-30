@@ -19,8 +19,7 @@ function subpattern.floodfill(ip, ipt, dirs)
 	dirs = dirs or neighbourhood.moore()
 	local retpat = pattern.new()
 	local function ff(pt)
-		if pattern.point(ip, pt.x, pt.y) ~= nil
-        and pattern.point(retpat, pt.x, pt.y) == nil then
+		if ip:has_cell(pt.x, pt.y) and retpat:has_cell(pt.x, pt.y) == false then
 		    pattern.insert(retpat, pt.x, pt.y)
 			for i=1, #dirs, 1 do ff(pt + dirs[i]) end
 		end
@@ -32,7 +31,7 @@ end
 
 --- Generate a list of contiguous 'segments' or sub-patterns.
 -- This performs a series of flood-fill operations until all
--- pattern points are accounted for in the sub-patterns
+-- pattern cells are accounted for in the sub-patterns
 -- @param ip pattern for which the segments are to be extracted
 -- @param dirs defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
@@ -90,7 +89,7 @@ function subpattern.voronoi(points, domain, measure)
     local segments  = {}
 	for i=1, #pointset, 1 do
         local v = pointset[i]
-        assert(pattern.point(domain, v.x, v.y) ~= nil, "forma.voronoi: point outside of domain: " .. tostring(v))
+        assert(domain:has_cell(v.x, v.y), "forma.voronoi: point outside of domain: " .. tostring(v))
         segments[i] = pattern.new()
     end
 	for i=1, #domainset, 1 do
@@ -129,7 +128,7 @@ function subpattern.maxrectangle(ip)
 
 	local function updateCache(x)
 		for y = ip.min.y, ip.max.y, 1 do
-			if pattern.point(ip,x,y) ~= nil then
+			if ip:has_cell(ip,x,y) then
 				cache[y] = cache[y] + 1
 			else
 				cache[y] = 0

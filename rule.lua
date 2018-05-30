@@ -47,7 +47,7 @@ local function nCount(pa, pt, nbh)
 	local n = 0
 	for i=1,#nbh,1 do
 		local tpt = pt + nbh[i]
-		if pattern.point(pa, tpt.x, tpt.y) ~= nil then n = n + 1 end
+		if pa:has_cell(tpt.x, tpt.y) then n = n + 1 end
 	end
 	return n
 end
@@ -58,7 +58,7 @@ function rule.check(ruleset, ipattern, ipoint)
      for i=1, #ruleset, 1 do
         local irule = ruleset[i]
 	    local count = nCount(ipattern, ipoint, irule.neighbourhood)
-	    local alive = pattern.point(ipattern, ipoint.x, ipoint.y) ~= nil
+	    local alive = ipattern:has_cell(ipoint.x, ipoint.y)
 	    if     alive == false and irule.B[count] ~= true then  -- Birth
              alive_cell = false break
 	    elseif alive == true  and irule.S[count] ~= true then  -- Survival

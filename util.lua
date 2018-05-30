@@ -62,7 +62,7 @@ function util.pretty_print(domain, segments, chars)
         for j=domain.min.x, domain.max.x,1 do
             local token = ' '
             for k,v in ipairs(segments) do
-            if pattern.point(v, j, i) ~= nil then token = chars[k] end end
+            if v:has_cell(j, i) then token = chars[k] end end
             string = string .. token
         end
         print(string)

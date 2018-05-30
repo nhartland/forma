@@ -102,7 +102,7 @@ function pattern.__tostring(self)
 	for y = self.min.y, self.max.y, 1 do
 		string = string .. '.'
 		for x = self.min.x, self.max.x, 1 do
-            string = string .. (pattern.point(self,x,y) ~= nil and self.onchar or self.offchar)
+            string = string .. (self:has_cell(x,y) and self.onchar or self.offchar)
 		end
 		string = string .. '\n'
 	end
@@ -121,7 +121,7 @@ function pattern.__add(a,b)
 	local c = pattern.clone(a)
 	for i=1, #b.pointset, 1 do
         local v = b.pointset[i]
-		if pattern.point(c, v.x, v.y) == nil then
+		if c:has_cell(v.x, v.y) == false then
 			pattern.insert(c, v.x, v.y)
 		end
 	end
@@ -143,7 +143,7 @@ function pattern.__sub(a,b)
 
 	for i=1, #a.pointset, 1 do
         local v = a.pointset[i]
-		if pattern.point(b, v.x, v.y) == nil then
+		if b:has_cell(v.x, v.y) == false then
 			pattern.insert(c, v.x, v.y)
 		end
 	end
@@ -167,7 +167,7 @@ function pattern.__eq(a,b)
 	-- Slower checks
 	for i=1, #a.pointset, 1 do
         local v = a.pointset[i]
-		if pattern.point(b, v.x, v.y) == nil then return false end
+		if b:has_cell(v.x, v.y) == false then return false end
 	end
 	return true
 end
@@ -250,24 +250,25 @@ end
 -- @param y second coordinate of new point
 -- @return true if the insert was sucessful, false if not
 function pattern.insert_over( ip, x, y )
-    if pattern.point(ip, x, y) == nil then
+    if ip:has_cell(x, y) == false then
        pattern.insert(ip, x, y)
        return true
     end
     return false
 end
---- Pattern point method
+
+--- Check for occupied cell
 -- @param ip pattern for point check
 -- @param x first coordinate of point to be returned
 -- @param y second coordinate of point to be returned
--- @return the point at (x,y)
-function pattern.point(ip, x, y)
-	assert(getmetatable(ip) == pattern, "pattern.point requires a pattern as the first argument")
-	assert(type(x) == 'number', 'pattern.point requires a number for the x coordinate')
-	assert(type(y) == 'number', 'pattern.point requires a number for the y coordinate')
+-- @return True if pattern `ip` includes the point at (x,y), False otherwise
+function pattern.has_cell(ip, x, y)
+	assert(getmetatable(ip) == pattern, "pattern.has_cell requires a pattern as the first argument")
+	assert(type(x) == 'number', 'pattern.has_cell requires a number for the x coordinate')
+	assert(type(y) == 'number', 'pattern.has_cell requires a number for the y coordinate')
 
 	local key = coordinates_to_key(x, y)
-	return ip.pointmap[key]
+	return ip.pointmap[key] ~= nil
 end
 
 --- Pattern random point method.
@@ -358,8 +359,8 @@ function pattern.edge(ip, dirs)
 	for i=1, #ip.pointset, 1 do
 		for j=1, #dirs, 1 do
 			local vpr = ip.pointset[i] + dirs[j]
-			if pattern.point(ip, vpr.x, vpr.y ) == nil then
-				if pattern.point(ep, vpr.x, vpr.y) == nil then
+			if ip:has_cell(vpr.x, vpr.y) == false then
+				if ep:has_cell(vpr.x, vpr.y) == false then
 					pattern.insert(ep, vpr.x, vpr.y)
 				end
 			end
@@ -389,7 +390,7 @@ function pattern.surface(ip, dirs)
         local v = ip.pointset[i]
 		for j=1, #dirs, 1 do
 			local vpr = v + dirs[j]
-			if pattern.point(ip, vpr.x, vpr.y ) == nil then
+			if ip:has_cell(vpr.x, vpr.y) == false then
 				foundEdge = true
 				break
 			end
@@ -416,7 +417,7 @@ function pattern.intersection(...)
 		local newint = pattern.new()
 		for j=1, #intpat.pointset, 1 do
             local v2 = intpat.pointset[j]
-			if pattern.point(tpattern, v2.x, v2.y) ~= nil then
+			if tpattern:has_cell(v2.x, v2.y) then
 				pattern.insert(newint, v2.x, v2.y)
 			end
 		end
@@ -437,7 +438,7 @@ function pattern.sum(...)
 		assert(getmetatable(v) == pattern, "pattern.sum requires a pattern as an argument")
 		for j=1, #v.pointset, 1 do
             local v2 = v.pointset[j]
-			if pattern.point(sum, v2.x, v2.y) == nil then
+			if sum:has_cell(v2.x, v2.y) == false then
 				pattern.insert(sum, v2.x, v2.y)
 			end
 		end
@@ -524,7 +525,7 @@ function pattern.smear(ip, ss)
 	for i=1, #ip.pointset, 1 do
 		for j=1, #block.pointset, 1 do
 			local iv = ip.pointset[i] + block.pointset[j]
-			if pattern.point(sp,iv.x,iv.y) == nil then
+			if sp:has_cell(iv.x,iv.y) == false then
 				pattern.insert(sp, iv.x, iv.y)
 			end
 		end
@@ -551,10 +552,10 @@ function pattern.unsmear(ip, ss)
 		foundTile = false
 		for i=1, #ip.pointset, 1 do
             local v = ip.pointset[i]
-            if pattern.point(remove, v.x, v.y) == nil then
+            if remove:has_cell(v.x, v.y) == false then
 			    for j=1, #block.pointset, 1 do
                     local iv = v + block.pointset[j]
-                    if pattern.point(ip, iv.x, iv.y) == nil then
+                    if ip:has_cell(iv.x, iv.y) == false then
                        pattern.insert(remove, v.x, v.y)
                        foundTile = true
                        break
@@ -636,7 +637,7 @@ function pattern.packtile(a,b)
 		local tiles = true
 		for j=1, #a.pointset, 1 do
 			local shifted = a.pointset[j] + coordshift
-			if pattern.point(b, shifted.x, shifted.y) == nil then
+			if b:has_cell(shifted.x, shifted.y) == false then
 				tiles = false
 				break
 			end
@@ -669,7 +670,7 @@ function pattern.packtile_centre(a,b)
 		local tiles = true
 		for j=1, #a.pointset, 1 do
 			local shifted = a.pointset[j] + coordshift
-			if pattern.point(b, shifted.x, shifted.y) == nil then
+			if b:has_cell(shifted.x, shifted.y) == false then
 				tiles = false
 				break
 			end
