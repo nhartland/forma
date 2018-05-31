@@ -443,17 +443,15 @@ function pattern.enlarge(ip, f)
 	assert(getmetatable(ip) == pattern, "pattern.enlarge requires a pattern as the first argument")
 	assert(type(f) == 'number', 'pattern.enlarge requires a number as the enlargement factor')
 
-    local primitives = require(thispath .. 'primitives')
-	local block = primitives.square(f)
-	local ep = pattern.new()
-
-	for i=1, #ip.pointset, 1 do
-		for j=1, #block.pointset, 1 do
-			local iv = f*ip.pointset[i] + block.pointset[j]
-			pattern.insert(ep, iv.x, iv.y)
-		end
-	end
-
+    local ep = pattern.new()
+    for _, iv in ipairs(ip:pointlist()) do
+        local sv = f*iv
+        for i=0, f-1, 1 do
+            for j=0, f-1, 1 do
+                ep:insert(sv.x+i, sv.y+j)
+            end
+        end
+    end
 	return ep
 end
 
