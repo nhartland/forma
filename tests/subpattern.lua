@@ -3,12 +3,13 @@ local lu = require('tests/luaunit')
 
 local point = require("point")
 local pattern = require("pattern")
+local primitives = require("primitives")
 local subpattern = require("subpattern")
 
 testSubPatterns = {}
 
 function testSubPatterns:setUp()
-    self.square = pattern.square(10)
+    self.square = primitives.square(10)
     self.seeds = subpattern.random(self.square, 0.1) -- For voronoi tesselation
 end
 

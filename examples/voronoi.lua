@@ -4,11 +4,12 @@
 local point   = require('point')
 local util    = require('util')
 local pattern = require('pattern')
+local primitives = require('primitives')
 local subpattern = require('subpattern')
 math.randomseed(os.time())
 
 -- Generate a random pattern and its voronoi tesselation
-local sq = pattern.square(60,20)
+local sq = primitives.square(60,20)
 local rn = subpattern.random(sq, 0.01)
 
 -- Compute voronoi tesselation for various measures

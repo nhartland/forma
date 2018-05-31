@@ -28,61 +28,6 @@ function pattern.new()
 	return setmetatable(self, pattern)
 end
 
-
---- Basic square pattern
--- @param x size in x
--- @param y size in y (default y = x)
--- @return square forma.pattern of size {x,y}
-function pattern.square(x,y)
-	assert(type(x) == "number")
-	y = y ~= nil and y or x
-
-	local sqPattern = pattern.new()
-	for i=0, x-1, 1 do
-		for j=0, y-1, 1 do
-			pattern.insert(sqPattern, i,j)
-		end
-	end
-
-	return sqPattern
-end
-
---- Basic circular pattern
--- http://willperone.net/Code/codecircle.php suggests a faster method
--- might be worth a look
--- @param r the radius of the circle to be drawn
--- @return circular forma.pattern of radius r
-function pattern.circle(r)
-	assert(type(r) == 'number', 'pattern.circle requires a number for the radius')
-	assert(r >= 0, 'pattern.circle requires a positive number for the radius')
-
-    local cp = pattern.new()
-    local x, y = 0, r
-    local p = 3 - 2*r
-    if r == 0 then return cp end
-
-    -- insert_over needed here because this algorithm duplicates some points
-    while (y >= x) do
-        pattern.insert_over(cp, -x, -y)
-        pattern.insert_over(cp, -y, -x)
-        pattern.insert_over(cp,  y, -x)
-        pattern.insert_over(cp,  x, -y)
-        pattern.insert_over(cp, -x,  y)
-        pattern.insert_over(cp, -y,  x)
-        pattern.insert_over(cp,  y,  x)
-        pattern.insert_over(cp,  x,  y)
-
-        x = x + 1
-        if p < 0 then
-            p = p + 4*x + 6
-        else
-            y = y - 1
-            p = p + 4*(x - y) + 10
-        end
-    end
-    return cp
-end
-
 -------------------------- Pattern methods -------------------------------
 
 --- Pattern tostring.
@@ -486,66 +431,11 @@ function pattern.shift(ip, x, y)
 	return sp
 end
 
---- Smear a pattern out by converting all points to blocks of size ss
--- @param ip pattern for smearing
--- @param ss size of pattern smear
--- @return smeared pattern
-function pattern.smear(ip, ss)
-	assert(getmetatable(ip) == pattern, "pattern.smear requires a pattern as the first argument")
-	assert(type(ss) == 'number', 'pattern.smear requires a number as the smearsize')
-
-	local sp = pattern.new()
-	sp.onchar = ip.onchar
-	sp.offchar = ip.offchar
-
-	local block = pattern.square(ss)
-	for i=1, #ip.pointset, 1 do
-		for j=1, #block.pointset, 1 do
-			local iv = ip.pointset[i] + block.pointset[j]
-			if sp:has_cell(iv.x,iv.y) == false then
-				pattern.insert(sp, iv.x, iv.y)
-			end
-		end
-	end
-
-	return sp
-end
-
---- Inverse operation of pattern.smear.
--- Note that the process is not invertible, the best you can do is return
--- a pattern, which under smearing, will give you the original pattern.
--- @param ip pattern for unsmearing
--- @param ss size of pattern smear
--- @return unsmeared pattern
-function pattern.unsmear(ip, ss)
-	assert(getmetatable(ip) == pattern, "pattern.unsmear requires a pattern as the first argument")
-	assert(type(ss) == 'number', 'pattern.unsmear requires a number as the smearsize')
-
-	local block  = pattern.square(ss)
-	local remove = pattern.new()
-
-	local foundTile = true
-	while foundTile == true do
-		foundTile = false
-		for i=1, #ip.pointset, 1 do
-            local v = ip.pointset[i]
-            if remove:has_cell(v.x, v.y) == false then
-			    for j=1, #block.pointset, 1 do
-                    local iv = v + block.pointset[j]
-                    if ip:has_cell(iv.x, iv.y) == false then
-                       pattern.insert(remove, v.x, v.y)
-                       foundTile = true
-                       break
-                    end
-			    end
-            end
-		end
-	end
-    local unsmeared = ip - remove
-	return unsmeared
-end
-
 --- Enlarges a pattern by a specific factor
+-- Based on an input pattern, this method returns a new pattern in which each
+-- input cell is converted to a f*f cell block. The returned pattern is
+-- therfore an 'enlarged' version of the input pattern, by a scale factor of
+-- 'f' in both x and y.
 -- @param ip pattern to be enlarged
 -- @param f factor of enlargement
 -- @return enlarged pattern
@@ -553,18 +443,15 @@ function pattern.enlarge(ip, f)
 	assert(getmetatable(ip) == pattern, "pattern.enlarge requires a pattern as the first argument")
 	assert(type(f) == 'number', 'pattern.enlarge requires a number as the enlargement factor')
 
-	local block = pattern.square(f)
-	local ep = pattern.new()
-	ep.onchar = ip.onchar
-	ep.offchar = ip.offchar
-
-	for i=1, #ip.pointset, 1 do
-		for j=1, #block.pointset, 1 do
-			local iv = f*ip.pointset[i] + block.pointset[j]
-			pattern.insert(ep, iv.x, iv.y)
-		end
-	end
-
+    local ep = pattern.new()
+    for _, iv in ipairs(ip:pointlist()) do
+        local sv = f*iv
+        for i=0, f-1, 1 do
+            for j=0, f-1, 1 do
+                ep:insert(sv.x+i, sv.y+j)
+            end
+        end
+    end
 	return ep
 end
 

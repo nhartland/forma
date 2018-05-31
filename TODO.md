@@ -5,7 +5,10 @@
   
 - Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tessellation) into separate module
-- Move primitives (square, circle) into separate module
+
+- Rename grow -> asynchronous CA
+https://en.wikipedia.org/wiki/Asynchronous_cellular_automaton
+namely *fully asynchronous*
 
 - Add wrapper functions so that
   point.insert(ip, z, y)
