@@ -165,9 +165,12 @@ local function coordinates_to_key(x, y)
 end
 
 --- Point insertion into a pattern.
+-- Re-returns the provided point to allow for initialisations
+-- like `pattern.new():insert(x,y)` to work.
 -- @param ip pattern for point insertion
 -- @param x first coordinate of new point
 -- @param y second coordinate of new point
+-- @return ip with the point inserted
 function pattern.insert( ip, x, y )
 	assert(getmetatable(ip) == pattern, "pattern.insert requires a pattern as the first argument")
 	assert(type(x) == 'number', 'pattern.insert requires a number for the x coordinate')
@@ -183,6 +186,8 @@ function pattern.insert( ip, x, y )
 	ip.max.y = math.max(ip.max.y, y)
 	ip.min.x = math.min(ip.min.x, x)
 	ip.min.y = math.min(ip.min.y, y)
+
+    return ip
 end
 
 --- Point insertion into a pattern without failing if point already exists.
