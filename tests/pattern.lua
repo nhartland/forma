@@ -1,12 +1,13 @@
 --- Tests of basic forma pattern functions
 local lu = require('tests/luaunit')
+local pattern    = require("pattern")
+local primitives = require("primitives")
 
 testPattern = {}
 
 function testPattern:setUp()
-    pattern = require("pattern")
     self.test_pattern_1 = pattern.new()
-    self.test_pattern_2 = pattern.square(5)
+    self.test_pattern_2 = primitives.square(5)
 end
 
 function testPattern:testConstructor()

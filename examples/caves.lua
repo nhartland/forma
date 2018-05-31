@@ -1,13 +1,13 @@
 -- caves.lua
 -- Demonstration of classic cellular-automata cave generation (4-5 rule)
 
-local pattern = require('pattern')
+local primitives = require('primitives')
 local subpattern = require('subpattern')
 local automata = require('automata')
 local neighbourhood = require('neighbourhood')
 math.randomseed( os.time() )
 
-local sq = pattern.square(80,20)
+local sq = primitives.square(80,20)
 local rn = subpattern.random(sq, 0.5)
 sq.onchar, sq.offchar = "∎", " "
 

@@ -4,13 +4,14 @@
 
 local util = require('util')
 local pattern = require('pattern')
+local primitives = require('primitives')
 local automata = require('automata')
 local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed( os.time() )
 
 -- Domain and seed
-local sq = pattern.square(10,5)
+local sq = primitives.square(10,5)
 local rp = sq:rpoint()
 
 local rn = pattern.new()

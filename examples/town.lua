@@ -5,11 +5,12 @@
 local util = require('util')
 local pattern = require('pattern')
 local automata = require('automata')
+local primitives = require('primitives')
 local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
 
-local sq = pattern.square(20,10)
+local sq = primitives.square(20,10)
 local tp = pattern.new()
 local seed = pattern.rpoint(sq)
 pattern.insert(tp, seed.x, seed.y)

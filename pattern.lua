@@ -28,61 +28,6 @@ function pattern.new()
 	return setmetatable(self, pattern)
 end
 
-
---- Basic square pattern
--- @param x size in x
--- @param y size in y (default y = x)
--- @return square forma.pattern of size {x,y}
-function pattern.square(x,y)
-	assert(type(x) == "number")
-	y = y ~= nil and y or x
-
-	local sqPattern = pattern.new()
-	for i=0, x-1, 1 do
-		for j=0, y-1, 1 do
-			pattern.insert(sqPattern, i,j)
-		end
-	end
-
-	return sqPattern
-end
-
---- Basic circular pattern
--- http://willperone.net/Code/codecircle.php suggests a faster method
--- might be worth a look
--- @param r the radius of the circle to be drawn
--- @return circular forma.pattern of radius r
-function pattern.circle(r)
-	assert(type(r) == 'number', 'pattern.circle requires a number for the radius')
-	assert(r >= 0, 'pattern.circle requires a positive number for the radius')
-
-    local cp = pattern.new()
-    local x, y = 0, r
-    local p = 3 - 2*r
-    if r == 0 then return cp end
-
-    -- insert_over needed here because this algorithm duplicates some points
-    while (y >= x) do
-        pattern.insert_over(cp, -x, -y)
-        pattern.insert_over(cp, -y, -x)
-        pattern.insert_over(cp,  y, -x)
-        pattern.insert_over(cp,  x, -y)
-        pattern.insert_over(cp, -x,  y)
-        pattern.insert_over(cp, -y,  x)
-        pattern.insert_over(cp,  y,  x)
-        pattern.insert_over(cp,  x,  y)
-
-        x = x + 1
-        if p < 0 then
-            p = p + 4*x + 6
-        else
-            y = y - 1
-            p = p + 4*(x - y) + 10
-        end
-    end
-    return cp
-end
-
 -------------------------- Pattern methods -------------------------------
 
 --- Pattern tostring.
@@ -498,7 +443,8 @@ function pattern.smear(ip, ss)
 	sp.onchar = ip.onchar
 	sp.offchar = ip.offchar
 
-	local block = pattern.square(ss)
+    local primitives = require(thispath .. 'primitives')
+	local block = primitives.square(ss)
 	for i=1, #ip.pointset, 1 do
 		for j=1, #block.pointset, 1 do
 			local iv = ip.pointset[i] + block.pointset[j]
@@ -521,7 +467,9 @@ function pattern.unsmear(ip, ss)
 	assert(getmetatable(ip) == pattern, "pattern.unsmear requires a pattern as the first argument")
 	assert(type(ss) == 'number', 'pattern.unsmear requires a number as the smearsize')
 
-	local block  = pattern.square(ss)
+
+    local primitives = require(thispath .. 'primitives')
+	local block  = primitives.square(ss)
 	local remove = pattern.new()
 
 	local foundTile = true
@@ -553,10 +501,9 @@ function pattern.enlarge(ip, f)
 	assert(getmetatable(ip) == pattern, "pattern.enlarge requires a pattern as the first argument")
 	assert(type(f) == 'number', 'pattern.enlarge requires a number as the enlargement factor')
 
-	local block = pattern.square(f)
+    local primitives = require(thispath .. 'primitives')
+	local block = primitives.square(f)
 	local ep = pattern.new()
-	ep.onchar = ip.onchar
-	ep.offchar = ip.offchar
 
 	for i=1, #ip.pointset, 1 do
 		for j=1, #block.pointset, 1 do
