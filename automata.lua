@@ -57,7 +57,7 @@ end
 
 --- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
-function automata.check_cell(ruleset, ipattern, ipoint)
+local function check_cell(ruleset, ipattern, ipoint)
     local alive_cell = true -- Start by assuming the cell will be alive
      for i=1, #ruleset, 1 do
         local irule = ruleset[i]
@@ -86,7 +86,7 @@ function automata.iterate(prevp, domain, ruleset)
 	local nextp = pattern.new()
     for i=1, #domain.pointset, 1 do
         local v = domain.pointset[i]
-        local alive_cell = automata.check_cell(ruleset, prevp, v)
+        local alive_cell = check_cell(ruleset, prevp, v)
 		if alive_cell == true then nextp:insert(v.x, v.y) end
 	end
 	local converged = (nextp:size() == prevp:size()) and (nextp-prevp):size() == 0
@@ -110,7 +110,7 @@ function automata.grow(prevp, domain, ruleset, rng)
     local testpoints = testdomain:pointlist()
     util.fisher_yates(testpoints, rng)
     for i=1, #testpoints, 1 do
-       if automata.check_cell(ruleset, prevp, testpoints[i]) == true then
+       if check_cell(ruleset, prevp, testpoints[i]) == true then
            local nextp = pattern.clone(prevp)
            nextp:insert(testpoints[i].x, testpoints[i].y)
 	       return nextp, false
