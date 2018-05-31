@@ -431,69 +431,11 @@ function pattern.shift(ip, x, y)
 	return sp
 end
 
---- Smear a pattern out by converting all points to blocks of size ss
--- @param ip pattern for smearing
--- @param ss size of pattern smear
--- @return smeared pattern
-function pattern.smear(ip, ss)
-	assert(getmetatable(ip) == pattern, "pattern.smear requires a pattern as the first argument")
-	assert(type(ss) == 'number', 'pattern.smear requires a number as the smearsize')
-
-	local sp = pattern.new()
-	sp.onchar = ip.onchar
-	sp.offchar = ip.offchar
-
-    local primitives = require(thispath .. 'primitives')
-	local block = primitives.square(ss)
-	for i=1, #ip.pointset, 1 do
-		for j=1, #block.pointset, 1 do
-			local iv = ip.pointset[i] + block.pointset[j]
-			if sp:has_cell(iv.x,iv.y) == false then
-				pattern.insert(sp, iv.x, iv.y)
-			end
-		end
-	end
-
-	return sp
-end
-
---- Inverse operation of pattern.smear.
--- Note that the process is not invertible, the best you can do is return
--- a pattern, which under smearing, will give you the original pattern.
--- @param ip pattern for unsmearing
--- @param ss size of pattern smear
--- @return unsmeared pattern
-function pattern.unsmear(ip, ss)
-	assert(getmetatable(ip) == pattern, "pattern.unsmear requires a pattern as the first argument")
-	assert(type(ss) == 'number', 'pattern.unsmear requires a number as the smearsize')
-
-
-    local primitives = require(thispath .. 'primitives')
-	local block  = primitives.square(ss)
-	local remove = pattern.new()
-
-	local foundTile = true
-	while foundTile == true do
-		foundTile = false
-		for i=1, #ip.pointset, 1 do
-            local v = ip.pointset[i]
-            if remove:has_cell(v.x, v.y) == false then
-			    for j=1, #block.pointset, 1 do
-                    local iv = v + block.pointset[j]
-                    if ip:has_cell(iv.x, iv.y) == false then
-                       pattern.insert(remove, v.x, v.y)
-                       foundTile = true
-                       break
-                    end
-			    end
-            end
-		end
-	end
-    local unsmeared = ip - remove
-	return unsmeared
-end
-
 --- Enlarges a pattern by a specific factor
+-- Based on an input pattern, this method returns a new pattern in which each
+-- input cell is converted to a f*f cell block. The returned pattern is
+-- therfore an 'enlarged' version of the input pattern, by a scale factor of
+-- 'f' in both x and y.
 -- @param ip pattern to be enlarged
 -- @param f factor of enlargement
 -- @return enlarged pattern

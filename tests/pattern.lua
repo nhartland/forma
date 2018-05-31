@@ -8,6 +8,7 @@ testPattern = {}
 function testPattern:setUp()
     self.test_pattern_1 = pattern.new()
     self.test_pattern_2 = primitives.square(5)
+    self.test_pattern_3 = primitives.square(1)
 end
 
 function testPattern:testConstructor()
@@ -25,6 +26,13 @@ function testPattern:testInsert()
     lu.assertEquals(self.test_pattern_1.max.y,1)
     lu.assertEquals(self.test_pattern_1.min.x,-1)
     lu.assertEquals(self.test_pattern_1.min.y,-1)
+end
+
+function testPattern:testEnlarge()
+    local enlarged_pattern_1 = self.test_pattern_1:enlarge(2)
+    local enlarged_pattern_2 = self.test_pattern_2:enlarge(2)
+    lu.assertEquals(enlarged_pattern_1:size(),0)
+    lu.assertEquals(enlarged_pattern_2:size(),100)
 end
 
 local runner = lu.LuaUnit.new()

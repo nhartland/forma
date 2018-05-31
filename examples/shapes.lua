@@ -16,14 +16,11 @@ local function generate_shape()
     return rn
 end
 
--- Add some symmetry and smear pattern
+-- Add some symmetry
 local rn = generate_shape():hreflect()
-local sm = rn:smear(2)
 
 -- Print to stdout
 rn.onchar, rn.offchar = "X"," "
-sm.onchar, sm.offchar = "X"," "
 print(rn)
-print(sm)
 
 
