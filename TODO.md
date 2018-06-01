@@ -19,6 +19,9 @@ namely *fully asynchronous*
 
 - Improve documentation - specify how all pattern.X methods can also be
   called with standard lua sugar - ip:X
+    explain method cascading of pattern:insert
+    explains which methods mutate a pattern (only insert?) and which return a
+    new pattern (all of them?)
 
 - Improve testing:
   More tests! (Still lifes, oscillators for CA)

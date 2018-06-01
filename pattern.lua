@@ -165,12 +165,13 @@ local function coordinates_to_key(x, y)
 end
 
 --- Point insertion into a pattern.
--- Re-returns the provided point to allow for initialisations
--- like `pattern.new():insert(x,y)` to work.
+-- Re-returns the provided point to enable cascading.
+-- e.g `pattern.new():insert(x,y)` returns a pattern with
+-- a single point at (x,y).
 -- @param ip pattern for point insertion
 -- @param x first coordinate of new point
 -- @param y second coordinate of new point
--- @return ip with the point inserted
+-- @return ip for method cascading
 function pattern.insert( ip, x, y )
 	assert(getmetatable(ip) == pattern, "pattern.insert requires a pattern as the first argument")
 	assert(type(x) == 'number', 'pattern.insert requires a number for the x coordinate')
