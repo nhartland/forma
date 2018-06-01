@@ -106,7 +106,12 @@ function automata.grow(prevp, domain, ruleset, rng)
            "forma.automata: grow requires a pattern as a first argument")
 	assert(getmetatable(domain) == pattern,
            "forma.automata: grow requires a pattern as a second argument")
-    local testdomain = pattern.intersection(prevp:edge(), domain)
+    -- Compute all cells that could change under this ruleset
+    local mutable_cells = pattern.new()
+    for _, rule in ipairs(ruleset) do
+	    mutable_cells = mutable_cells + prevp:edge(rule.neighbourhood)
+    end
+    local testdomain = pattern.intersection(mutable_cells, domain)
     local testpoints = testdomain:pointlist()
     util.fisher_yates(testpoints, rng)
     for i=1, #testpoints, 1 do
