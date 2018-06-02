@@ -7,6 +7,21 @@ local primitives = {}
 local thispath = select('1', ...):match(".+%.") or ""
 local pattern = require(thispath .. 'pattern')
 
+--- Point insertion into a pattern without failing if point already exists.
+-- This function differs only from pattern.insert by first checking if the point
+-- already exists in the pointset. Therefore bypassing the assert.
+-- @param ip pattern for point insertion
+-- @param x first coordinate of new point
+-- @param y second coordinate of new point
+-- @return true if the insert was sucessful, false if not
+local function pattern_insert_over( ip, x, y )
+    if ip:has_cell(x, y) == false then
+       pattern.insert(ip, x, y)
+       return true
+    end
+    return false
+end
+
 --- Basic square pattern
 -- @param x size in x
 -- @param y size in y (default y = x)
@@ -44,14 +59,14 @@ function primitives.circle(r)
 
     -- insert_over needed here because this algorithm duplicates some points
     while (y >= x) do
-        cp:insert_over(-x, -y)
-        cp:insert_over(-y, -x)
-        cp:insert_over( y, -x)
-        cp:insert_over( x, -y)
-        cp:insert_over(-x,  y)
-        cp:insert_over(-y,  x)
-        cp:insert_over( y,  x)
-        cp:insert_over( x,  y)
+        pattern_insert_over(cp,-x, -y)
+        pattern_insert_over(cp,-y, -x)
+        pattern_insert_over(cp, y, -x)
+        pattern_insert_over(cp, x, -y)
+        pattern_insert_over(cp,-x,  y)
+        pattern_insert_over(cp,-y,  x)
+        pattern_insert_over(cp, y,  x)
+        pattern_insert_over(cp, x,  y)
 
         x = x + 1
         if p < 0 then

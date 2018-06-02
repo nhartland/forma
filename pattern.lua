@@ -54,7 +54,7 @@ function pattern.new(prototype)
 	return np
 end
 
--------------------------- Pattern methods -------------------------------
+-------------------------- Pattern metamethods -------------------------------
 
 --- Pattern tostring.
 -- Prints the stored pattern to string, using pattern.onchar
@@ -217,20 +217,6 @@ function pattern.insert( ip, x, y )
     return ip
 end
 
---- Point insertion into a pattern without failing if point already exists.
--- This function differs only from pattern.insert by first checking if the point
--- already exists in the pointset. Therefore bypassing the assert.
--- @param ip pattern for point insertion
--- @param x first coordinate of new point
--- @param y second coordinate of new point
--- @return true if the insert was sucessful, false if not
-function pattern.insert_over( ip, x, y )
-    if ip:has_cell(x, y) == false then
-       pattern.insert(ip, x, y)
-       return true
-    end
-    return false
-end
 
 --- Check for occupied cell
 -- @param ip pattern for point check
