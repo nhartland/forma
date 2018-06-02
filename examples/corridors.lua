@@ -1,6 +1,6 @@
 -- corridors.lua
 -- Demonstration of forma growth automata functions
--- Generates a plausible corridor system in a 50x20 box
+-- Generates a plausible corridor system in an 80x20 box
 
 -- 'Growth automata' follow the same 'birth' rules as normal CA,
 -- but the survival rule is ignored (all cells survive). Every iteration
@@ -20,7 +20,7 @@ local seed = sq:rpoint()
 local tp = pattern.new()
 tp:insert(seed.x, seed.y)
 
--- Complicated ruleset
+-- Complicated ruleset (leaving diag2 out provides a denser pattern)
 local moore = automata.rule(neighbourhood.moore(),      "B12/S012345678")
 local diag  = automata.rule(neighbourhood.diagonal(),   "B0123/S01234")
 local diag2 = automata.rule(neighbourhood.diagonal_2(), "B01/S01234")
@@ -33,10 +33,11 @@ repeat
 	local converged
 	tp, converged = automata.grow(tp, sq, ruleset)
     ite = ite + 1
+    local segments = categories.find_all(tp, point_types)
+    os.execute("clear")
+    util.pretty_print(tp, segments, categories.von_neumann_utf8())
 until converged == true
 
-local segments = categories.find_all(tp, point_types)
-util.pretty_print(tp, segments, categories.von_neumann_utf8())
 
 print("Converged in " .. tostring(ite) .. " iterations")
 
