@@ -13,19 +13,45 @@ pattern.__index = pattern
 -------------------------- Pattern creation ------------------------------
 
 --- Initialise a forma.pattern.
+-- @param prototype (optional) a N*N 2D table of ones and zeros to initialise
+-- pattern. If unset, an empty pattern is returned. If set with the prototype
+-- table {{1,0},{0,1}} will initialise the pattern:
+--  10
+--  01
 -- @return new pattern
-function pattern.new()
-	local self = {}
+function pattern.new(prototype)
+    local np = {}
 
-	self.max = point.new()
-	self.min = point.new()
+	np.max = point.new()
+	np.min = point.new()
 
-	self.offchar = '0'
-	self.onchar  = '1'
+	np.offchar = '0'
+	np.onchar  = '1'
 
-	self.pointset = {}
-    self.pointmap = {}
-	return setmetatable(self, pattern)
+	np.pointset = {}
+    np.pointmap = {}
+
+    np = setmetatable(np, pattern)
+
+    if prototype ~= nil then
+	    assert(type(prototype) == 'table', 'pattern.new requires either no arguments or a N*N matrix as a prototype')
+        local N = #prototype
+        for i=1,N,1 do
+            local row = prototype[i]
+	        assert(type(row) == 'table', 'pattern.new requires either no arguments or a N*N matrix as a prototype')
+	        assert(#row == N, 'pattern.new requires a N*N matrix when using a prototype, you requested '..N..'*'.. #row)
+            for j=1,N,1 do
+                local cell = row[j]
+                if cell == 1 then
+                    np:insert(i-1,j-1) -- Patterns start from zero
+                else
+	                assert(cell == 0, 'pattern.new: invalid prototype entry (must be 1 or 0): '.. cell)
+                end
+            end
+        end
+    end
+
+	return np
 end
 
 -------------------------- Pattern methods -------------------------------
