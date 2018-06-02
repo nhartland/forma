@@ -61,6 +61,7 @@ local function check_cell(ruleset, ipattern, ipoint)
     local alive_cell = true -- Start by assuming the cell will be alive
      for i=1, #ruleset, 1 do
         local irule = ruleset[i]
+        assert(irule ~= nil, "forma.automata check_cell: nil element found in ruleset")
 	    local count = nCount(ipattern, ipoint, irule.neighbourhood)
 	    local alive = ipattern:has_cell(ipoint.x, ipoint.y)
 	    if     alive == false and irule.B[count] ~= true then  -- Birth
