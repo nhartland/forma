@@ -1,10 +1,10 @@
 -- corridors.lua
--- Demonstration of forma growth automata functions
+-- Demonstration of forma asynchronous cellular automata
 -- Generates a plausible corridor system in an 80x20 box
 
--- 'Growth automata' follow the same 'birth' rules as normal CA,
--- but the survival rule is ignored (all cells survive). Every iteration
--- of the growth automata adds only one cell.
+-- 'asynchronous CA' follow the same rules as normal CA, but the rule is
+-- applied at random to only once cell at a time, unlike normal synchronous
+-- rules where the whole pattern is updated.
 
 local util = require('util')
 local pattern = require('pattern')
@@ -13,6 +13,7 @@ local automata = require('automata')
 local categories = require('categories')
 local neighbourhood = require('neighbourhood')
 math.randomseed(os.time())
+math.randomseed(0)
 
 local sq = primitives.square(80,20)
 local seed = sq:rpoint()
@@ -31,13 +32,12 @@ local ite = 0
 local point_types = categories.generate(neighbourhood.von_neumann())
 repeat
 	local converged
-	tp, converged = automata.grow(tp, sq, ruleset)
+	tp, converged = automata.async_iterate(tp, sq, ruleset)
     ite = ite + 1
-    local segments = categories.find_all(tp, point_types)
-    os.execute("clear")
-    util.pretty_print(tp, segments, categories.von_neumann_utf8())
 until converged == true
 
+local segments = categories.find_all(tp, point_types)
+util.pretty_print(tp, segments, categories.von_neumann_utf8())
 
 print("Converged in " .. tostring(ite) .. " iterations")
 

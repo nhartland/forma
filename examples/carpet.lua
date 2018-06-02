@@ -1,5 +1,5 @@
 -- carpet.lua
--- Demonstration of forma cellular automata growth methods
+-- Demonstration of forma asynchronous cellular automata
 -- Here a nice carpet pattern generator is specified
 
 local util = require('util')
@@ -18,10 +18,10 @@ local rn = pattern.new()
 rn:insert(rp.x, rp.y)
 
 -- Moore neighbourhood rule
-local moore = automata.rule(neighbourhood.moore(), "B12/S345678")
+local moore = automata.rule(neighbourhood.moore(), "B12/S12345678")
 repeat
 	local converged
-	rn, converged = automata.grow(rn, sq, {moore})
+	rn, converged = automata.async_iterate(rn, sq, {moore})
     rn.onchar, rn.offchar = "X"," "
     local rflct = rn:hreflect()
     rflct = rflct:vreflect():vreflect()

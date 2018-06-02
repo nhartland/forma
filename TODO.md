@@ -6,23 +6,18 @@
 - Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tessellation) into separate module
 
-- Rename grow -> asynchronous CA
-https://en.wikipedia.org/wiki/Asynchronous_cellular_automaton
-namely *fully asynchronous*
-
 - Add wrapper functions so that
   point.insert(ip, z, y)
   can use
   point.insert(ip, cell(z,y))
-
-- Add pattern import/export to json
 
 - Improve documentation - specify how all pattern.X methods can also be
   called with standard lua sugar - ip:X
     explain method cascading of pattern:insert
     explains which methods mutate a pattern (only insert?) and which return a
     new pattern (all of them?)
+  More docs for examples
 
 - Improve testing:
-  More tests! (Still lifes, oscillators for CA)
+  More tests!
   coveralls.io

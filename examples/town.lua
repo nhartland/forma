@@ -24,7 +24,7 @@ local ruleset = {diag2, diag, vn, moore}
 
 repeat
 	local converged
-	tp, converged = automata.grow(tp, sq, ruleset)
+	tp, converged = automata.async_iterate(tp, sq, ruleset)
 until converged == true
 
 tp = pattern.edge(tp) -- Comment this out and you get the 'sewerage system'

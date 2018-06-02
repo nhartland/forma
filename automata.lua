@@ -73,8 +73,12 @@ local function check_cell(ruleset, ipattern, ipoint)
     return alive_cell
 end
 
---- Cellular automata iteration.
--- Performs one CA tick on pattern prevp in the specified domain
+--- Synchronous cellular automata iteration.
+-- Performs one standard synchronous CA update on pattern prevp in the specified domain.
+-- Multiple rules can be applied simultaneously through the ruleset. Rule conflicts are
+-- resolved in favour of cell deactivation, i.e if there are two nested rulesets, with a
+-- cell passing one and failing the other either survival or birth rules, the cell will
+-- be deactivated in the next iteration.
 -- @param prevp the previous iteration of the pattern
 -- @param domain the points in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
@@ -94,33 +98,42 @@ function automata.iterate(prevp, domain, ruleset)
 	return nextp, converged
 end
 
---- Cellular automata growth.
--- Performs one CA tick on pattern prevp in the specified domain
--- but only adding one cell at a time at the edge of an existing pattern
+--- Asynchronous cellular automata iteration.
+-- Performs a CA update on one cell (chosen randomly) in the specified domain.
+-- Multiple rules can be applied simultaneously through the ruleset. Rule conflicts are
+-- resolved in favour of cell deactivation, i.e if there are two nested rulesets, with a
+-- cell passing one and failing the other either survival or birth rules, the cell will
+-- be deactivated in the next iteration.
 -- @param prevp the previous iteration of the pattern
 -- @param domain the points in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
 -- @param rng a (optional) random number generator (syntax as per math.random).
 -- @return the next iteration, and a bool specifying if convergence has been reached.
-function automata.grow(prevp, domain, ruleset, rng)
+function automata.async_iterate(prevp, domain, ruleset, rng)
 	assert(getmetatable(prevp)  == pattern,
-           "forma.automata: grow requires a pattern as a first argument")
+           "forma.automata: async_iterate requires a pattern as a first argument")
 	assert(getmetatable(domain) == pattern,
-           "forma.automata: grow requires a pattern as a second argument")
-    -- Compute all cells that could change under this ruleset
-    local mutable_cells = pattern.new()
-    for _, rule in ipairs(ruleset) do
-	    mutable_cells = mutable_cells + prevp:edge(rule.neighbourhood)
-    end
-    local testdomain = pattern.intersection(mutable_cells, domain)
-    local testpoints = testdomain:pointlist()
+           "forma.automata: async_iterate requires a pattern as a second argument")
+    local testpoints = domain:pointlist()
     util.fisher_yates(testpoints, rng)
     for i=1, #testpoints, 1 do
-       if check_cell(ruleset, prevp, testpoints[i]) == true then
-           local nextp = pattern.clone(prevp)
-           nextp:insert(testpoints[i].x, testpoints[i].y)
-	       return nextp, false
-       end
+        local tp = testpoints[i]
+        if prevp:has_cell(tp.x, tp.y) and check_cell(ruleset, prevp, tp) == false then
+            -- Copy old pattern, leaving out newly deactivated cell
+            local prevpoints = prevp:pointlist()
+            local nextp = pattern.new()
+            for j=1, #prevpoints, 1 do
+                if i ~= j then
+                    nextp:insert(prevpoints[j].x, prevpoints[j].y)
+                end
+            end
+            return nextp, false
+        elseif prevp:has_cell(tp.x, tp.y) == false and check_cell(ruleset, prevp, tp) == true then
+            -- Activate new cell
+            local nextp = pattern.clone(prevp)
+            nextp:insert(testpoints[i].x, testpoints[i].y)
+            return nextp, false
+        end
     end
     return prevp, true
 end
