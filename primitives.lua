@@ -50,17 +50,17 @@ end
 function primitives.line(start, finish)
 	local deltax = finish.x - start.x
 	local sx = deltax / math.abs(deltax)
-	deltax = bit.lshift( math.abs(deltax), 1)
+	deltax = math.abs(deltax)*2.
 
 	local deltay = finish.y - start.y
 	local sy = deltay / math.abs(deltay)
-	deltay = bit.lshift( math.abs(deltay), 1)
+	deltay = math.abs(deltay)*2.
 
 	local x,y = start.x, start.y
     local line = pattern.new():insert(x,y)
 
 	if deltax >= deltay then
-		local error = deltay - bit.rshift(deltax, 1)
+		local error = deltay - deltax/2.
 		while x ~= finish.x do
 			if error > 0 or (error == 0 and sx > 0 ) then
 				error = error - deltax
@@ -71,7 +71,7 @@ function primitives.line(start, finish)
             line:insert(x,y)
 		end
 	else
-		local error = deltax - bit.rshift(deltay ,1)
+		local error = deltax - deltay/2.
 		while y ~= finish.y do
 			if error > 0 or (error == 0 and sy > 0) then
 				error = error - deltay
