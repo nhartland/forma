@@ -1,4 +1,5 @@
 --- Pattern tables.
+-- Pattern coordinates should be reasonably reliable in [-65536, 65536]
 -- @module forma.pattern
 local pattern = {}
 
@@ -185,9 +186,7 @@ end
 --- Generate the pointmap key from coordinates
 -- This handles the wierd -0 behaviour
 local function coordinates_to_key(x, y)
-    if x == -0 then x = 0 end
-    if y == -0 then y = 0 end
-	return x..':'..y
+    return (x - 65536)*65536 + (y - 65536)
 end
 
 --- Point insertion into a pattern.
