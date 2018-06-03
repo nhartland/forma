@@ -1,7 +1,6 @@
 # TODO
 
 - Correct Bresenham circle algorithm to not duplicate points 
-- Add Bresenham line drawing to raster
   
 - Decouple a bit pattern methods from the underlying data structure
 - Move pattern packing (tessellation) into separate module

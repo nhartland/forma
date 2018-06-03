@@ -43,6 +43,48 @@ function primitives.square(x,y)
 	return sqPattern
 end
 
+-- Bresenham line algorithm
+-- @param start a forma.point denoting the start of the line
+-- @param finish a forma.point denoting the end of the line
+-- @return a forma.pattern consisting of a line between (start, finish)
+function primitives.line(start, finish)
+	local deltax = finish.x - start.x
+	local sx = deltax / math.abs(deltax)
+	deltax = bit.lshift( math.abs(deltax), 1)
+
+	local deltay = finish.y - start.y
+	local sy = deltay / math.abs(deltay)
+	deltay = bit.lshift( math.abs(deltay), 1)
+
+	local x,y = start.x, start.y
+    local line = pattern.new():insert(x,y)
+
+	if deltax >= deltay then
+		local error = deltay - bit.rshift(deltax, 1)
+		while x ~= finish.x do
+			if error > 0 or (error == 0 and sx > 0 ) then
+				error = error - deltax
+				y = y + sy
+			end
+			error = error + deltay
+			x = x + sx
+            line:insert(x,y)
+		end
+	else
+		local error = deltax - bit.rshift(deltay ,1)
+		while y ~= finish.y do
+			if error > 0 or (error == 0 and sy > 0) then
+				error = error - deltay
+				x = x + sx
+			end
+			error = error + deltax
+			y = y + sy
+            line:insert(x,y)
+		end
+	end
+    return line
+end
+
 --- Basic circular pattern
 -- http://willperone.net/Code/codecircle.php suggests a faster method
 -- might be worth a look
