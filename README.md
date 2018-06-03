@@ -47,12 +47,17 @@ Documentation
 -------------
 
 Documentation is provided by [LDoc](https://github.com/stevedonovan/LDoc).
-Simply running ```ldoc .``` in the root directory should generate all the
-required pages.
+Simply running 
+
+    ldoc .
+
+in the root directory should generate all the required pages.
 
 Testing
 -------
 
 Unit tests are provided for some methods with the
 [luaunit](https://github.com/bluebird75/luaunit) framework. To run the tests use
-``` lua ./tests/<test>.lua ```
+
+    lua ./tests/<test>.lua 
+
