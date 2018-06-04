@@ -1,11 +1,11 @@
---- Pattern primitives
+--- Primitive patterns (line, rectangle and circle).
 -- This module provides functions for the generation of basic
--- pattern shapes such as square/rectangular or raster circle patterns.
+-- pattern shapes. So far including lines, squares/rectangles
+-- and circle rasters.
 -- @module forma.primitives
 local primitives = {}
 
-local thispath = select('1', ...):match(".+%.") or ""
-local pattern = require(thispath .. 'pattern')
+local pattern = require('forma.pattern')
 
 --- Point insertion into a pattern without failing if point already exists.
 -- This function differs only from pattern.insert by first checking if the point
@@ -43,7 +43,7 @@ function primitives.square(x,y)
 	return sqPattern
 end
 
--- Bresenham line algorithm
+--- Bresenham line algorithm
 -- @param start a forma.point denoting the start of the line
 -- @param finish a forma.point denoting the end of the line
 -- @return a forma.pattern consisting of a line between (start, finish)

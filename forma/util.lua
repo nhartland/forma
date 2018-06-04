@@ -1,8 +1,7 @@
---- Utilities
+--- Utility functions - primarily for internal use.
 -- @module forma.util
 
 local util = {}
-local thispath = select('1', ...):match(".+%.") or ""
 
 --- C++ style pop-and-swap for unordered lists.
 -- @param lst input list.
@@ -43,8 +42,8 @@ function util.fisher_yates(table, rng)
 end
 
 --- Pretty print a list of forma.patterns.
--- Prints a list of pattern segments to the terminal, with a given list of
--- chars per segment.
+-- Prints a list of pattern segments to `io.output`. If provided, a table
+-- of segment labels can be used, with one entry per segment.
 -- @param domain the basic patterns from which the segments are drawn.
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
@@ -54,17 +53,16 @@ function util.pretty_print(domain, segments, chars)
         chars = {}
         for i=1, #segments, 1 do table.insert(chars, string.char(i+47)) end
     end
-    print('$')
     -- Print out the segments to a map
     for i=domain.min.y, domain.max.y,1 do
-        local string = ' '
+        local string = ''
         for j=domain.min.x, domain.max.x,1 do
             local token = ' '
             for k,v in ipairs(segments) do
             if v:has_cell(j, i) then token = chars[k] end end
             string = string .. token
         end
-        print(string)
+        io.write(string .. '\n')
     end
 end
 

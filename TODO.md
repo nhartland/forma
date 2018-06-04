@@ -1,4 +1,7 @@
 # TODO
+- Rename point->cell
+
+- Move point.neighbours somewhere else: neighbours
 
 - Correct Bresenham circle algorithm to not duplicate points 
   

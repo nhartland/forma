@@ -1,11 +1,10 @@
 -- voronoi.lua
 -- Demonstration of voronoi tesselation
 
-local point   = require('point')
-local util    = require('util')
-local pattern = require('pattern')
-local primitives = require('primitives')
-local subpattern = require('subpattern')
+local point      = require('forma.point')
+local util       = require('forma.util')
+local primitives = require('forma.primitives')
+local subpattern = require('forma.subpattern')
 math.randomseed(os.time())
 
 -- Generate a random pattern and its voronoi tesselation

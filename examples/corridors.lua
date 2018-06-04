@@ -6,14 +6,14 @@
 -- applied at random to only once cell at a time, unlike normal synchronous
 -- rules where the whole pattern is updated.
 
-local util = require('util')
-local pattern = require('pattern')
-local primitives = require('primitives')
-local automata = require('automata')
-local categories = require('categories')
-local neighbourhood = require('neighbourhood')
+local util          = require('forma.util')
+local pattern       = require('forma.pattern')
+local primitives    = require('forma.primitives')
+local automata      = require('forma.automata')
+local subpattern    = require('forma.subpattern')
+local neighbourhood = require('forma.neighbourhood')
+
 math.randomseed(os.time())
-math.randomseed(0)
 
 local sq = primitives.square(80,20)
 local seed = sq:rpoint()
@@ -29,15 +29,12 @@ local vn    = automata.rule(neighbourhood.von_neumann(),"B12/S01234")
 local ruleset = {diag2, diag, vn, moore}
 
 local ite = 0
-local point_types = categories.generate(neighbourhood.von_neumann())
 repeat
 	local converged
 	tp, converged = automata.async_iterate(tp, sq, ruleset)
     ite = ite + 1
 until converged == true
 
-local segments = categories.find_all(tp, point_types)
-util.pretty_print(tp, segments, categories.von_neumann_utf8())
-
-print("Converged in " .. tostring(ite) .. " iterations")
-
+local nbh = neighbourhood.von_neumann()
+local segments = subpattern.neighbourhood_categories(tp, nbh)
+util.pretty_print(tp, segments, nbh:category_label())

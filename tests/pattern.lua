@@ -1,7 +1,7 @@
 --- Tests of basic forma pattern functions
-local lu = require('tests/luaunit')
-local pattern    = require("pattern")
-local primitives = require("primitives")
+local lu = require('luaunit')
+local pattern    = require("forma.pattern")
+local primitives = require("forma.primitives")
 
 testPattern = {}
 

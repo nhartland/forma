@@ -1,9 +1,9 @@
 --- Tests of forma cellular-automata implementation
-local lu = require('tests/luaunit')
-local pattern       = require("pattern")
-local automata      = require("automata")
-local primitives    = require("primitives")
-local neighbourhood = require("neighbourhood")
+local lu = require('luaunit')
+local pattern       = require("forma.pattern")
+local automata      = require("forma.automata")
+local primitives    = require("forma.primitives")
+local neighbourhood = require("forma.neighbourhood")
 
 testAutomata = {}
 

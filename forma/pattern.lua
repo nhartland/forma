@@ -1,13 +1,12 @@
---- Pattern tables.
+--- A class containing a set or *pattern* of cells.
 -- Pattern coordinates should be reasonably reliable in [-65536, 65536]
 -- @module forma.pattern
 local pattern = {}
 
-local thispath = select('1', ...):match(".+%.") or ""
-local neighbourhood = require(thispath .. 'neighbourhood')
-local point         = require(thispath .. 'point')
+local point         = require('forma.point')
+local neighbourhood = require('forma.neighbourhood')
 
---- Pattern indexing
+-- Pattern indexing
 -- For enabling syntax sugar pattern:method
 pattern.__index = pattern
 
@@ -62,16 +61,9 @@ end
 -- for points and pattern.offchar for unactivated points
 -- @return pattern as string
 function pattern.__tostring(self)
-	local string = ' '
-
-	-- Header
-	for _ = self.min.x, self.max.x, 1 do
-		string = string .. '.'
-	end
-	string = string .. '\n'
-
+	local string = ''
 	for y = self.min.y, self.max.y, 1 do
-		string = string .. '.'
+		string = string
 		for x = self.min.x, self.max.x, 1 do
             string = string .. (self:has_cell(x,y) and self.onchar or self.offchar)
 		end
@@ -206,6 +198,12 @@ function pattern.insert( ip, x, y )
 	assert(ip.pointmap[key] == nil, "pattern.insert cannot duplicate points")
 	ip.pointmap[key] = point.new(x,y)
     table.insert(ip.pointset, ip.pointmap[key])
+
+    -- First added point, set limits
+    if ip:size() == 1 then
+        ip.min = point.new(x,y)
+        ip.max = point.new(x,y)
+    end
 
 	-- reset pattern extent
 	ip.max.x = math.max(ip.max.x, x)
@@ -386,37 +384,6 @@ function pattern.sum(...)
 end
 
 ----------------------------- Pattern modifiers --------------------------
-
---- Re-evaluate pattern limits.
--- The limits are usually set to the maximum extent
--- (ignoring removed points), to maintain consistency with subpatterns.
--- @param ip pattern for which the limits should be re-evaluated.
--- @return the shift in origin and maximum as forma.points - dmin, dmax
-function pattern.limiteval(ip)
-
-	local nmin = nil
-	local nmax = nil
-	for i=1, #ip.pointset, 1 do
-        local v = ip.pointset[i]
-		if nmin == nil or nmax == nil then
-			nmin = point.clone(v)
-			nmax = point.clone(v)
-		else
-			nmin.x = math.min(nmin.x, v.x)
-			nmin.y = math.min(nmin.y, v.y)
-			nmax.x = math.max(nmax.x, v.x)
-			nmax.y = math.max(nmax.y, v.y)
-		end
-	end
-
-	local minshift = ip.min - nmin
-	local maxshift = ip.max - nmax
-
-	ip.min = nmin
-	ip.max = nmax
-
-	return minshift, maxshift
-end
 
 --- Normalise a pattern such that it's origin is (0,0)
 -- @param ip pattern to be normalised

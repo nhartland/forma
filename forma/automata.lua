@@ -1,10 +1,9 @@
---- Pattern generation by Cellular Automata
+--- Cellular Automata pattern generators
 -- @module forma.automata
 local automata= {}
 
-local thispath = select('1', ...):match(".+%.") or ""
-local pattern = require(thispath .. 'pattern')
-local util = require(thispath .. 'util')
+local pattern = require('forma.pattern')
+local util    = require('forma.util')
 
 --- Cellular automata rule parsing.
 -- Takes a string signature i.e "X1234" and converts it into a boolean lookup-table
@@ -119,19 +118,12 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
     for i=1, #testpoints, 1 do
         local tp = testpoints[i]
         if prevp:has_cell(tp.x, tp.y) and check_cell(ruleset, prevp, tp) == false then
-            -- Copy old pattern, leaving out newly deactivated cell
-            local prevpoints = prevp:pointlist()
-            local nextp = pattern.new()
-            for j=1, #prevpoints, 1 do
-                if i ~= j then
-                    nextp:insert(prevpoints[j].x, prevpoints[j].y)
-                end
-            end
+            -- Copy old pattern, subtracting off newly deactivated cell
+            local nextp = prevp - pattern.new():insert(tp.x, tp.y)
             return nextp, false
         elseif prevp:has_cell(tp.x, tp.y) == false and check_cell(ruleset, prevp, tp) == true then
             -- Activate new cell
-            local nextp = pattern.clone(prevp)
-            nextp:insert(testpoints[i].x, testpoints[i].y)
+            local nextp = prevp + pattern.new():insert(testpoints[i].x, testpoints[i].y)
             return nextp, false
         end
     end

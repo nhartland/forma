@@ -2,12 +2,12 @@
 -- Generates a plausible small town layout. Following a simmilar setup to the
 -- corridor example but with more post-processing.
 
-local util = require('util')
-local pattern = require('pattern')
-local automata = require('automata')
-local primitives = require('primitives')
-local categories = require('categories')
-local neighbourhood = require('neighbourhood')
+local util          = require('forma.util')
+local pattern       = require('forma.pattern')
+local automata      = require('forma.automata')
+local primitives    = require('forma.primitives')
+local subpattern    = require('forma.subpattern')
+local neighbourhood = require('forma.neighbourhood')
 math.randomseed(os.time())
 
 local sq = primitives.square(20,10)
@@ -30,7 +30,9 @@ until converged == true
 tp = pattern.edge(tp) -- Comment this out and you get the 'sewerage system'
 tp = pattern.enlarge(tp,4)
 tp = pattern.surface(tp)
-local point_types = categories.generate(neighbourhood.von_neumann())
-local segments = categories.find_all(tp, point_types)
-util.pretty_print(tp, segments, categories.von_neumann_utf8())
+
+-- Pretty print according to neighbourhood
+local nbh = neighbourhood.von_neumann()
+local segments = subpattern.neighbourhood_categories(tp, nbh)
+util.pretty_print(tp, segments, nbh:category_label())
 

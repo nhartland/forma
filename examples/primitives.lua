@@ -1,8 +1,8 @@
 -- primitives.lua
 -- Examples of geometry primitives
 
-local point = require('point')
-local primitives = require('primitives')
+local point      = require('forma.point')
+local primitives = require('forma.primitives')
 
 local tp = primitives.circle(1)
 local radii = {2,4,5,15}

@@ -1,8 +1,8 @@
 -- shapes.lua
 -- Use of a few different functions to generate shapes
 
-local pattern = require('pattern')
-local primitives = require('primitives')
+local pattern    = require('forma.pattern')
+local primitives = require('forma.primitives')
 math.randomseed( os.time() )
 
 -- Generate some basic shape as a sum of rectangles

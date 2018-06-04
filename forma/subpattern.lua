@@ -1,13 +1,13 @@
---- Routines for the generation of sub-patterns
+--- Sub-pattern finders (random sample, flood-fill, Voronoi segments and more).
 -- @module forma.subpattern
 
 local subpattern = {}
 
-local thispath      = select('1', ...):match(".+%.") or ""
-local util          = require(thispath .. 'util')
-local point         = require(thispath .. 'point')
-local pattern       = require(thispath .. 'pattern')
-local neighbourhood = require(thispath .. 'neighbourhood')
+local util          = require('forma.util')
+local point         = require('forma.point')
+local pattern       = require('forma.pattern')
+local primitives    = require('forma.primitives')
+local neighbourhood = require('forma.neighbourhood')
 
 --- Random subpattern.
 -- For a given domain, returns a pattern sampling randomly from it, generating a random
@@ -81,18 +81,14 @@ end
 function subpattern.enclosed(ip, dirs)
 	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
 	dirs = dirs or neighbourhood.von_neumann()
-    local xs = ip.max.x - ip.min.x
-    local ys = ip.max.y - ip.min.y
-    local sq = pattern.square(xs, ys)
-    sq = pattern.shift(sq, ip.min.x, ip.min.y)
-    sq = sq - ip
-    local segments = subpattern.segments(sq, dirs)
+    local size = ip.max - ip.min + 1
+    local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
+    local segments = subpattern.segments(interior, dirs)
     local enclosed = {}
     for i=1, #segments,1 do
         local segment = segments[i]
-        pattern.limiteval(segment)
-        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
-        and segment.max.x < ip.max.x-1 and segment.max.y < ip.max.y-1 then
+        if segment.min.x >= ip.min.x and segment.min.y >= ip.min.y
+        and segment.max.x <= ip.max.x-1 and segment.max.y <= ip.max.y-1 then
             table.insert(enclosed, segment)
         end
     end
@@ -194,7 +190,7 @@ end
 -- @return rectangle pattern followed by it's min, max
 function subpattern.maxrectangle_pattern(ip)
 	local min, max = subpattern.maxrectangle(ip)
-	local sqpattern = pattern.square(max.x - min.x + 1, max.y - min.y + 1)
+	local sqpattern = primitives.square(max.x - min.x + 1, max.y - min.y + 1)
 	sqpattern = pattern.shift(sqpattern, min.x, min.y)
 	return sqpattern, min, max
 end
@@ -223,7 +219,7 @@ local function bspSplit(rng, rules, min, max, outpatterns)
 		bspSplit(rules, r2min, max, outpatterns)
 
 	else -- just right
-		local np = pattern.square(size.x, size.y)
+		local np = primitives.square(size.x, size.y)
 		np = pattern.shift(np, min.x, min.y)
 		table.insert(outpatterns, np)
 	end
@@ -250,6 +246,24 @@ function subpattern.bsp(rules, ip, sps, rng)
 		bspSplit(rng, rules, min, max, sps)
 		for i=1, #sps, 1 do available = available - sps[i] end
 	end
+end
+
+--- Categorise all points in a pattern according to a list of possibilities.
+-- @param ip the pattern in which points are to be categorised
+-- @param nbh the forma.neighbourhood used for the categorisation
+-- @return a table of #icats patterns, where each point in ip is categorised
+function subpattern.neighbourhood_categories(ip, nbh)
+    assert(getmetatable(ip) == pattern, "find_all requires a pattern as a first argument")
+    assert(getmetatable(nbh) == neighbourhood, "find_all requires a neighbourhood as a second argument")
+    local category_patterns = {}
+    for i=1, #nbh.categories, 1 do
+        category_patterns[i] = pattern.new()
+    end
+    for i=1, #ip.pointset, 1 do
+        local cat = nbh:categorise(ip, ip.pointset[i])
+        pattern.insert(category_patterns[cat], ip.pointset[i].x, ip.pointset[i].y)
+    end
+    return category_patterns
 end
 
 return subpattern

@@ -4,12 +4,12 @@
 -- Here a small basic pattern is generated, which is then enlarged by
 -- reflection into a nicely symmetric larger pattern.
 
-local util = require('util')
-local pattern = require('pattern')
-local primitives = require('primitives')
-local automata = require('automata')
-local categories = require('categories')
-local neighbourhood = require('neighbourhood')
+local util          = require('forma.util')
+local pattern       = require('forma.pattern')
+local primitives    = require('forma.primitives')
+local automata      = require('forma.automata')
+local subpattern    = require('forma.subpattern')
+local neighbourhood = require('forma.neighbourhood')
 
 math.randomseed( os.time() )
 
@@ -22,7 +22,7 @@ local rp = sq:rpoint()
 rn:insert(rp.x, rp.y)
 
 -- Moore neighbourhood rule
-local moore = automata.rule(neighbourhood.moore(), "B12/S12345678")
+local moore = automata.rule(neighbourhood.moore(), "B12/S012345678")
 
 repeat
     -- Perform asynchronous CA update
@@ -35,8 +35,8 @@ repeat
         rflct = rflct:vreflect():vreflect()
         rflct = rflct:hreflect():hreflect()
         -- Categorise the pattern according to possible vN neighbours and print to screen
-        local point_types = categories.generate(neighbourhood.von_neumann())
-        local segments = categories.find_all(rflct, point_types)
-        util.pretty_print(rflct, segments, categories.von_neumann_utf8())
+        local vn = neighbourhood.von_neumann()
+        local segments = subpattern.neighbourhood_categories(rflct, vn)
+        util.pretty_print(rflct, segments, vn:category_label())
     end
 until converged == true
