@@ -1,6 +1,6 @@
---- Primitive patterns (line, rectangle and circle).
+--- Primitive (line, rectangle and circle) patterns.
 -- This module provides convenience functions for the generation of basic
--- pattern shapes.  So far including lines, squares/rectangles and circle
+-- pattern shapes. So far including lines, squares/rectangles and circle
 -- rasters.
 --
 -- @usage

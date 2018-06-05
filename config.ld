@@ -12,6 +12,5 @@ file = {
         './forma/primitives.lua',
         './forma/subpattern.lua',
         './forma/automata.lua',
-        './forma/neighbourhood.lua',
-        './forma/util.lua'
+        './forma/neighbourhood.lua'
     }

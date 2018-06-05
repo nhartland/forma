@@ -1,4 +1,5 @@
--- Cellular Automata pattern generators
+--- Cellular Automata pattern generators
+--
 -- @module forma.automata
 local automata= {}
 

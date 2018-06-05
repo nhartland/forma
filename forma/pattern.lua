@@ -176,6 +176,7 @@ end
 --- Return a list of cells active in the pattern.
 -- @param ip source pattern for active cell list.
 function pattern.cell_list(ip)
+	assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
     local newlist = {}
     for i=1, #ip.cellset, 1 do
         table.insert(newlist, ip.cellset[i])
@@ -186,6 +187,7 @@ end
 --- Return the number of cells active in a pattern.
 -- @param ip pattern for size check
 function pattern.size( ip )
+	assert(getmetatable(ip) == pattern, "pattern.size requires a pattern as the first argument")
     return #ip.cellset
 end
 

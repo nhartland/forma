@@ -1,7 +1,7 @@
 --- Tests of subpattern construction
 local lu = require('luaunit')
 
-local cell         = require("forma.cell")
+local cell          = require("forma.cell")
 local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local subpattern    = require("forma.subpattern")
@@ -62,27 +62,50 @@ function testSubPatterns:testEnclosed()
     local vn_segments    = subpattern.enclosed(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(#moore_segments, 1)
     lu.assertEquals(#vn_segments, 2)
+    lu.assertFalse(self:check_for_overlap(vn_segments))
 end
 
 --  Random sampling ------------------------------------------------------------------
 function testSubPatterns:testRandom()
+    lu.assertEquals(getmetatable(self.seeds),  pattern)
     lu.assertEquals(pattern.size(self.seeds), 10)
+    lu.assertTrue(self:check_for_overlap({self.square, self.seeds}))
+end
+
+--  Maximum Rectangle  ---------------------------------------------------------------
+function testSubPatterns:testMaxRectangle()
+    -- Basic test of the 'maximum rectangular area' subpattern finder.
+    -- When run on a square pattern, it should return the input pattern.
+    local rect = subpattern.maxrectangle(self.square)
+    lu.assertEquals(rect, self.square)
+    -- Adding a single extra point far from the square pattern should not change anything
+    local extra_point = self.square + pattern.new():insert(1000,1000)
+    local rect2 = subpattern.maxrectangle(extra_point)
+    lu.assertEquals(rect2, self.square)
+end
+
+--  Binary space partitioning  -------------------------------------------------------
+function testSubPatterns:testBinarySpacePartition()
+    -- Testing on a square test pattern. The returned segments should all
+    -- have fewer than 10 active cells.
+    local partitions  = subpattern.bsp(self.square, 10)
+    local total_points = 0
+    for _, partition in ipairs(partitions) do
+        total_points = total_points + partition:size()
+        lu.assertTrue(partition:size() <= 10 )
+    end
+    lu.assertEquals(total_points, self.square:size())
+    lu.assertEquals(pattern.sum(unpack(partitions)), self.square)
+    lu.assertFalse(self:check_for_overlap(partitions))
 end
 
 -- Voronoi tesselation ---------------------------------------------------------------
 function testSubPatterns:commonVoronoi(measure)
     local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
 
-    -- Check for the correct number of segments
+    -- Check for the correct number of segments, and that there are no overlaps
     lu.assertEquals(#voronoi_segments, self.seeds:size())
-
-    -- Check that no segments overlap
-    for i=1, #voronoi_segments-1, 1 do
-        for j=i+1, #voronoi_segments, 1 do
-            local int = pattern.intersection(voronoi_segments[i], voronoi_segments[j])
-            lu.assertEquals(int:size(),  0)
-        end
-    end
+    lu.assertFalse(self:check_for_overlap(voronoi_segments))
 
     -- Check that, for every cell in every segment, the
     -- closest seed for that segment intersects with the segment
@@ -115,6 +138,19 @@ function testSubPatterns:testVoronoi_Euclidean()
 end
 function testSubPatterns:testVoronoi_Chebyshev()
     self:commonVoronoi(cell.chebyshev)
+end
+
+-- Helper functions ------------------------------------------------------------------
+function testSubPatterns:check_for_overlap(segments)
+    -- Check that no segments overlap
+    -- Returns true if there is an overlap, false otherwise
+    for i=1, #segments-1, 1 do
+        for j=i+1, #segments, 1 do
+            local int = pattern.intersection(segments[i], segments[j])
+            if int:size() ~= 0 then return true end
+        end
+    end
+    return false
 end
 
 local runner = lu.LuaUnit.new()
