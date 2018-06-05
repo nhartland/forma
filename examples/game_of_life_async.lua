@@ -1,7 +1,6 @@
 -- life.lua
 -- Demonstration of a 'Game of Life' rule
 
-local util          = require('forma.util')
 local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
@@ -30,10 +29,10 @@ repeat
         local reflect = rn:hreflect()
         local segments = subpattern.neighbourhood_categories(reflect, nbh)
         os.execute("clear")
-        util.pretty_print(reflect, segments, nbh:category_label())
+        subpattern.pretty_print(reflect, segments, nbh:category_label())
     end
 until converged == true or counter == maxcounter
 
 local reflect = rn:hreflect()
 local segments = subpattern.neighbourhood_categories(reflect, nbh)
-util.pretty_print(reflect, segments, nbh:category_label())
+subpattern.pretty_print(reflect, segments, nbh:category_label())

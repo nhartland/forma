@@ -1,7 +1,7 @@
 --- Tests of subpattern construction
 local lu = require('luaunit')
 
-local point         = require("forma.point")
+local cell         = require("forma.cell")
 local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local subpattern    = require("forma.subpattern")
@@ -25,7 +25,7 @@ function testSubPatterns:testFloodFill()
                                       {0,1,1,0,},
                                       {1,0,0,1,}}):shift(100,-100)
     local floodfill = subpattern.floodfill(test_pattern,
-                                           test_pattern:rpoint(),
+                                           test_pattern:rcell(),
                                            neighbourhood.moore())
     lu.assertEquals(floodfill, test_pattern)
 end
@@ -84,15 +84,15 @@ function testSubPatterns:commonVoronoi(measure)
         end
     end
 
-    -- Check that, for every point in every segment, the
+    -- Check that, for every cell in every segment, the
     -- closest seed for that segment intersects with the segment
     -- (should define a voronoi tesselation)
     for _,segment in ipairs(voronoi_segments) do
         -- Loop over all cells in this segment
-        for _, segment_cell in ipairs(segment:pointlist()) do
+        for _, segment_cell in ipairs(segment:cell_list()) do
             -- Find the closest seed to this cell
             local closest_seed, seed_distance = nil, math.huge
-            for _, seed_cell in ipairs(self.seeds:pointlist()) do
+            for _, seed_cell in ipairs(self.seeds:cell_list()) do
                 local distance = measure(segment_cell, seed_cell)
                 if distance < seed_distance then
                     seed_distance = distance
@@ -108,13 +108,13 @@ end
 
 -- Test Voronoi tesselation with various distance measures
 function testSubPatterns:testVoronoi_Manhattan()
-    self:commonVoronoi(point.manhattan)
+    self:commonVoronoi(cell.manhattan)
 end
 function testSubPatterns:testVoronoi_Euclidean()
-    self:commonVoronoi(point.euclidean)
+    self:commonVoronoi(cell.euclidean)
 end
 function testSubPatterns:testVoronoi_Chebyshev()
-    self:commonVoronoi(point.chebyshev)
+    self:commonVoronoi(cell.chebyshev)
 end
 
 local runner = lu.LuaUnit.new()

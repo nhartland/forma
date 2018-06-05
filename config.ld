@@ -4,9 +4,10 @@ description = 'A grid shape generation package'
 format = 'markdown' 
 readme = 'README.md'
 examples = 'examples'
+not_luadoc = true
 
 file = {
-        './forma/point.lua',
+        './forma/cell.lua',
         './forma/pattern.lua',
         './forma/primitives.lua',
         './forma/subpattern.lua',

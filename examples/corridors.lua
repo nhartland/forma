@@ -6,7 +6,6 @@
 -- applied at random to only once cell at a time, unlike normal synchronous
 -- rules where the whole pattern is updated.
 
-local util          = require('forma.util')
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
@@ -16,7 +15,7 @@ local neighbourhood = require('forma.neighbourhood')
 math.randomseed(os.time())
 
 local sq = primitives.square(80,20)
-local seed = sq:rpoint()
+local seed = sq:rcell()
 
 local tp = pattern.new()
 tp:insert(seed.x, seed.y)
@@ -37,4 +36,4 @@ until converged == true
 
 local nbh = neighbourhood.von_neumann()
 local segments = subpattern.neighbourhood_categories(tp, nbh)
-util.pretty_print(tp, segments, nbh:category_label())
+subpattern.pretty_print(tp, segments, nbh:category_label())

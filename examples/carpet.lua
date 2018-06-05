@@ -4,7 +4,6 @@
 -- Here a small basic pattern is generated, which is then enlarged by
 -- reflection into a nicely symmetric larger pattern.
 
-local util          = require('forma.util')
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
@@ -16,9 +15,9 @@ math.randomseed( os.time() )
 -- Initial CA domain
 local sq = primitives.square(10,5)
 
--- Make a new pattern consisting of a random (seed) point from the domain
+-- Make a new pattern consisting of a random (seed) cell from the domain
 local rn = pattern.new()
-local rp = sq:rpoint()
+local rp = sq:rcell()
 rn:insert(rp.x, rp.y)
 
 -- Moore neighbourhood rule
@@ -37,6 +36,6 @@ repeat
         -- Categorise the pattern according to possible vN neighbours and print to screen
         local vn = neighbourhood.von_neumann()
         local segments = subpattern.neighbourhood_categories(rflct, vn)
-        util.pretty_print(rflct, segments, vn:category_label())
+        subpattern.pretty_print(rflct, segments, vn:category_label())
     end
 until converged == true

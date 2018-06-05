@@ -1,4 +1,4 @@
---- Cellular Automata pattern generators
+-- Cellular Automata pattern generators
 -- @module forma.automata
 local automata= {}
 
@@ -40,9 +40,9 @@ function automata.rule(neighbourhood, rulesig)
 end
 
 --- Pattern neighbour count.
--- Counts how many adjacent points there are to vec
+-- Counts how many adjacent cells there are to vec
 -- @param pa provided pattern for neighbour count
--- @param pt point in pattern for neighbour count
+-- @param pt cell in pattern for neighbour count
 -- @param nbh neighbourhood for testing
 -- @return square forma.pattern of size {x,y}
 local function nCount(pa, pt, nbh)
@@ -56,13 +56,13 @@ end
 
 --- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
-local function check_cell(ruleset, ipattern, ipoint)
+local function check_cell(ruleset, ipattern, icell)
     local alive_cell = true -- Start by assuming the cell will be alive
      for i=1, #ruleset, 1 do
         local irule = ruleset[i]
         assert(irule ~= nil, "forma.automata check_cell: nil element found in ruleset")
-	    local count = nCount(ipattern, ipoint, irule.neighbourhood)
-	    local alive = ipattern:has_cell(ipoint.x, ipoint.y)
+	    local count = nCount(ipattern, icell, irule.neighbourhood)
+	    local alive = ipattern:has_cell(icell.x, icell.y)
 	    if     alive == false and irule.B[count] ~= true then  -- Birth
              alive_cell = false break
 	    elseif alive == true  and irule.S[count] ~= true then  -- Survival
@@ -79,7 +79,7 @@ end
 -- cell passing one and failing the other either survival or birth rules, the cell will
 -- be deactivated in the next iteration.
 -- @param prevp the previous iteration of the pattern
--- @param domain the points in which the CA operates
+-- @param domain the cells in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
 -- @return the next iteration, and a bool specifying if convergence has been reached.
 function automata.iterate(prevp, domain, ruleset)
@@ -88,8 +88,8 @@ function automata.iterate(prevp, domain, ruleset)
 	assert(getmetatable(domain) == pattern,
            "forma.automata: iterate requires a pattern as a second argument")
 	local nextp = pattern.new()
-    for i=1, #domain.pointset, 1 do
-        local v = domain.pointset[i]
+    for i=1, #domain.cellset, 1 do
+        local v = domain.cellset[i]
         local alive_cell = check_cell(ruleset, prevp, v)
 		if alive_cell == true then nextp:insert(v.x, v.y) end
 	end
@@ -104,7 +104,7 @@ end
 -- cell passing one and failing the other either survival or birth rules, the cell will
 -- be deactivated in the next iteration.
 -- @param prevp the previous iteration of the pattern
--- @param domain the points in which the CA operates
+-- @param domain the cells in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
 -- @param rng a (optional) random number generator (syntax as per math.random).
 -- @return the next iteration, and a bool specifying if convergence has been reached.
@@ -113,17 +113,17 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
            "forma.automata: async_iterate requires a pattern as a first argument")
 	assert(getmetatable(domain) == pattern,
            "forma.automata: async_iterate requires a pattern as a second argument")
-    local testpoints = domain:pointlist()
-    util.fisher_yates(testpoints, rng)
-    for i=1, #testpoints, 1 do
-        local tp = testpoints[i]
+    local testcells = domain:cell_list()
+    util.fisher_yates(testcells, rng)
+    for i=1, #testcells, 1 do
+        local tp = testcells[i]
         if prevp:has_cell(tp.x, tp.y) and check_cell(ruleset, prevp, tp) == false then
             -- Copy old pattern, subtracting off newly deactivated cell
             local nextp = prevp - pattern.new():insert(tp.x, tp.y)
             return nextp, false
         elseif prevp:has_cell(tp.x, tp.y) == false and check_cell(ruleset, prevp, tp) == true then
             -- Activate new cell
-            local nextp = prevp + pattern.new():insert(testpoints[i].x, testpoints[i].y)
+            local nextp = prevp + pattern.new():insert(testcells[i].x, testcells[i].y)
             return nextp, false
         end
     end

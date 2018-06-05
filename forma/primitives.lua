@@ -1,18 +1,34 @@
 --- Primitive patterns (line, rectangle and circle).
--- This module provides functions for the generation of basic
--- pattern shapes. So far including lines, squares/rectangles
--- and circle rasters.
+-- This module provides convenience functions for the generation of basic
+-- pattern shapes.  So far including lines, squares/rectangles and circle
+-- rasters.
+--
+-- @usage
+-- -- Draw some squares
+-- local square_pattern = primitives.square(5)      -- 5x5
+-- local rectangle_pattern = primitives.square(3,5) -- 3x5
+--
+-- -- Draw a line
+-- local line = primitives.line(cell.new(0,0), cell.new(10,10))
+--
+-- -- Draw a circle about (0,0) with radius 5
+-- local circle = primitives.circle(5)
+--
 -- @module forma.primitives
 local primitives = {}
 
 local pattern = require('forma.pattern')
 
---- Point insertion into a pattern without failing if point already exists.
--- This function differs only from pattern.insert by first checking if the point
--- already exists in the pointset. Therefore bypassing the assert.
--- @param ip pattern for point insertion
--- @param x first coordinate of new point
--- @param y second coordinate of new point
+----------------------------------------------------------------------------
+--- Geometry primitives
+-- @section primitives
+
+--- cell insertion into a pattern without failing if cell already exists.
+-- This function differs only from pattern.insert by first checking if the cell
+-- already exists in the cellset. Therefore bypassing the assert.
+-- @param ip pattern for cell insertion
+-- @param x first coordinate of new cell
+-- @param y second coordinate of new cell
 -- @return true if the insert was sucessful, false if not
 local function pattern_insert_over( ip, x, y )
     if ip:has_cell(x, y) == false then
@@ -22,10 +38,10 @@ local function pattern_insert_over( ip, x, y )
     return false
 end
 
---- Basic square pattern
+--- Generate a square pattern.
 -- @param x size in x
--- @param y size in y (default y = x)
--- @return square forma.pattern of size {x,y}
+-- @param y size in y (default `y = x`)
+-- @return square forma.pattern of size `{x,y}`
 function primitives.square(x,y)
 	y = y ~= nil and y or x
 	assert(type(x) == "number",
@@ -43,10 +59,11 @@ function primitives.square(x,y)
 	return sqPattern
 end
 
---- Bresenham line algorithm
--- @param start a forma.point denoting the start of the line
--- @param finish a forma.point denoting the end of the line
--- @return a forma.pattern consisting of a line between (start, finish)
+--- Generate a line pattern.
+-- According to Bresenham's line algorithm.
+-- @param start  a forma.cell denoting the start of the line
+-- @param finish a forma.cell denoting the end of the line
+-- @return a pattern consisting of a line between `start` and `finish`
 function primitives.line(start, finish)
 	local deltax = finish.x - start.x
 	local sx = deltax / math.abs(deltax)
@@ -85,11 +102,12 @@ function primitives.line(start, finish)
     return line
 end
 
---- Basic circular pattern
--- http://willperone.net/Code/codecircle.php suggests a faster method
--- might be worth a look
+--- Generate a circular pattern.
+-- Midpoint algorithm.
+-- http://willperone.net/Code/codecircle.php suggests a faster method might be
+-- worth a look.
 -- @param r the radius of the circle to be drawn
--- @return circular forma.pattern of radius r
+-- @return circular forma.pattern of radius `r` and origin `(0,0)`
 function primitives.circle(r)
 	assert(type(r) == 'number', 'primitives.circle requires a number for the radius')
 	assert(r >= 0, 'primitives.circle requires a positive number for the radius')
@@ -99,7 +117,7 @@ function primitives.circle(r)
     local p = 3 - 2*r
     if r == 0 then return cp end
 
-    -- insert_over needed here because this algorithm duplicates some points
+    -- insert_over needed here because this algorithm duplicates some cells
     while (y >= x) do
         pattern_insert_over(cp,-x, -y)
         pattern_insert_over(cp,-y, -x)

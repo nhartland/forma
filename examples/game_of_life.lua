@@ -1,7 +1,6 @@
 -- life.lua
 -- Demonstration of a 'Game of Life' rule
 
-local util          = require('forma.util')
 local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
@@ -24,6 +23,6 @@ repeat
 	rn, converged = automata.iterate(rn, sq, {life})
     local segments = subpattern.neighbourhood_categories(rn, nbh)
     os.execute("clear")
-    util.pretty_print(rn, segments, nbh:category_label())
+    subpattern.pretty_print(rn, segments, nbh:category_label())
     print(counter .. "/".. maxcounter .. " frames")
 until converged == true or counter == maxcounter

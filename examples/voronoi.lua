@@ -1,8 +1,7 @@
 -- voronoi.lua
 -- Demonstration of voronoi tesselation
 
-local point      = require('forma.point')
-local util       = require('forma.util')
+local cell      = require('forma.cell')
 local primitives = require('forma.primitives')
 local subpattern = require('forma.subpattern')
 math.randomseed(os.time())
@@ -13,12 +12,12 @@ local rn = subpattern.random(sq, 0.01)
 
 -- Compute voronoi tesselation for various measures
 local measures = {}
-measures.Chebyshev = point.chebyshev
-measures.Euclidean = point.euclidean
-measures.Manhattan = point.manhattan
+measures.Chebyshev = cell.chebyshev
+measures.Euclidean = cell.euclidean
+measures.Manhattan = cell.manhattan
 
 for label, measure in pairs(measures) do
     local segments = subpattern.voronoi(rn, sq, measure)
     print(label)
-    util.pretty_print(sq, segments)
+    subpattern.pretty_print(sq, segments)
 end

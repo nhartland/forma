@@ -2,7 +2,6 @@
 -- Generates a plausible small town layout. Following a simmilar setup to the
 -- corridor example but with more post-processing.
 
-local util          = require('forma.util')
 local pattern       = require('forma.pattern')
 local automata      = require('forma.automata')
 local primitives    = require('forma.primitives')
@@ -12,7 +11,7 @@ math.randomseed(os.time())
 
 local sq = primitives.square(20,10)
 local tp = pattern.new()
-local seed = pattern.rpoint(sq)
+local seed = pattern.rcell(sq)
 pattern.insert(tp, seed.x, seed.y)
 
 -- Complicated ruleset
@@ -34,5 +33,5 @@ tp = pattern.surface(tp)
 -- Pretty print according to neighbourhood
 local nbh = neighbourhood.von_neumann()
 local segments = subpattern.neighbourhood_categories(tp, nbh)
-util.pretty_print(tp, segments, nbh:category_label())
+subpattern.pretty_print(tp, segments, nbh:category_label())
 
