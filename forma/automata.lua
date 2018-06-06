@@ -1,4 +1,47 @@
---- Cellular Automata pattern generators
+--- Pattern manipulation with Cellular Automata.
+--
+-- This module provides various functions useful for the generation or
+-- modification of a `pattern` by means of Cellular Automata.
+--
+-- Cellular Automata are defined here by two parameters. Firstly a
+-- `neighbourhood` that the rule acts on, and secondly conditions under which
+-- cells are *Born* (B) or *Survive* (S). The neighbourhood is specified with
+-- a `neighbourhood` class and the B/S conditions by a string rule in the
+-- "Golly" format. i.e a rule which activates Cells with one neighbour and
+-- deactivates cells with two would have the rule string "B1/S2".
+--
+-- Once a rule is specified, there are two implementations of CA used here.
+-- Firstly the standard *synchronous* CA is implemented in `automata.iterate`
+-- whereby all cells are updated simultaneously. Secondly an *asynchronous*
+-- update is provided in `automata.iterate_async` in which each iteration
+-- updates only one cell at random.
+--
+-- For both methods, multiple rules can be applied simultaneously through the
+-- ruleset by supplying a table containting more than one `forma.rule`. Rule
+-- conflicts are resolved in favour of cell deactivation, i.e if there are two
+-- nested rulesets, with a cell passing one and failing the other either
+-- survival or birth rules, the cell will be deactivated in the next iteration.
+--
+-- Both the synchronous and asynchronous iterations return the result of one CA
+-- iteration and a bool specifying whether or not the iteration has converged
+-- to a stable pattern.
+--
+-- All CA updates here are only possible on a *finite* domain of cells. That
+-- domain must be specified in the iteration call.
+--
+-- @usage
+--  Domain and start seed for the CA
+--  local domain     = primitives.square(80,20)
+--  local ca_pattern = subpattern.random(sq, 0.5)
+--
+--  -- Game of life rule
+--  local life = automata.rule(neighbourhood.moore(), "B3/S23")
+--
+--  -- Repeat iteration until convergence is reached
+--  local converged = false
+--  repeat
+--  	ca_pattern, converged = automata.iterate(ca_pattern, domain, {life})
+--  until converged == true
 --
 -- @module forma.automata
 local automata= {}
@@ -23,10 +66,18 @@ local function parse_rule(nbh, rulesub)
     return ruletable
 end
 
---- Defines a cellular automata ruleset.
--- Takes a string signature in the 'Golly' format (BXX/SXX).
--- @param neighbourhood specifying the neighbourhood the rule is to be applied in
--- @param rulesig string specifying the ruleset (i.e B23/S1)
+--- Ruleset Generation
+-- @section
+
+--- Define a cellular automata rule.
+-- CA rules in forma are defined by a `neighbourhood` in the usual CA sense and
+-- a string signature in the 'Golly' format (BXX/SXX). This function
+-- initialises a rule, and performs a few consistency checks.
+-- @usage
+--  -- Initialise a rule corresponding to Conway's Game of Life
+--  local rule = automata.rule(neighbourhood.moore(), "B3/S23")
+-- @param neighbourhood specifying the `neighbourhood` the rule is to be applied in.
+-- @param rulesig string specifying the ruleset (i.e B23/S1).
 -- @return a verified rule for CA
 function automata.rule(neighbourhood, rulesig)
     assert(type(neighbourhood) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
@@ -73,12 +124,11 @@ local function check_cell(ruleset, ipattern, icell)
     return alive_cell
 end
 
+--- CA Iteration
+-- @section
+
 --- Synchronous cellular automata iteration.
 -- Performs one standard synchronous CA update on pattern prevp in the specified domain.
--- Multiple rules can be applied simultaneously through the ruleset. Rule conflicts are
--- resolved in favour of cell deactivation, i.e if there are two nested rulesets, with a
--- cell passing one and failing the other either survival or birth rules, the cell will
--- be deactivated in the next iteration.
 -- @param prevp the previous iteration of the pattern
 -- @param domain the cells in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
@@ -100,10 +150,6 @@ end
 
 --- Asynchronous cellular automata iteration.
 -- Performs a CA update on one cell (chosen randomly) in the specified domain.
--- Multiple rules can be applied simultaneously through the ruleset. Rule conflicts are
--- resolved in favour of cell deactivation, i.e if there are two nested rulesets, with a
--- cell passing one and failing the other either survival or birth rules, the cell will
--- be deactivated in the next iteration.
 -- @param prevp the previous iteration of the pattern
 -- @param domain the cells in which the CA operates
 -- @param ruleset a list of forma.rules for performing the CA on
