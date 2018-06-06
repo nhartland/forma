@@ -5,10 +5,4 @@
   
 - Decouple a bit pattern methods from the underlying data structure
 
-- Finish documentation
-
 - Standardise examples a bit more 
-
-- Improve testing:
-  More tests!
-  coveralls.io
