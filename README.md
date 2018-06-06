@@ -43,13 +43,13 @@ Requirements
 A lua@5.1 or luajit installation should be all that is required to use this module.
 See the examples folder for some demonstration.
 
-Documentation
--------------
+Generating documentation
+------------------------
 
 Documentation is provided by [LDoc](https://github.com/stevedonovan/LDoc).
 Simply running 
 
-    ldoc .
+    ldoc --output contents --dir docs .
 
 in the root directory should generate all the required pages.
 
@@ -59,5 +59,4 @@ Testing
 Unit tests are provided for some methods with the
 [luaunit](https://github.com/bluebird75/luaunit) framework. To run the tests use
 
-    lua ./tests/<test>.lua 
-
+    ./run_tests.sh

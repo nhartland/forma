@@ -1,6 +1,7 @@
 project = 'forma'
 title = 'forma Reference Manual'
-description = 'A grid shape generation package'
+description = 'A 2D grid shape generation package'
+kind_names={topic='Readme'}
 format = 'markdown' 
 readme = 'README.md'
 examples = 'examples'
