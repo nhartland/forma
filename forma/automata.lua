@@ -1,13 +1,13 @@
 --- Pattern manipulation with Cellular Automata.
 --
 -- This module provides various functions useful for the generation or
--- modification of a `pattern` by means of Cellular Automata.
+-- modification of a `pattern` by means of **Cellular Automata**.
 --
 -- Cellular Automata are defined here by two parameters. Firstly a
 -- `neighbourhood` that the rule acts on, and secondly conditions under which
 -- cells are *Born* (B) or *Survive* (S). The neighbourhood is specified with
 -- a `neighbourhood` class and the B/S conditions by a string rule in the
--- "Golly" format. i.e a rule which activates Cells with one neighbour and
+-- "Golly" format. i.e a rule which activates `cell`s with one neighbour and
 -- deactivates cells with two would have the rule string "B1/S2".
 --
 -- Once a rule is specified, there are two implementations of CA used here.

@@ -1,6 +1,6 @@
 --- Integer point/vector class defining the position of a cell.
 --
--- The `cell` class behaves much as a normal 2D vector class, with the
+-- The **cell** class behaves much as a normal 2D vector class, with the
 -- restriction that its components must be integer-valued. Several normal
 -- vector operations are available such as a vector equality check, vector
 -- addition, subtraction, and multiplication by an integer.

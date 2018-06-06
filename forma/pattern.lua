@@ -1,7 +1,7 @@
 --- A class containing a set or *pattern* of cells.
 --
--- The forma.pattern class is the central class of this module, representing a
--- set of cells. This set can be initialised as empty, or according to
+-- The **pattern** class is the central class of this module, representing a
+-- set of `cell`s. This set can be initialised as empty, or according to
 -- geometric `primitives`. Once initialised, a pattern can only be modified by
 -- the `insert` method, used to add active cells. All other pattern manipulations
 -- return a new, modified pattern rather than modifying patterns in-place.
@@ -416,9 +416,9 @@ end
 -- Note that this will *not* necessarily generate a hull, it just returns the
 -- inactive neighbours of the provided pattern.
 -- @param ip pattern for which the edges should be calculated
--- @param dirs defines which neighbourhood to scan in to determine edges (default 8/moore)
+-- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
 -- @return the forma.pattern represeting the edge of ip
-function pattern.edge(ip, dirs)
+function pattern.edge(ip, nbh)
 	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
 
 	local ep = pattern.new()
@@ -426,10 +426,10 @@ function pattern.edge(ip, dirs)
 	ep.offchar = ip.offchar
 
 	-- Default is eight
-	dirs = dirs or neighbourhood.moore()
+	nbh = nbh or neighbourhood.moore()
 	for i=1, #ip.cellset, 1 do
-		for j=1, #dirs, 1 do
-			local vpr = ip.cellset[i] + dirs[j]
+		for j=1, #nbh, 1 do
+			local vpr = ip.cellset[i] + nbh[j]
 			if ip:has_cell(vpr.x, vpr.y) == false then
 				if ep:has_cell(vpr.x, vpr.y) == false then
 					pattern.insert(ep, vpr.x, vpr.y)
@@ -445,9 +445,9 @@ end
 -- This is simmilar to pattern.edge, but will return cells that are /internal/
 -- to the provided pattern.
 -- @param ip pattern for which the surface should be calculated
--- @param dirs defines which neighbourhood to scan in to determine edges (default 8/moore)
+-- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
 -- @return the forma.pattern represeting the surface of ip
-function pattern.surface(ip, dirs)
+function pattern.surface(ip, nbh)
 	assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
 
 	local sp = pattern.new()
@@ -455,12 +455,12 @@ function pattern.surface(ip, dirs)
 	sp.offchar = ip.offchar
 
 	-- Default is eight
-	dirs = dirs or neighbourhood.moore()
+	nbh = nbh or neighbourhood.moore()
 	for i=1, #ip.cellset, 1 do
 		local foundEdge = false
         local v = ip.cellset[i]
-		for j=1, #dirs, 1 do
-			local vpr = v + dirs[j]
+		for j=1, #nbh, 1 do
+			local vpr = v + nbh[j]
 			if ip:has_cell(vpr.x, vpr.y) == false then
 				foundEdge = true
 				break
