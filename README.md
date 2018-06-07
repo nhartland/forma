@@ -45,7 +45,9 @@ See the examples folder for some demonstration.
 Generating documentation
 ------------------------
 
-Documentation is provided by [LDoc](https://github.com/stevedonovan/LDoc).
+Documentation is provided by [LDoc](https://github.com/stevedonovan/LDoc)
+and hosted [here](https://nhartland.github.io/forma/).
+
 Simply running 
 
     ldoc --output contents --dir docs .
