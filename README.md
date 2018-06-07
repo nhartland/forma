@@ -34,8 +34,7 @@ addition or subtraction, enlargement and reflection:
 
 To more complication operations such as sub-pattern finding by flood-filling,
 Voronoi tessellation of patterns, hull finding or Binary Space Partitioning. All
-operations being defined on various choices of 2D neighbourhoods (e.g Moore, Von
-Neumann).
+operations being defined on various choices of 2D neighbourhoods.
 
 Requirements
 ------------
