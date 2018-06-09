@@ -25,8 +25,8 @@ local moore = automata.rule(neighbourhood.moore(), "B12/S012345678")
 
 repeat
     -- Perform asynchronous CA update
-	local converged
-	rn, converged = automata.async_iterate(rn, sq, {moore})
+    local converged
+    rn, converged = automata.async_iterate(rn, sq, {moore})
 
     if converged == true then
         -- Mirror the basic pattern a couple of times

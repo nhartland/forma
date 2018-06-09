@@ -29,8 +29,8 @@ local ruleset = {diag2, diag, vn, moore}
 
 local ite = 0
 repeat
-	local converged
-	tp, converged = automata.async_iterate(tp, sq, ruleset)
+    local converged
+    tp, converged = automata.async_iterate(tp, sq, ruleset)
     ite = ite + 1
 until converged == true
 

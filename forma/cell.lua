@@ -36,10 +36,10 @@ cell.__index = cell
 function cell.new(x,y)
     if x == -0 then x = 0 end
     if y == -0 then y = 0 end
-	local self = { x = (x~=nil) and x or 0, y = (y~=nil) and y or 0 }
+    local self = { x = (x~=nil) and x or 0, y = (y~=nil) and y or 0 }
     local valid = self.x == math.floor(self.x) and self.y == math.floor(self.y)
     assert (valid, "cell.new requires integer inputs")
-	return setmetatable(self, cell)
+    return setmetatable(self, cell)
 end
 
 --- Perform a copy of a cell.
@@ -47,7 +47,7 @@ end
 -- @return copy of `icell`
 function cell.clone(icell)
     assert(getmetatable(icell) == cell, "cell.clone requires a cell as an argument")
-	return cell.new(icell.x, icell.y)
+    return cell.new(icell.x, icell.y)
 end
 
 --- Add two cells, or add a number to a cell.
@@ -56,14 +56,14 @@ end
 -- @param b second cell or number
 -- @return c = a + b
 function cell.__add(a, b)
-  if type(a) == "number" and getmetatable(b) == cell then
-    return cell.new(a + b.x, a + b.y)
-  elseif type(b) == "number" and getmetatable(a) == cell then
-    return cell.new(a.x + b, a.y + b)
-  else
-	assert(getmetatable(a) == cell and getmetatable(b) == cell)
-    return cell.new(a.x + b.x, a.y + b.y)
-  end
+    if type(a) == "number" and getmetatable(b) == cell then
+        return cell.new(a + b.x, a + b.y)
+    elseif type(b) == "number" and getmetatable(a) == cell then
+        return cell.new(a.x + b, a.y + b)
+    else
+        assert(getmetatable(a) == cell and getmetatable(b) == cell)
+        return cell.new(a.x + b.x, a.y + b.y)
+    end
 end
 
 --- Subtract two cells, or a number and a cell.
@@ -72,14 +72,14 @@ end
 -- @param b second cell or number
 -- @return c = a - b
 function cell.__sub(a, b)
-  if type(a) == "number" and getmetatable(b) == cell then
-    return cell.new(a - b.x, a - b.y)
-  elseif type(b) == "number" and getmetatable(a) == cell then
-    return cell.new(a.x - b, a.y - b)
-  else
-	assert(getmetatable(a) == cell and getmetatable(b) == cell)
-    return cell.new(a.x - b.x, a.y - b.y)
-  end
+    if type(a) == "number" and getmetatable(b) == cell then
+        return cell.new(a - b.x, a - b.y)
+    elseif type(b) == "number" and getmetatable(a) == cell then
+        return cell.new(a.x - b, a.y - b)
+    else
+        assert(getmetatable(a) == cell and getmetatable(b) == cell)
+        return cell.new(a.x - b.x, a.y - b.y)
+    end
 end
 
 --- Multiply a cell by an number.
@@ -88,12 +88,12 @@ end
 -- @param b second cell or number
 -- @return c = a*b
 function cell.__mul(a, b)
-  if type(a) == "number" and getmetatable(b) == cell then
-    return cell.new(b.x * a, b.y * a )
-  elseif type(b) == "number" and getmetatable(a) == cell then
-    return cell.new(a.x * b, a.y * b )
-  end
-  assert("forma.cell.__mul: unrecognised argument. Expected arguments are a forma.cell and a number.")
+    if type(a) == "number" and getmetatable(b) == cell then
+        return cell.new(b.x * a, b.y * a )
+    elseif type(b) == "number" and getmetatable(a) == cell then
+        return cell.new(a.x * b, a.y * b )
+    end
+    assert("forma.cell.__mul: unrecognised argument. Expected arguments are a forma.cell and a number.")
 end
 
 --- Divide a cell position by a number.
@@ -102,12 +102,12 @@ end
 -- @param b a number
 -- @return c = a/b
 function cell.__div(a, b)
-  if type(a) == "number" and getmetatable(b) == cell then
-    assert(false, "Cannot divide a number by a cell")
-  elseif type(b) == "number" and getmetatable(a) == cell then
-    return cell.new(a.x / b, a.y / b )
-  end
-  assert("forma.cell.__div: unrecognised argument. Expected arguments are a forma.cell and a number.")
+    if type(a) == "number" and getmetatable(b) == cell then
+        assert(false, "Cannot divide a number by a cell")
+    elseif type(b) == "number" and getmetatable(a) == cell then
+        return cell.new(a.x / b, a.y / b )
+    end
+    assert("forma.cell.__div: unrecognised argument. Expected arguments are a forma.cell and a number.")
 end
 
 --- Test for equality of two cells.
@@ -116,8 +116,8 @@ end
 -- @param b second cell
 -- @return a == b
 function cell.__eq(a, b)
-	assert(getmetatable(a) == cell and getmetatable(b) == cell)
-	return a.x == b.x and a.y == b.y
+    assert(getmetatable(a) == cell and getmetatable(b) == cell)
+    return a.x == b.x and a.y == b.y
 end
 
 --- Render a cell as a string.
@@ -125,7 +125,7 @@ end
 -- @param icell the forma.cell being rendered as a string
 -- @return string of the form `(icell.x, icell.y)`
 function cell.__tostring(icell)
-	return '('..icell.x..','..icell.y..')'
+    return '('..icell.x..','..icell.y..')'
 end
 
 --- Manhattan distance between cells.

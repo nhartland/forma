@@ -15,9 +15,9 @@ sq.onchar, sq.offchar = "#", " "
 local moore = automata.rule(neighbourhood.moore(), "B5678/S45678")
 local ite = 0
 repeat
-	local converged
-	rn, converged = automata.iterate(rn, sq, {moore})
-	ite = ite+1
+    local converged
+    rn, converged = automata.iterate(rn, sq, {moore})
+    ite = ite+1
 until converged == true
 
 print(sq-rn)

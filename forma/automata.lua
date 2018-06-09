@@ -82,13 +82,13 @@ end
 function automata.rule(neighbourhood, rulesig)
     assert(type(neighbourhood) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
     assert(type(rulesig) == 'string', "forma.automata.rule: parse_rules trying to parse a " .. type(rulesig))
-	local Bpos, Spos = string.find(rulesig, 'B'), string.find(rulesig, 'S')
-	assert(Bpos == 1 and Spos ~= nil, "forma.automata.rule: parse_rules cannot understand rule " .. rulesig)
+    local Bpos, Spos = string.find(rulesig, 'B'), string.find(rulesig, 'S')
+    assert(Bpos == 1 and Spos ~= nil, "forma.automata.rule: parse_rules cannot understand rule " .. rulesig)
     local Brule, Srule = string.sub(rulesig, 1, Spos-2), string.sub(rulesig, Spos, #rulesig)
-	local newrule = {neighbourhood = neighbourhood}
+    local newrule = {neighbourhood = neighbourhood}
     newrule.B = parse_rule(neighbourhood, Brule)
     newrule.S = parse_rule(neighbourhood, Srule)
-	return newrule
+    return newrule
 end
 
 --- Pattern neighbour count.
@@ -98,29 +98,29 @@ end
 -- @param nbh neighbourhood for testing
 -- @return square forma.pattern of size {x,y}
 local function nCount(pa, pt, nbh)
-	local n = 0
-	for i=1,#nbh,1 do
-		local tpt = pt + nbh[i]
-		if pa:has_cell(tpt.x, tpt.y) then n = n + 1 end
-	end
-	return n
+    local n = 0
+    for i=1,#nbh,1 do
+        local tpt = pt + nbh[i]
+        if pa:has_cell(tpt.x, tpt.y) then n = n + 1 end
+    end
+    return n
 end
 
 --- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
 local function check_cell(ruleset, ipattern, icell)
     local alive_cell = true -- Start by assuming the cell will be alive
-     for i=1, #ruleset, 1 do
+    for i=1, #ruleset, 1 do
         local irule = ruleset[i]
         assert(irule ~= nil, "forma.automata check_cell: nil element found in ruleset")
-	    local count = nCount(ipattern, icell, irule.neighbourhood)
-	    local alive = ipattern:has_cell(icell.x, icell.y)
-	    if     alive == false and irule.B[count] ~= true then  -- Birth
-             alive_cell = false break
-	    elseif alive == true  and irule.S[count] ~= true then  -- Survival
-             alive_cell = false break
-	    end
-     end
+        local count = nCount(ipattern, icell, irule.neighbourhood)
+        local alive = ipattern:has_cell(icell.x, icell.y)
+        if     alive == false and irule.B[count] ~= true then  -- Birth
+            alive_cell = false break
+        elseif alive == true  and irule.S[count] ~= true then  -- Survival
+            alive_cell = false break
+        end
+    end
     return alive_cell
 end
 
@@ -134,18 +134,18 @@ end
 -- @param ruleset a list of forma.rules for performing the CA on
 -- @return the next iteration, and a bool specifying if convergence has been reached.
 function automata.iterate(prevp, domain, ruleset)
-	assert(getmetatable(prevp) == pattern,
-           "forma.automata: iterate requires a pattern as a first argument")
-	assert(getmetatable(domain) == pattern,
-           "forma.automata: iterate requires a pattern as a second argument")
-	local nextp = pattern.new()
+    assert(getmetatable(prevp) == pattern,
+    "forma.automata: iterate requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern,
+    "forma.automata: iterate requires a pattern as a second argument")
+    local nextp = pattern.new()
     for i=1, #domain.cellset, 1 do
         local v = domain.cellset[i]
         local alive_cell = check_cell(ruleset, prevp, v)
-		if alive_cell == true then nextp:insert(v.x, v.y) end
-	end
-	local converged = (nextp:size() == prevp:size()) and (nextp-prevp):size() == 0
-	return nextp, converged
+        if alive_cell == true then nextp:insert(v.x, v.y) end
+    end
+    local converged = (nextp:size() == prevp:size()) and (nextp-prevp):size() == 0
+    return nextp, converged
 end
 
 --- Asynchronous cellular automata iteration.
@@ -156,10 +156,10 @@ end
 -- @param rng a (optional) random number generator (syntax as per math.random).
 -- @return the next iteration, and a bool specifying if convergence has been reached.
 function automata.async_iterate(prevp, domain, ruleset, rng)
-	assert(getmetatable(prevp)  == pattern,
-           "forma.automata: async_iterate requires a pattern as a first argument")
-	assert(getmetatable(domain) == pattern,
-           "forma.automata: async_iterate requires a pattern as a second argument")
+    assert(getmetatable(prevp)  == pattern,
+    "forma.automata: async_iterate requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern,
+    "forma.automata: async_iterate requires a pattern as a second argument")
     local testcells = domain:cell_list()
     util.fisher_yates(testcells, rng)
     for i=1, #testcells, 1 do

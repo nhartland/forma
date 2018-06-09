@@ -28,19 +28,19 @@ local neighbourhood = require('forma.neighbourhood')
 -- @param rng (optional ) a random number generator, following the signature of math.random.
 -- @return a pattern of `fr*domain.size` cells sampled randomly from domain
 function subpattern.random(ip, fr, rng)
-	assert(getmetatable(ip) == pattern, "subpattern.random requires a pattern as the first argument")
-	assert(type(fr) == 'number', 'subpattern.random requires a number for the probability')
-	assert(fr >= 0 and fr <= 1 , 'subpattern.random requires a fraction 0 <= p <= 1')
+    assert(getmetatable(ip) == pattern, "subpattern.random requires a pattern as the first argument")
+    assert(type(fr) == 'number', 'subpattern.random requires a number for the probability')
+    assert(fr >= 0 and fr <= 1 , 'subpattern.random requires a fraction 0 <= p <= 1')
     local n_subset = math.floor(fr*ip:size()) -- Number of cells in returned pattern
-	assert(n_subset > 0,  'subpattern.random requires a fraction and domain large enough to return a non-empty pattern')
-	if rng == nil then rng = math.random end
+    assert(n_subset > 0,  'subpattern.random requires a fraction and domain large enough to return a non-empty pattern')
+    if rng == nil then rng = math.random end
     local cells = ip:cell_list()
     util.fisher_yates(cells, rng)
-	local p = pattern.new()
+    local p = pattern.new()
     for i = 1, n_subset, 1 do
-	    p:insert(cells[i].x, cells[i].y)
-	end
-	return p
+        p:insert(cells[i].x, cells[i].y)
+    end
+    return p
 end
 
 --- Returns the contiguous sub-pattern of ip that surrounts cell pt
@@ -49,19 +49,19 @@ end
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a forma.pattern consisting of the contiguous segment about cell
 function subpattern.floodfill(ip, ipt, nbh)
-	assert(getmetatable(ip) == pattern, "subpattern.floodfill requires a pattern as the first argument")
-	assert(ipt, "subpattern.floodfill requires a cell as the second argument")
-	nbh = nbh or neighbourhood.moore()
-	local retpat = pattern.new()
-	local function ff(pt)
-		if ip:has_cell(pt.x, pt.y) and retpat:has_cell(pt.x, pt.y) == false then
-		    pattern.insert(retpat, pt.x, pt.y)
-			for i=1, #nbh, 1 do ff(pt + nbh[i]) end
-		end
-		return
-	end
-	ff(ipt)
-	return retpat
+    assert(getmetatable(ip) == pattern, "subpattern.floodfill requires a pattern as the first argument")
+    assert(ipt, "subpattern.floodfill requires a cell as the second argument")
+    nbh = nbh or neighbourhood.moore()
+    local retpat = pattern.new()
+    local function ff(pt)
+        if ip:has_cell(pt.x, pt.y) and retpat:has_cell(pt.x, pt.y) == false then
+            pattern.insert(retpat, pt.x, pt.y)
+            for i=1, #nbh, 1 do ff(pt + nbh[i]) end
+        end
+        return
+    end
+    ff(ipt)
+    return retpat
 end
 
 --- Generate a list of contiguous 'segments' or sub-patterns.
@@ -71,16 +71,16 @@ end
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
 function subpattern.segments(ip, nbh)
-	assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
-	nbh = nbh or neighbourhood.moore()
-	local wp = pattern.clone(ip)
-	local segs = {}
-	while pattern.size(wp) > 0 do
-		local rancell = pattern.rcell(wp)
-		table.insert(segs, subpattern.floodfill(wp, rancell, nbh))
-		wp = wp - segs[#segs]
-	end
-	return segs
+    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
+    nbh = nbh or neighbourhood.moore()
+    local wp = pattern.clone(ip)
+    local segs = {}
+    while pattern.size(wp) > 0 do
+        local rancell = pattern.rcell(wp)
+        table.insert(segs, subpattern.floodfill(wp, rancell, nbh))
+        wp = wp - segs[#segs]
+    end
+    return segs
 end
 
 --- Returns a list of 'enclosed' segments of a pattern.
@@ -90,8 +90,8 @@ end
 -- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
 -- @return a list of forma.patterns comprising the enclosed areas of ip
 function subpattern.enclosed(ip, nbh)
-	assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
-	nbh = nbh or neighbourhood.von_neumann()
+    assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
+    nbh = nbh or neighbourhood.von_neumann()
     local size = ip.max - ip.min + 1
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
     local segments = subpattern.segments(interior, nbh)
@@ -99,7 +99,7 @@ function subpattern.enclosed(ip, nbh)
     for i=1, #segments,1 do
         local segment = segments[i]
         if segment.min.x >= ip.min.x and segment.min.y >= ip.min.y
-        and segment.max.x <= ip.max.x-1 and segment.max.y <= ip.max.y-1 then
+            and segment.max.x <= ip.max.x-1 and segment.max.y <= ip.max.y-1 then
             table.insert(enclosed, segment)
         end
     end
@@ -112,22 +112,22 @@ end
 -- @param measure the measure used to judge distance between cells
 -- @return a list of voronoi segments
 function subpattern.voronoi(cells, domain, measure)
-	assert(getmetatable(cells) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
-	assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
+    assert(getmetatable(cells) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
     assert(pattern.size(cells) > 0, "subpattern.voronoi requires at least one target cell/seed")
     local domaincells = domain:cell_list()
     local seedcells   = cells:cell_list()
     local segments  = {}
-	for i=1, #seedcells, 1 do
+    for i=1, #seedcells, 1 do
         local v = seedcells[i]
         assert(domain:has_cell(v.x, v.y), "forma.voronoi: cell outside of domain: " .. tostring(v))
         segments[i] = pattern.new()
     end
-	for i=1, #domaincells, 1 do
+    for i=1, #domaincells, 1 do
         local dp = domaincells[i]
         local min_cell = 1
         local min_dist  = measure(dp, seedcells[1])
-	    for j=2, #seedcells, 1 do
+        for j=2, #seedcells, 1 do
             local distance = measure(dp, seedcells[j])
             if distance < min_dist then
                 min_cell = j
@@ -146,51 +146,51 @@ end
 -- @return the minimum and maxium coordinates of the area
 local function maxrectangle_coordinates(ip)
 
-	local best_ll = cell.new()
-	local best_ur = cell.new(-1,-1)
-	local best_area = 0
+    local best_ll = cell.new()
+    local best_ur = cell.new(-1,-1)
+    local best_area = 0
 
-	local stack = {}
-	local function push(y,w) table.insert(stack,{y,w}) end
-	local function pop() return unpack(table.remove(stack)) end
+    local stack = {}
+    local function push(y,w) table.insert(stack,{y,w}) end
+    local function pop() return unpack(table.remove(stack)) end
 
-	local cache = {}
-	for y = ip.min.y, ip.max.y+1, 1 do cache[y] = 0 end -- One extra element (closes all rectangles)
+    local cache = {}
+    for y = ip.min.y, ip.max.y+1, 1 do cache[y] = 0 end -- One extra element (closes all rectangles)
 
-	local function updateCache(x)
-		for y = ip.min.y, ip.max.y, 1 do
-			if ip:has_cell(x,y) then
-				cache[y] = cache[y] + 1
-			else
-				cache[y] = 0
-			end
-		end
-	end
+    local function updateCache(x)
+        for y = ip.min.y, ip.max.y, 1 do
+            if ip:has_cell(x,y) then
+                cache[y] = cache[y] + 1
+            else
+                cache[y] = 0
+            end
+        end
+    end
 
-	for x=ip.max.x, ip.min.x, -1 do
-		updateCache(x)
-		local width = 0 -- Width of widest opened rectangle
-		for y = ip.min.y, ip.max.y+1, 1 do
-			if cache[y]>width then-- Opening new rectangle(s)?
-				push(y, width)
-				width = cache[y]
-	        end
-			if cache[y]<width then  --// Closing rectangle(s)?
-				local y0, w0
-				repeat
-					y0, w0= pop()
-					if width*(y-y0)> best_area then
-						best_ll = cell.new(x, y0)
-						best_ur = cell.new(x+width-1, y - 1)
-						best_area = width*(y-y0)
-					end
-					width = w0
-				until cache[y] >= width
-				width = cache[y]
-				if width ~= 0 then push(y0, w0) end
-			end
-	    end
-	end
+    for x=ip.max.x, ip.min.x, -1 do
+        updateCache(x)
+        local width = 0 -- Width of widest opened rectangle
+        for y = ip.min.y, ip.max.y+1, 1 do
+            if cache[y]>width then-- Opening new rectangle(s)?
+                push(y, width)
+                width = cache[y]
+            end
+            if cache[y]<width then  --// Closing rectangle(s)?
+                local y0, w0
+                repeat
+                    y0, w0= pop()
+                    if width*(y-y0)> best_area then
+                        best_ll = cell.new(x, y0)
+                        best_ur = cell.new(x+width-1, y - 1)
+                        best_area = width*(y-y0)
+                    end
+                    width = w0
+                until cache[y] >= width
+                width = cache[y]
+                if width ~= 0 then push(y0, w0) end
+            end
+        end
+    end
 
     return best_ll, best_ur
 end
@@ -199,7 +199,7 @@ end
 -- @param ip the input pattern
 -- @return the subpattern of `ip` consisting of its largest contiguous rectangular area.
 function subpattern.maxrectangle(ip)
-	assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
+    assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
     local min, max = maxrectangle_coordinates(ip)
     local size = max - min + 1
     return primitives.square(size.x, size.y):shift(min.x, min.y)
@@ -208,30 +208,30 @@ end
 
 -- Binary space partitioning - internal function
 local function bspSplit(min, max, th_volume, outpatterns)
-	local size = max - min + cell.new(1,1)
-	local volume = size.x*size.y
+    local size = max - min + cell.new(1,1)
+    local volume = size.x*size.y
 
-	if volume > th_volume then
-		local r1max, r2min
-		if size.x > size.y then
-			local xch = math.floor((size.x-1)*0.5)
-			r1max = min + cell.new( xch, size.y-1)
-			r2min = min + cell.new( xch + 1, 0)
-		else
-			local ych = math.floor((size.y-1)*0.5)
-			r1max = min + cell.new( size.x-1, ych)
-			r2min = min + cell.new( 0, ych + 1)
-		end
+    if volume > th_volume then
+        local r1max, r2min
+        if size.x > size.y then
+            local xch = math.floor((size.x-1)*0.5)
+            r1max = min + cell.new( xch, size.y-1)
+            r2min = min + cell.new( xch + 1, 0)
+        else
+            local ych = math.floor((size.y-1)*0.5)
+            r1max = min + cell.new( size.x-1, ych)
+            r2min = min + cell.new( 0, ych + 1)
+        end
 
-		-- Recurse on both new partitions
-		bspSplit(min, r1max, th_volume, outpatterns)
-		bspSplit(r2min, max, th_volume, outpatterns)
+        -- Recurse on both new partitions
+        bspSplit(min, r1max, th_volume, outpatterns)
+        bspSplit(r2min, max, th_volume, outpatterns)
 
-	else -- Passes threshold volume
-		local np = primitives.square(size.x, size.y)
-		np = pattern.shift(np, min.x, min.y)
-		table.insert(outpatterns, np)
-	end
+    else -- Passes threshold volume
+        local np = primitives.square(size.x, size.y)
+        np = pattern.shift(np, min.x, min.y)
+        table.insert(outpatterns, np)
+    end
 end
 
 --- Generate subpatterns by binary space partition.
@@ -246,18 +246,18 @@ end
 -- @param ip the pattern for which the BSP will be run over
 -- @param th_volume the highest acceptable volume for each final partition
 function subpattern.bsp(ip, th_volume)
-	assert(getmetatable(ip) == pattern, "subpattern.bsp requires a pattern as an argument")
-	assert(th_volume,     "subpattern.bsp rules must specify a threshold volume for partitioning")
-	assert(th_volume > 0, "subpattern.bsp rules must specify positive threshold volume for partitioning")
-	local bsp_subpatterns = {}
-	local available = ip
-	while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
-		local min, max = maxrectangle_coordinates(available)
-		bspSplit(min, max, th_volume, bsp_subpatterns)
-		for i=1, #bsp_subpatterns, 1 do
+    assert(getmetatable(ip) == pattern, "subpattern.bsp requires a pattern as an argument")
+    assert(th_volume,     "subpattern.bsp rules must specify a threshold volume for partitioning")
+    assert(th_volume > 0, "subpattern.bsp rules must specify positive threshold volume for partitioning")
+    local bsp_subpatterns = {}
+    local available = ip
+    while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
+        local min, max = maxrectangle_coordinates(available)
+        bspSplit(min, max, th_volume, bsp_subpatterns)
+        for i=1, #bsp_subpatterns, 1 do
             available = available - bsp_subpatterns[i]
         end
-	end
+    end
     return bsp_subpatterns
 end
 
@@ -270,9 +270,9 @@ end
 -- @return a table of #nbh patterns, where each cell in ip is categorised
 function subpattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(ip) == pattern,
-           "subpattern.neighbourhood_categories requires a pattern as a first argument")
+    "subpattern.neighbourhood_categories requires a pattern as a first argument")
     assert(getmetatable(nbh) == neighbourhood,
-           "subpattern.neighbourhood_categories requires a neighbourhood as a second argument")
+    "subpattern.neighbourhood_categories requires a neighbourhood as a second argument")
     local category_patterns = {}
     for i=1, #nbh.categories, 1 do
         category_patterns[i] = pattern.new()
@@ -301,18 +301,18 @@ function subpattern.pretty_print(domain, segments, chars)
         end
     end
     assert(#segments == #chars,
-           "subpattern.pretty_print: there must be as many character list entries as segments")
+    "subpattern.pretty_print: there must be as many character list entries as segments")
     -- Print out the segments to a map
     for i=domain.min.y, domain.max.y,1 do
         local string = ''
         for j=domain.min.x, domain.max.x,1 do
             local token = ' '
             for k,v in ipairs(segments) do
-            if v:has_cell(j, i) then token = chars[k] end end
-            string = string .. token
+                if v:has_cell(j, i) then token = chars[k] end end
+                string = string .. token
+            end
+            io.write(string .. '\n')
         end
-        io.write(string .. '\n')
     end
-end
 
-return subpattern
+    return subpattern

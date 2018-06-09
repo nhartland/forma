@@ -19,8 +19,8 @@ local life = automata.rule(neighbourhood.moore(), "B3/S23")
 local counter, maxcounter = 0, 100
 repeat
     counter = counter + 1
-	local converged
-	rn, converged = automata.iterate(rn, sq, {life})
+    local converged
+    rn, converged = automata.iterate(rn, sq, {life})
     local segments = subpattern.neighbourhood_categories(rn, nbh)
     os.execute("clear")
     subpattern.pretty_print(rn, segments, nbh:category_label())

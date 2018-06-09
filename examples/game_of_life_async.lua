@@ -22,8 +22,8 @@ local life = automata.rule(neighbourhood.moore(), "B3/S23")
 local counter, maxcounter = 0, 500
 repeat
     counter = counter + 1
-	local converged
-	rn, converged = automata.async_iterate(rn, sq, {life})
+    local converged
+    rn, converged = automata.async_iterate(rn, sq, {life})
 
     if print_every_iteration then
         local reflect = rn:hreflect()
