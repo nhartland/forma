@@ -71,8 +71,8 @@ end
 function pattern.new(prototype)
     local np = {}
 
-    np.max = cell.new()
-    np.min = cell.new()
+    np.max = cell.new(0,0)
+    np.min = cell.new(0,0)
 
     np.offchar = '0'
     np.onchar  = '1'
@@ -314,7 +314,7 @@ function pattern.com(ip)
     assert(getmetatable(ip) == pattern, "pattern.com requires a pattern as the first argument")
     assert(ip:size() > 0, 'pattern.com requires a filled pattern!')
 
-    local com = cell.new()
+    local com = cell.new(0,0)
     local allcells = ip.cellset
     for i=1, #allcells, 1 do com = com + allcells[i] end
     local comx, comy = com.x / #allcells, com.y / #allcells

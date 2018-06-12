@@ -146,7 +146,7 @@ end
 -- @return the minimum and maxium coordinates of the area
 local function maxrectangle_coordinates(ip)
 
-    local best_ll = cell.new()
+    local best_ll = cell.new(0,0)
     local best_ur = cell.new(-1,-1)
     local best_area = 0
 

@@ -36,9 +36,9 @@ cell.__index = cell
 function cell.new(x,y)
     if x == -0 then x = 0 end
     if y == -0 then y = 0 end
-    local self = { x = (x~=nil) and x or 0, y = (y~=nil) and y or 0 }
-    local valid = self.x == math.floor(self.x) and self.y == math.floor(self.y)
-    assert (valid, "cell.new requires integer inputs")
+    local self = { x = x, y = y }
+    assert(x and y, "cell.new requires non-null arguments")
+    assert (self.x == math.floor(self.x) and self.y == math.floor(self.y), "cell.new requires integer inputs")
     return setmetatable(self, cell)
 end
 
@@ -152,8 +152,9 @@ end
 -- @param b second cell
 -- @return L_2(a,b)^2 = (a-b)^2
 function cell.euclidean2(a,b)
-    local d = a - b
-    return d.x*d.x+d.y*d.y
+    local dx = a.x - b.x
+    local dy = a.y - b.y
+    return dx*dx+dy*dy
 end
 
 --- Euclidean distance between cells.
