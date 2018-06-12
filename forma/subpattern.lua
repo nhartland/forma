@@ -98,8 +98,8 @@ function subpattern.enclosed(ip, nbh)
     local enclosed = {}
     for i=1, #segments,1 do
         local segment = segments[i]
-        if segment.min.x >= ip.min.x and segment.min.y >= ip.min.y
-            and segment.max.x <= ip.max.x-1 and segment.max.y <= ip.max.y-1 then
+        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
+            and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
             table.insert(enclosed, segment)
         end
     end
