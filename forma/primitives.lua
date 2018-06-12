@@ -23,21 +23,6 @@ local pattern = require('forma.pattern')
 --- Geometry primitives
 -- @section primitives
 
---- cell insertion into a pattern without failing if cell already exists.
--- This function differs only from pattern.insert by first checking if the cell
--- already exists in the cellset. Therefore bypassing the assert.
--- @param ip pattern for cell insertion
--- @param x first coordinate of new cell
--- @param y second coordinate of new cell
--- @return true if the insert was sucessful, false if not
-local function pattern_insert_over( ip, x, y )
-    if ip:has_cell(x, y) == false then
-        pattern.insert(ip, x, y)
-        return true
-    end
-    return false
-end
-
 --- Generate a square pattern.
 -- @param x size in x
 -- @param y size in y (default `y = x`)
@@ -102,40 +87,35 @@ function primitives.line(start, finish)
     return line
 end
 
---- Generate a circular pattern.
--- Midpoint algorithm.
--- http://willperone.net/Code/codecircle.php suggests a faster method might be
--- worth a look.
+--- Generate a circle pattern.
+-- Bresenham algorithm.
 -- @param r the radius of the circle to be drawn
 -- @return circular forma.pattern of radius `r` and origin `(0,0)`
 function primitives.circle(r)
     assert(type(r) == 'number', 'primitives.circle requires a number for the radius')
     assert(r >= 0, 'primitives.circle requires a positive number for the radius')
 
+    local x, y = -r,0
+    local acc = 2-2*r
+
     local cp = pattern.new()
-    local x, y = 0, r
-    local p = 3 - 2*r
-    if r == 0 then return cp end
+    repeat
+        cp:insert(-x,  y)
+        cp:insert(-y, -x)
+        cp:insert( x, -y)
+        cp:insert( y,  x)
 
-    -- insert_over needed here because this algorithm duplicates some cells
-    while (y >= x) do
-        pattern_insert_over(cp,-x, -y)
-        pattern_insert_over(cp,-y, -x)
-        pattern_insert_over(cp, y, -x)
-        pattern_insert_over(cp, x, -y)
-        pattern_insert_over(cp,-x,  y)
-        pattern_insert_over(cp,-y,  x)
-        pattern_insert_over(cp, y,  x)
-        pattern_insert_over(cp, x,  y)
-
-        x = x + 1
-        if p < 0 then
-            p = p + 4*x + 6
-        else
-            y = y - 1
-            p = p + 4*(x - y) + 10
+        r = acc
+        if (r <= y) then
+            y = y + 1
+            acc = acc + y*2 + 1
         end
-    end
+        if (r > x or acc > y) then
+            x = x + 1
+            acc = acc + x*2+1;
+        end
+    until (x == 0)
+
     return cp
 end
 
