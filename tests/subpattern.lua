@@ -63,6 +63,9 @@ function testSubPatterns:testEnclosed()
     lu.assertEquals(#moore_segments, 1)
     lu.assertEquals(#vn_segments, 2)
     lu.assertFalse(self:check_for_overlap(vn_segments))
+    -- Check that neighbourhood defaults to vN, and edge diagonal case
+    local test_circle = primitives.circle(1)
+    lu.assertEquals(#subpattern.enclosed(test_circle),1)
 end
 
 --  Random sampling ------------------------------------------------------------------
