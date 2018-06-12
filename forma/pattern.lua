@@ -143,8 +143,8 @@ function pattern.insert( ip, x, y )
 
     local key = coordinates_to_key(x, y)
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
-    ip.cellmap[key] = cell.new(x,y)
-    ip.cellset[#ip.cellset+1] = ip.cellmap[key]
+    ip.cellmap[key] = true
+    ip.cellset[#ip.cellset+1] = cell.new(x,y)
 
     -- First added cell, set limits
     if ip:size() == 1 then
