@@ -59,6 +59,8 @@ end
 --@section basic
 
 --- forma.pattern constructor.
+-- Points are stored in the pattern in a standard integer keyed table, and
+-- also as elements in a spatial hash map.
 -- @param prototype (optional) an N*N 2D table of ones and zeros.
 -- Returns a new forma.pattern. If no prototype is used, then an empty pattern
 -- is returned. If set with the prototype table {{1,0},{0,1}} will initialise
@@ -142,7 +144,7 @@ function pattern.insert( ip, x, y )
     local key = coordinates_to_key(x, y)
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
     ip.cellmap[key] = cell.new(x,y)
-    table.insert(ip.cellset, ip.cellmap[key])
+    ip.cellset[#ip.cellset+1] = ip.cellmap[key]
 
     -- First added cell, set limits
     if ip:size() == 1 then
@@ -179,7 +181,7 @@ function pattern.cell_list(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
     local newlist = {}
     for i=1, #ip.cellset, 1 do
-        table.insert(newlist, ip.cellset[i])
+        newlist[#newlist+1] = ip.cellset[i]:clone()
     end
     return newlist
 end

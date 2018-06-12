@@ -100,8 +100,7 @@ end
 local function nCount(pa, pt, nbh)
     local n = 0
     for i=1,#nbh,1 do
-        local tpt = pt + nbh[i]
-        if pa:has_cell(tpt.x, tpt.y) then n = n + 1 end
+        if pa:has_cell(pt.x+nbh[i].x, pt.y+nbh[i].y) then n = n + 1 end
     end
     return n
 end
