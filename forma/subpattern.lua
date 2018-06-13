@@ -22,8 +22,8 @@ local neighbourhood = require('forma.neighbourhood')
 
 --- Masked subpattern.
 -- Generate a subpattern by applying a boolean mask to an input pattern.
--- @ip the pattern to be masked.
--- @mask a function that takes a `cell` and returns true if the cell passes the mask
+-- @param ip the pattern to be masked.
+-- @param mask a function that takes a `cell` and returns true if the cell passes the mask
 function subpattern.mask(ip, mask)
     assert(getmetatable(ip) == pattern, "subpattern.mask requires a pattern as the first argument")
     assert(type(mask) == 'function', 'subpattern.mask requires a function for the mask')
@@ -164,10 +164,9 @@ end
 -- to fix this in future.
 -- @param seeds the original seed points to be relaxed
 -- @param domain the domain to be tesselated
--- @measure the distance measure to be used between cells
+-- @param measure the distance measure to be used between cells
 -- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
--- @return (segments, centroids, converged) a list of approximately centroidal Voronoi
--- segments, a `pattern` of the corresponding segment centres, and a bool specifying convergence
+-- @return (segments, segment centres, convergence bool)
 function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
    if max_ite == nil then max_ite = 30 end
    assert(getmetatable(seeds)  == pattern, "subpattern.centroidal_voronoi requires a pattern as a first argument")
@@ -194,12 +193,11 @@ end
 -- Helper function that seeds `voronoi_relax` with `nsegment` randomly
 -- sampled seeds.
 -- @param domain the domain to be tesselated
--- @measure nsegment the number of requested segments
--- @measure the distance measure to be used between cells
+-- @param nsegment the number of requested segments
+-- @param measure the distance measure to be used between cells
 -- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
 -- @param rng (optional) a random number generator, following the signature of math.random.
--- @return (segments, centroids, converged) a list of approximately centroidal Voronoi
--- segments, a `pattern` of the corresponding segment centres, and a bool specifying convergence
+-- @return (segments, segment centres, convergence bool)
 function subpattern.centroidal_voronoi(domain, nsegment, measure, max_ite, rng)
     assert(getmetatable(domain) == pattern, "subpattern.centroidal_voronoi requires a pattern as a first argument")
     assert(nsegment > 0, "subpattern.centroidal_voronoi requires a postitive integer for the number of segments")

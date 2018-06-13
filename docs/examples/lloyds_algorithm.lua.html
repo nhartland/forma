@@ -39,10 +39,10 @@
   <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
   <li><a href="../examples/game_of_life.lua.html">game_of_life.lua</a></li>
   <li><a href="../examples/game_of_life_async.lua.html">game_of_life_async.lua</a></li>
-  <li><a href="../examples/lloyds_algorithm.lua.html">lloyds_algorithm.lua</a></li>
+  <li><strong>lloyds_algorithm.lua</strong></li>
   <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
   <li><a href="../examples/primitives.lua.html">primitives.lua</a></li>
-  <li><strong>shapes.lua</strong></li>
+  <li><a href="../examples/shapes.lua.html">shapes.lua</a></li>
   <li><a href="../examples/town.lua.html">town.lua</a></li>
   <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
 </ul>
@@ -64,32 +64,37 @@
 
 <div id="content">
 
-    <h2>shapes.lua</h2>
+    <h2>lloyds_algorithm.lua</h2>
 <pre>
-<span class="comment">-- shapes.lua
-</span><span class="comment">-- Use of a few different functions to generate shapes
+<span class="comment">-- voronoi.lua
+</span><span class="comment">-- Demonstration of voronoi relaxation by lloyds algorithm
 </span>
-<span class="keyword">local</span> pattern    = <span class="global">require</span>(<span class="string">'forma.pattern'</span>)
+<span class="keyword">local</span> cell      = <span class="global">require</span>(<span class="string">'forma.cell'</span>)
 <span class="keyword">local</span> primitives = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
-<span class="global">math</span>.randomseed( <span class="global">os</span>.time() )
+<span class="keyword">local</span> subpattern = <span class="global">require</span>(<span class="string">'forma.subpattern'</span>)
+<span class="global">math</span>.randomseed(<span class="global">os</span>.time())
 
-<span class="comment">-- Generate some basic shape as a sum of rectangles
-</span><span class="keyword">local</span> <span class="keyword">function</span> generate_shape()
-    <span class="keyword">local</span> rn = pattern.new()
-    <span class="keyword">while</span> rn:size() &lt; <span class="number">35</span> <span class="keyword">do</span>
-        <span class="keyword">local</span> sqx, sqy = <span class="global">math</span>.random(<span class="number">3</span>) , <span class="global">math</span>.random(<span class="number">3</span>)
-        <span class="keyword">local</span> pqx, pqy = <span class="global">math</span>.random(<span class="number">5</span>) , <span class="global">math</span>.random(<span class="number">5</span>)
-        rn = rn + primitives.square(sqx,sqy):shift(pqx, pqy)
-    <span class="keyword">end</span>
-    <span class="keyword">return</span> rn
-<span class="keyword">end</span>
+<span class="comment">-- Domain for tesselation
+</span><span class="keyword">local</span> sq = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
+<span class="keyword">local</span> seeds = primitives.square(<span class="number">3</span>)
 
-<span class="comment">-- Add some symmetry
-</span><span class="keyword">local</span> rn = generate_shape():hreflect()
+<span class="comment">-- Compute voronoi tesselation for various measures
+</span><span class="keyword">local</span> measure = cell.manhattan
 
-<span class="comment">-- Print to stdout
-</span>rn.onchar, rn.offchar = <span class="string">"X"</span>,<span class="string">" "</span>
-<span class="global">print</span>(rn)</pre>
+
+<span class="comment">-- Perform voronoi relaxation at incrementing
+</span><span class="comment">-- Note this isn't very efficient as we are displaying intermediate steps,
+</span><span class="comment">-- normally you would only call this function once.
+</span><span class="keyword">local</span> imax = <span class="number">1</span>
+<span class="keyword">repeat</span>
+    <span class="global">os</span>.execute(<span class="string">'clear'</span>)
+    <span class="global">print</span>(<span class="string">"Voronoi relaxation of cells"</span>)
+    <span class="keyword">local</span> segments, _, converged  = subpattern.voronoi_relax(seeds, sq, measure, imax)
+    <span class="global">table</span>.sort(segments, <span class="keyword">function</span>(a,b) <span class="keyword">return</span> a:com().x &lt; b:com().x <span class="keyword">end</span>)
+    subpattern.pretty_print(sq, segments)
+    imax = imax + <span class="number">1</span>
+    <span class="global">os</span>.execute(<span class="string">'sleep 1'</span>)
+<span class="keyword">until</span> converged == <span class="keyword">true</span> <span class="keyword">or</span> imax == <span class="number">100</span></pre>
 
 
 </div> <!-- id="content" -->
