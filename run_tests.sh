@@ -1,10 +1,14 @@
 #!/bin/bash
+# Runs test suite, including luacov coverage report
+# Requirements:
+#       luaunit
+#       luacov
 LUA=luajit
 
 echo "Running luaunit tests"
-for test in ./tests/*.lua; do
-    $LUA "$test"
-done
+$LUA -lluacov tests/run.lua -o TAP
+echo "Generating luacov report"
+luacov && rm luacov.stats.out 
 
 echo "Running examples"
 for example in ./examples/*.lua; do

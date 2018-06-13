@@ -42,11 +42,26 @@ Requirements
 A lua@5.1 or luajit installation should be all that is required to use this module.
 See the examples folder for some demonstration.
 
+The test suite requires
+ - [LuaCov](https://keplerproject.github.io/luacov/)
+ - [luaunit](https://github.com/bluebird75/luaunit)
+
+Generating the documentation requires
+ - [LDoc](https://github.com/stevedonovan/LDoc)
+
+Running examples
+----------------
+
+The examples require that the `forma/` directory is in the lua path. The easiest
+way to try the examples is to run them from the root directory of this repo. For
+example
+
+    lua examples/game_of_life.lua
+
 Generating documentation
 ------------------------
 
-Documentation is provided by [LDoc](https://github.com/stevedonovan/LDoc)
-and hosted [here](https://nhartland.github.io/forma/).
+Documentation is hosted [here](https://nhartland.github.io/forma/).
 
 Simply running 
 
@@ -57,7 +72,11 @@ in the root directory should generate all the required pages.
 Testing
 -------
 
-Unit tests are provided for some methods with the
-[luaunit](https://github.com/bluebird75/luaunit) framework. To run the tests use
+Unit tests are provided for some methods with the luaunit framework, coverage is
+tested using LuaCov. To run the tests use
 
     ./run_tests.sh
+
+A coverage report in the LuaCov format will be output at
+
+    luacov.report.out

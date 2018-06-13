@@ -80,7 +80,3 @@ function testAutomata:testOscillators()
         lu.assertEquals(newoscillator, oscillator)
     end
 end
-
-local runner = lu.LuaUnit.new()
-runner:setOutputType("tap")
-os.exit( runner:runSuite() )

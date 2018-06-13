@@ -56,7 +56,3 @@ function testPattern:testEnlarge()
     lu.assertEquals(enlarged_pattern_1:size(),0)
     lu.assertEquals(enlarged_pattern_2:size(),100)
 end
-
-local runner = lu.LuaUnit.new()
-runner:setOutputType("tap")
-os.exit( runner:runSuite() )

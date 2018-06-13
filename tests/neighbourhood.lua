@@ -32,7 +32,3 @@ function testNeighbourhood:testMoore()
      lu.assertEquals(256,ct1) -- Lowest category (single cell)
      lu.assertEquals(1, ct2)  -- Highest category (full neighbourhood)
 end
-
-local runner = lu.LuaUnit.new()
-runner:setOutputType("tap")
-os.exit( runner:runSuite() )

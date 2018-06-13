@@ -44,7 +44,3 @@ function testCell:testEuclidean2()
     lu.assertEquals(d1, 2)
     lu.assertEquals(d1, d2)
 end
-
-local runner = lu.LuaUnit.new()
-runner:setOutputType("tap")
-os.exit( runner:runSuite() )

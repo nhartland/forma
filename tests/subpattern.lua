@@ -155,7 +155,3 @@ function testSubPatterns:check_for_overlap(segments)
     end
     return false
 end
-
-local runner = lu.LuaUnit.new()
-runner:setOutputType("tap")
-os.exit( runner:runSuite() )
