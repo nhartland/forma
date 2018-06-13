@@ -32,7 +32,9 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Functions">Functions</a></li>
+<li><a href="#Sub_patterns">Sub-patterns </a></li>
+<li><a href="#Lists_of_sub_patterns">Lists of sub-patterns </a></li>
+<li><a href="#Utilities">Utilities </a></li>
 </ul>
 
 
@@ -82,7 +84,7 @@
  to render these lists of sub-patterns into text.</p>
 
 
-<h2><a href="#Functions">Functions</a></h2>
+<h2><a href="#Sub_patterns">Sub-patterns </a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#mask">mask (ip, mask)</a></td>
@@ -97,28 +99,19 @@
 	<td class="summary">Returns the contiguous sub-pattern of ip that surrounts cell pt</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#maxrectangle">maxrectangle (ip)</a></td>
+	<td class="summary">Find the maximal contiguous rectangular area within a pattern.</td>
+	</tr>
+</table>
+<h2><a href="#Lists_of_sub_patterns">Lists of sub-patterns </a></h2>
+<table class="function_list">
+	<tr>
 	<td class="name" nowrap><a href="#segments">segments (ip, nbh)</a></td>
 	<td class="summary">Generate a list of contiguous 'segments' or sub-patterns.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#enclosed">enclosed (ip, nbh)</a></td>
 	<td class="summary">Returns a list of 'enclosed' segments of a pattern.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#voronoi">voronoi (cells, domain, measure)</a></td>
-	<td class="summary">Generate voronoi tesselations of cells in a domain.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#voronoi_relax">voronoi_relax (seeds, domain, measure, max_ite)</a></td>
-	<td class="summary">Relax a set of voronoi seeds into an approximate centroidal Voronoi tessellation.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#centroidal_voronoi">centroidal_voronoi (domain, nsegment, measure, max_ite, rng)</a></td>
-	<td class="summary">Generate a centroidal Voronoi tesselation by Lloyds algorithm.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#maxrectangle">maxrectangle (ip)</a></td>
-	<td class="summary">Find the maximal contiguous rectangular area within a pattern.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#bsp">bsp (ip, th_volume)</a></td>
@@ -129,6 +122,17 @@
 	<td class="summary">Determine subpatterns for all <a href="../modules/forma.neighbourhood.html">neighbourhood</a> categories.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#voronoi">voronoi (seeds, domain, measure)</a></td>
+	<td class="summary">Generate Voronoi tesselations of cells in a domain.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#voronoi_relax">voronoi_relax (seeds, domain, measure, max_ite)</a></td>
+	<td class="summary">Generate (approx) centroidal Voronoi tessellation.</td>
+	</tr>
+</table>
+<h2><a href="#Utilities">Utilities </a></h2>
+<table class="function_list">
+	<tr>
 	<td class="name" nowrap><a href="#pretty_print">pretty_print (domain, segments, chars)</a></td>
 	<td class="summary">Pretty print a list of forma.pattern segments.</td>
 	</tr>
@@ -138,7 +142,7 @@
 <br/>
 
 
-    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+    <h2 class="section-header "><a name="Sub_patterns"></a>Sub-patterns </h2>
 
     <dl class="function">
     <dt>
@@ -230,6 +234,35 @@
 
 </dd>
     <dt>
+    <a name = "maxrectangle"></a>
+    <strong>maxrectangle (ip)</strong>
+    </dt>
+    <dd>
+    Find the maximal contiguous rectangular area within a pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         the input pattern
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the subpattern of <code>ip</code> consisting of its largest contiguous rectangular area.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Lists_of_sub_patterns"></a>Lists of sub-patterns </h2>
+
+    <dl class="function">
+    <dt>
     <a name = "segments"></a>
     <strong>segments (ip, nbh)</strong>
     </dt>
@@ -283,140 +316,6 @@
     <ol>
 
         a list of forma.patterns comprising the enclosed areas of ip
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "voronoi"></a>
-    <strong>voronoi (cells, domain, measure)</strong>
-    </dt>
-    <dd>
-    Generate voronoi tesselations of cells in a domain.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">cells</span>
-         the set of seed cells for the tesselation
-        </li>
-        <li><span class="parameter">domain</span>
-         the domain of the tesselation
-        </li>
-        <li><span class="parameter">measure</span>
-         the measure used to judge distance between cells
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        a list of Voronoi segments
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "voronoi_relax"></a>
-    <strong>voronoi_relax (seeds, domain, measure, max_ite)</strong>
-    </dt>
-    <dd>
-    Relax a set of voronoi seeds into an approximate centroidal Voronoi tessellation.
- Given a set of prior seeds and a domain, this iterates the position of the
- seeds until they are approximately located at the centre of their Voronoi
- segments. Lloyd's algorithm is used.  This uses the measure only to define
- the Voronoi tesselation, not the centre of each segment. It would be nice
- to fix this in future.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">seeds</span>
-         the original seed points to be relaxed
-        </li>
-        <li><span class="parameter">domain</span>
-         the domain to be tesselated
-        </li>
-        <li><span class="parameter">measure</span>
-         the distance measure to be used between cells
-        </li>
-        <li><span class="parameter">max_ite</span>
-         (optional) maximum number of iterations of relaxation (default 30)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        (segments, segment centres, convergence bool)
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "centroidal_voronoi"></a>
-    <strong>centroidal_voronoi (domain, nsegment, measure, max_ite, rng)</strong>
-    </dt>
-    <dd>
-    Generate a centroidal Voronoi tesselation by Lloyds algorithm.
- Helper function that seeds <a href="../modules/forma.subpattern.html#voronoi_relax">voronoi_relax</a> with <code>nsegment</code> randomly
- sampled seeds.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">domain</span>
-         the domain to be tesselated
-        </li>
-        <li><span class="parameter">nsegment</span>
-         the number of requested segments
-        </li>
-        <li><span class="parameter">measure</span>
-         the distance measure to be used between cells
-        </li>
-        <li><span class="parameter">max_ite</span>
-         (optional) maximum number of iterations of relaxation (default 30)
-        </li>
-        <li><span class="parameter">rng</span>
-         (optional) a random number generator, following the signature of math.random.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        (segments, segment centres, convergence bool)
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "maxrectangle"></a>
-    <strong>maxrectangle (ip)</strong>
-    </dt>
-    <dd>
-    Find the maximal contiguous rectangular area within a pattern.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">ip</span>
-         the input pattern
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        the subpattern of <code>ip</code> consisting of its largest contiguous rectangular area.
     </ol>
 
 
@@ -485,6 +384,78 @@
 
 </dd>
     <dt>
+    <a name = "voronoi"></a>
+    <strong>voronoi (seeds, domain, measure)</strong>
+    </dt>
+    <dd>
+    Generate Voronoi tesselations of cells in a domain.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">seeds</span>
+         the set of seed cells for the tesselation
+        </li>
+        <li><span class="parameter">domain</span>
+         the domain of the tesselation
+        </li>
+        <li><span class="parameter">measure</span>
+         the measure used to judge distance between cells
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a list of Voronoi segments
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "voronoi_relax"></a>
+    <strong>voronoi_relax (seeds, domain, measure, max_ite)</strong>
+    </dt>
+    <dd>
+    Generate (approx) centroidal Voronoi tessellation.
+ Given a set of prior seeds and a domain, this iterates the position of the
+ seeds until they are approximately located at the centre of their Voronoi
+ segments. Lloyd's algorithm is used.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">seeds</span>
+         the original seed points to be relaxed
+        </li>
+        <li><span class="parameter">domain</span>
+         the domain to be tesselated
+        </li>
+        <li><span class="parameter">measure</span>
+         the distance measure to be used between cells
+        </li>
+        <li><span class="parameter">max_ite</span>
+         (optional) maximum number of iterations of relaxation (default 30)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        (segments, segment centres, convergence bool)
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Utilities"></a>Utilities </h2>
+
+    <dl class="function">
+    <dt>
     <a name = "pretty_print"></a>
     <strong>pretty_print (domain, segments, chars)</strong>
     </dt>
@@ -519,7 +490,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-06-13 23:41:51 </i>
+<i style="float:right;">Last updated 2018-06-14 00:00:18 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

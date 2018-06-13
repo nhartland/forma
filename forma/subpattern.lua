@@ -20,6 +20,9 @@ local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
 
+--- Sub-patterns
+-- @section subpatterns
+
 --- Masked subpattern.
 -- Generate a subpattern by applying a boolean mask to an input pattern.
 -- @param ip the pattern to be masked.
@@ -79,131 +82,6 @@ function subpattern.floodfill(ip, ipt, nbh)
     end
     ff(ipt)
     return retpat
-end
-
---- Generate a list of contiguous 'segments' or sub-patterns.
--- This performs a series of flood-fill operations until all
--- pattern cells are accounted for in the sub-patterns
--- @param ip pattern for which the segments are to be extracted
--- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
--- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
-function subpattern.segments(ip, nbh)
-    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
-    nbh = nbh or neighbourhood.moore()
-    local wp = pattern.clone(ip)
-    local segs = {}
-    while pattern.size(wp) > 0 do
-        local rancell = pattern.rcell(wp)
-        table.insert(segs, subpattern.floodfill(wp, rancell, nbh))
-        wp = wp - segs[#segs]
-    end
-    return segs
-end
-
---- Returns a list of 'enclosed' segments of a pattern.
--- Enclosed areas are the inactive areas of a pattern which are
--- completely surrounded by active areas
--- @param ip pattern for which the enclosed areas should be computed
--- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
--- @return a list of forma.patterns comprising the enclosed areas of ip
-function subpattern.enclosed(ip, nbh)
-    assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
-    nbh = nbh or neighbourhood.von_neumann()
-    local size = ip.max - ip.min + 1
-    local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
-    local segments = subpattern.segments(interior, nbh)
-    local enclosed = {}
-    for i=1, #segments,1 do
-        local segment = segments[i]
-        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
-            and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
-            table.insert(enclosed, segment)
-        end
-    end
-    return enclosed
-end
-
---- Generate voronoi tesselations of cells in a domain.
--- @param cells the set of seed cells for the tesselation
--- @param domain the domain of the tesselation
--- @param measure the measure used to judge distance between cells
--- @return a list of Voronoi segments
-function subpattern.voronoi(cells, domain, measure)
-    assert(getmetatable(cells) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
-    assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
-    assert(pattern.size(cells) > 0, "subpattern.voronoi requires at least one target cell/seed")
-    local domaincells = domain:cell_list()
-    local seedcells   = cells:cell_list()
-    local segments  = {}
-    for i=1, #seedcells, 1 do
-        local v = seedcells[i]
-        assert(domain:has_cell(v.x, v.y), "forma.voronoi: cell outside of domain: " .. tostring(v))
-        segments[i] = pattern.new()
-    end
-    for i=1, #domaincells, 1 do
-        local dp = domaincells[i]
-        local min_cell = 1
-        local min_dist  = measure(dp, seedcells[1])
-        for j=2, #seedcells, 1 do
-            local distance = measure(dp, seedcells[j])
-            if distance < min_dist then
-                min_cell = j
-                min_dist = distance
-            end
-        end
-        segments[min_cell]:insert(dp.x,dp.y)
-    end
-    return segments
-end
-
---- Relax a set of voronoi seeds into an approximate centroidal Voronoi tessellation.
--- Given a set of prior seeds and a domain, this iterates the position of the
--- seeds until they are approximately located at the centre of their Voronoi
--- segments. Lloyd's algorithm is used.  This uses the measure only to define
--- the Voronoi tesselation, not the centre of each segment. It would be nice
--- to fix this in future.
--- @param seeds the original seed points to be relaxed
--- @param domain the domain to be tesselated
--- @param measure the distance measure to be used between cells
--- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
--- @return (segments, segment centres, convergence bool)
-function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
-   if max_ite == nil then max_ite = 30 end
-   assert(getmetatable(seeds)  == pattern, "subpattern.centroidal_voronoi requires a pattern as a first argument")
-   assert(getmetatable(domain) == pattern, "subpattern.centroidal_voronoi requires a pattern as a second argument")
-   assert(type(measure)   == 'function', "subpattern.centroidal_voronoi requires a distance measure as an argument")
-   assert(seeds:size() < domain:size(), "subpattern.centroidal_voronoi: too many seeds for domain ")
-   local tesselation = subpattern.voronoi(seeds, domain, measure)
-   for _=1, max_ite, 1 do
-        local newseeds = pattern.new()
-        local no_change = true --  Test for convergence
-        for iseg = 1, #tesselation, 1 do
-            local com = tesselation[iseg]:com()
-            newseeds:insert(com.x, com.y)
-            no_change = no_change and seeds:has_cell(com.x, com.y)
-        end
-        seeds  = newseeds
-        if no_change then return tesselation, seeds, true end -- converged
-        tesselation = subpattern.voronoi(seeds, domain, measure)
-   end
-   return tesselation, seeds, false
-end
-
---- Generate a centroidal Voronoi tesselation by Lloyds algorithm.
--- Helper function that seeds `voronoi_relax` with `nsegment` randomly
--- sampled seeds.
--- @param domain the domain to be tesselated
--- @param nsegment the number of requested segments
--- @param measure the distance measure to be used between cells
--- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
--- @param rng (optional) a random number generator, following the signature of math.random.
--- @return (segments, segment centres, convergence bool)
-function subpattern.centroidal_voronoi(domain, nsegment, measure, max_ite, rng)
-    assert(getmetatable(domain) == pattern, "subpattern.centroidal_voronoi requires a pattern as a first argument")
-    assert(nsegment > 0, "subpattern.centroidal_voronoi requires a postitive integer for the number of segments")
-    local seeds = subpattern.random(domain, nsegment, rng)
-    local segments, newseeds, converged = subpattern.voronoi_relax(seeds, domain, measure, max_ite)
-    return segments, newseeds, converged
 end
 
 -- Find the (lower-left and upper-right) coordinates of the maximal contiguous
@@ -285,6 +163,51 @@ function subpattern.maxrectangle(ip)
 end
 
 
+--- Lists of sub-patterns
+-- @section subpattern_lists
+
+--- Generate a list of contiguous 'segments' or sub-patterns.
+-- This performs a series of flood-fill operations until all
+-- pattern cells are accounted for in the sub-patterns
+-- @param ip pattern for which the segments are to be extracted
+-- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
+-- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
+function subpattern.segments(ip, nbh)
+    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
+    nbh = nbh or neighbourhood.moore()
+    local wp = pattern.clone(ip)
+    local segs = {}
+    while pattern.size(wp) > 0 do
+        local rancell = pattern.rcell(wp)
+        table.insert(segs, subpattern.floodfill(wp, rancell, nbh))
+        wp = wp - segs[#segs]
+    end
+    return segs
+end
+
+--- Returns a list of 'enclosed' segments of a pattern.
+-- Enclosed areas are the inactive areas of a pattern which are
+-- completely surrounded by active areas
+-- @param ip pattern for which the enclosed areas should be computed
+-- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
+-- @return a list of forma.patterns comprising the enclosed areas of ip
+function subpattern.enclosed(ip, nbh)
+    assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
+    nbh = nbh or neighbourhood.von_neumann()
+    local size = ip.max - ip.min + 1
+    local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
+    local segments = subpattern.segments(interior, nbh)
+    local enclosed = {}
+    for i=1, #segments,1 do
+        local segment = segments[i]
+        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
+            and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
+            table.insert(enclosed, segment)
+        end
+    end
+    return enclosed
+end
+
 -- Binary space partitioning - internal function
 local function bspSplit(min, max, th_volume, outpatterns)
     local size = max - min + cell.new(1,1)
@@ -362,6 +285,73 @@ function subpattern.neighbourhood_categories(ip, nbh)
     end
     return category_patterns
 end
+
+--- Generate Voronoi tesselations of cells in a domain.
+-- @param seeds the set of seed cells for the tesselation
+-- @param domain the domain of the tesselation
+-- @param measure the measure used to judge distance between cells
+-- @return a list of Voronoi segments
+function subpattern.voronoi(seeds, domain, measure)
+    assert(getmetatable(seeds) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
+    assert(pattern.size(seeds) > 0, "subpattern.voronoi requires at least one target cell/seed")
+    local domaincells = domain:cell_list()
+    local seedcells   = seeds:cell_list()
+    local segments  = {}
+    for i=1, #seedcells, 1 do
+        local v = seedcells[i]
+        assert(domain:has_cell(v.x, v.y), "forma.voronoi: cell outside of domain: " .. tostring(v))
+        segments[i] = pattern.new()
+    end
+    for i=1, #domaincells, 1 do
+        local dp = domaincells[i]
+        local min_cell = 1
+        local min_dist  = measure(dp, seedcells[1])
+        for j=2, #seedcells, 1 do
+            local distance = measure(dp, seedcells[j])
+            if distance < min_dist then
+                min_cell = j
+                min_dist = distance
+            end
+        end
+        segments[min_cell]:insert(dp.x,dp.y)
+    end
+    return segments
+end
+
+--- Generate (approx) centroidal Voronoi tessellation.
+-- Given a set of prior seeds and a domain, this iterates the position of the
+-- seeds until they are approximately located at the centre of their Voronoi
+-- segments. Lloyd's algorithm is used.
+-- @param seeds the original seed points to be relaxed
+-- @param domain the domain to be tesselated
+-- @param measure the distance measure to be used between cells
+-- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
+-- @return (segments, segment centres, convergence bool)
+function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
+   if max_ite == nil then max_ite = 30 end
+   assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
+   assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
+   assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
+   assert(seeds:size() < domain:size(), "subpattern.voronoi_relax: too many seeds for domain ")
+   local tesselation = subpattern.voronoi(seeds, domain, measure)
+   for _=1, max_ite, 1 do
+        local newseeds = pattern.new()
+        local no_change = true --  Test for convergence
+        for iseg = 1, #tesselation, 1 do
+            local com = tesselation[iseg]:com()
+            newseeds:insert(com.x, com.y)
+            no_change = no_change and seeds:has_cell(com.x, com.y)
+        end
+        seeds  = newseeds
+        if no_change then return tesselation, seeds, true end -- converged
+        tesselation = subpattern.voronoi(seeds, domain, measure)
+   end
+   return tesselation, seeds, false
+end
+
+--- Utilities
+-- @section subpattern_utils
 
 --- Pretty print a list of forma.pattern segments.
 -- Prints a list of pattern segments to `io.output`. If provided, a table of
