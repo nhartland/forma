@@ -307,7 +307,9 @@ function pattern.rcell(ip, rng)
 end
 
 --- Pattern centre of mass cell method.
--- Returns the cell closes to the mass-centre of the pattern.
+-- Returns the cell closest to the mass-centre (euclidean distance) of the pattern.
+-- TODO: Should think about how to extend this to other distance measures, but cell only
+-- operating on integers makes this a bit difficult.
 -- @param ip pattern for centre of mass retrieval
 -- @return the centre of mass cell in the pattern
 function pattern.com(ip)

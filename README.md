@@ -36,6 +36,11 @@ To more complication operations such as sub-pattern finding by flood-filling,
 Voronoi tessellation of patterns, hull finding or Binary Space Partitioning. All
 operations being defined on various choices of 2D neighbourhoods.
 
+Warning
+-------
+The master branch is in active development. API breaking changes may
+occasionally occour.
+
 Requirements
 ------------
 

@@ -9,7 +9,7 @@ math.randomseed( os.time() )
 
 -- Domain and seed
 local sq = primitives.square(80,20)
-local rn = subpattern.random(sq, 0.5)
+local rn = subpattern.random(sq, math.floor(sq:size()*0.5))
 
 -- vonNeumann neighbourhood for pretty printing
 local nbh = neighbourhood.von_neumann()

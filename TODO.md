@@ -1,6 +1,14 @@
 # TODO
 
-- Investigate using boundary/contour tracing for pattern.edge and pattern.surface
-- Fix and update nearest-neighbours closure, and write a test
+- Add a sampling example (random, voronoi relax, farthest-first)
 - Decouple a bit pattern methods from the underlying data structure
 - Standardise examples a bit more 
+
+#### Computational geometry methods to consider implementing:
+
+- Farthest-first traversal
+- Poisson-disc sampling
+- Marching squares (or something else to draw isolines)
+  Might be useful to explain 'categories' a bit
+- Boundary/contour tracing in place of pattern.edge or pattern.surface
+

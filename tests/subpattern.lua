@@ -12,7 +12,19 @@ testSubPatterns = {}
 function testSubPatterns:setUp()
     -- Test patterns for Voronoi tesselation and random sampling tests
     self.square = primitives.square(10)
-    self.seeds = subpattern.random(self.square, 0.1)
+    self.seeds = subpattern.random(self.square, 10)
+end
+
+--  Masked subpattern  ---------------------------------------------------------------
+function testSubPatterns:testMask()
+    -- Mask out all seed points from the square input pattern,
+    -- then check that the masked pattern is identical to
+    -- the input pattern minus the seeds.
+    local mask = function(icell)
+        return self.seeds:has_cell(icell.x, icell.y) == false
+    end
+    local masked_pattern = subpattern.mask(self.square, mask)
+    lu.assertEquals(masked_pattern, self.square - self.seeds)
 end
 
 --  FloodFill -------------------------------------------------------------------------

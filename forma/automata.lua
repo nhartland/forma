@@ -32,7 +32,7 @@
 -- @usage
 --  Domain and start seed for the CA
 --  local domain     = primitives.square(80,20)
---  local ca_pattern = subpattern.random(sq, 0.5)
+--  local ca_pattern = subpattern.random(sq, 0.5*sq:size())
 --
 --  -- Game of life rule
 --  local life = automata.rule(neighbourhood.moore(), "B3/S23")

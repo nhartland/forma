@@ -8,7 +8,7 @@ math.randomseed(os.time())
 
 -- Generate a random pattern and its voronoi tesselation
 local sq = primitives.square(60,20)
-local rn = subpattern.random(sq, 0.01)
+local rn = subpattern.random(sq, math.floor(sq:size()*0.01))
 
 -- Compute voronoi tesselation for various measures
 local measures = {}

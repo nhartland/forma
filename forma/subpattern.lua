@@ -20,24 +20,41 @@ local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
 
+--- Masked subpattern.
+-- Generate a subpattern by applying a boolean mask to an input pattern.
+-- @ip the pattern to be masked.
+-- @mask a function that takes a `cell` and returns true if the cell passes the mask
+function subpattern.mask(ip, mask)
+    assert(getmetatable(ip) == pattern, "subpattern.mask requires a pattern as the first argument")
+    assert(type(mask) == 'function', 'subpattern.mask requires a function for the mask')
+    local np = pattern.new()
+    local cells = ip:cell_list()
+    for i=1,#cells,1 do
+        if mask(cells[i]) == true then
+            np:insert(cells[i].x, cells[i].y)
+        end
+    end
+    return np
+end
+
 --- Random subpattern.
 -- For a given domain, returns a pattern sampling randomly from it, generating a random
 -- subset with a fixed fraction of the size of the domain.
 -- @param ip pattern for sampling a random pattern from
--- @param fr the fraction of the domain to be sampled
--- @param rng (optional ) a random number generator, following the signature of math.random.
--- @return a pattern of `fr*domain.size` cells sampled randomly from domain
-function subpattern.random(ip, fr, rng)
-    assert(getmetatable(ip) == pattern, "subpattern.random requires a pattern as the first argument")
-    assert(type(fr) == 'number', 'subpattern.random requires a number for the probability')
-    assert(fr >= 0 and fr <= 1 , 'subpattern.random requires a fraction 0 <= p <= 1')
-    local n_subset = math.floor(fr*ip:size()) -- Number of cells in returned pattern
-    assert(n_subset > 0,  'subpattern.random requires a fraction and domain large enough to return a non-empty pattern')
+-- @param ncells the number of desired cells in the sample
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return a pattern of `ncells` cells sampled randomly from `domain`
+function subpattern.random(ip, ncells, rng)
+    assert(getmetatable(ip) == pattern,  "subpattern.random requires a pattern as the first argument")
+    assert(type(ncells) == 'number',     "subpattern.random requires an integer number of cells as the second argument")
+    assert(math.floor(ncells) == ncells, "subpattern.random requires an integer number of cells as the second argument")
+    assert(ncells > 0,                   "subpattern.random requires at least one sample to be requested")
+    assert(ncells <= ip:size(),          "subpattern.random requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
     local cells = ip:cell_list()
     util.fisher_yates(cells, rng)
     local p = pattern.new()
-    for i = 1, n_subset, 1 do
+    for i = 1, ncells, 1 do
         p:insert(cells[i].x, cells[i].y)
     end
     return p
@@ -110,7 +127,7 @@ end
 -- @param cells the set of seed cells for the tesselation
 -- @param domain the domain of the tesselation
 -- @param measure the measure used to judge distance between cells
--- @return a list of voronoi segments
+-- @return a list of Voronoi segments
 function subpattern.voronoi(cells, domain, measure)
     assert(getmetatable(cells) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
@@ -139,6 +156,58 @@ function subpattern.voronoi(cells, domain, measure)
     return segments
 end
 
+--- Relax a set of voronoi seeds into an approximate centroidal Voronoi tessellation.
+-- Given a set of prior seeds and a domain, this iterates the position of the
+-- seeds until they are approximately located at the centre of their Voronoi
+-- segments. Lloyd's algorithm is used.  This uses the measure only to define
+-- the Voronoi tesselation, not the centre of each segment. It would be nice
+-- to fix this in future.
+-- @param seeds the original seed points to be relaxed
+-- @param domain the domain to be tesselated
+-- @measure the distance measure to be used between cells
+-- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
+-- @return (segments, centroids, converged) a list of approximately centroidal Voronoi
+-- segments, a `pattern` of the corresponding segment centres, and a bool specifying convergence
+function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
+   if max_ite == nil then max_ite = 30 end
+   assert(getmetatable(seeds)  == pattern, "subpattern.centroidal_voronoi requires a pattern as a first argument")
+   assert(getmetatable(domain) == pattern, "subpattern.centroidal_voronoi requires a pattern as a second argument")
+   assert(type(measure)   == 'function', "subpattern.centroidal_voronoi requires a distance measure as an argument")
+   assert(seeds:size() < domain:size(), "subpattern.centroidal_voronoi: too many seeds for domain ")
+   local tesselation = subpattern.voronoi(seeds, domain, measure)
+   for _=1, max_ite, 1 do
+        local newseeds = pattern.new()
+        local no_change = true --  Test for convergence
+        for iseg = 1, #tesselation, 1 do
+            local com = tesselation[iseg]:com()
+            newseeds:insert(com.x, com.y)
+            no_change = no_change and seeds:has_cell(com.x, com.y)
+        end
+        seeds  = newseeds
+        if no_change then return tesselation, seeds, true end -- converged
+        tesselation = subpattern.voronoi(seeds, domain, measure)
+   end
+   return tesselation, seeds, false
+end
+
+--- Generate a centroidal Voronoi tesselation by Lloyds algorithm.
+-- Helper function that seeds `voronoi_relax` with `nsegment` randomly
+-- sampled seeds.
+-- @param domain the domain to be tesselated
+-- @measure nsegment the number of requested segments
+-- @measure the distance measure to be used between cells
+-- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return (segments, centroids, converged) a list of approximately centroidal Voronoi
+-- segments, a `pattern` of the corresponding segment centres, and a bool specifying convergence
+function subpattern.centroidal_voronoi(domain, nsegment, measure, max_ite, rng)
+    assert(getmetatable(domain) == pattern, "subpattern.centroidal_voronoi requires a pattern as a first argument")
+    assert(nsegment > 0, "subpattern.centroidal_voronoi requires a postitive integer for the number of segments")
+    local seeds = subpattern.random(domain, nsegment, rng)
+    local segments, newseeds, converged = subpattern.voronoi_relax(seeds, domain, measure, max_ite)
+    return segments, newseeds, converged
+end
+
 -- Find the (lower-left and upper-right) coordinates of the maximal contiguous
 -- rectangular area within a pattern.
 -- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529.
@@ -150,9 +219,21 @@ local function maxrectangle_coordinates(ip)
     local best_ur = cell.new(-1,-1)
     local best_area = 0
 
-    local stack = {}
-    local function push(y,w) table.insert(stack,{y,w}) end
-    local function pop() return unpack(table.remove(stack)) end
+    local stack_w = {}
+    local stack_y = {}
+
+    local function push(y,w)
+        stack_y[#stack_y+1] = y
+        stack_w[#stack_w+1] = w
+    end
+
+    local function pop()
+        local y = stack_y[#stack_y]
+        local w = stack_w[#stack_w]
+        stack_y[#stack_y] = nil
+        stack_w[#stack_w] = nil
+        return y, w
+    end
 
     local cache = {}
     for y = ip.min.y, ip.max.y+1, 1 do cache[y] = 0 end -- One extra element (closes all rectangles)
@@ -178,10 +259,10 @@ local function maxrectangle_coordinates(ip)
             if cache[y]<width then  --// Closing rectangle(s)?
                 local y0, w0
                 repeat
-                    y0, w0= pop()
+                    y0, w0 = pop()
                     if width*(y-y0)> best_area then
-                        best_ll = cell.new(x, y0)
-                        best_ur = cell.new(x+width-1, y - 1)
+                        best_ll.x, best_ll.y = x, y0
+                        best_ur.x, best_ur.y = x + width - 1, y - 1
                         best_area = width*(y-y0)
                     end
                     width = w0

@@ -5,3 +5,8 @@ Since 0.1
 - Fixed bug with subpattern.enclosed which would generate more than one enclosed
   point for a primitive.circle
 - Integrated all tests into a single test script, and added luacov coverage
+- Implemented a 'mask' subpattern that masks out cells according to a provided
+  function
+- Converted subpattern.random to take as an argument a fixed integer number of
+  desired samples rather than a fraction of the domain size.
+- Added Voronoi relaxation via Lloyd's algorithm

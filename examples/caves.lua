@@ -8,7 +8,7 @@ local neighbourhood = require('forma.neighbourhood')
 math.randomseed( os.time() )
 
 local sq = primitives.square(80,20)
-local rn = subpattern.random(sq, 0.5)
+local rn = subpattern.random(sq, math.floor(sq:size()*0.5))
 sq.onchar, sq.offchar = "#", " "
 
 -- Moore neighbourhood rule
