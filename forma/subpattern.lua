@@ -333,7 +333,7 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
    assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
    assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
    assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
-   assert(seeds:size() < domain:size(), "subpattern.voronoi_relax: too many seeds for domain ")
+   assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain: " .. seeds:size() .. " vs " .. domain:size())
    local tesselation = subpattern.voronoi(seeds, domain, measure)
    for _=1, max_ite, 1 do
         local newseeds = pattern.new()
