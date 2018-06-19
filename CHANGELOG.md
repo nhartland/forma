@@ -10,3 +10,4 @@ Since 0.1
 - Converted subpattern.random to take as an argument a fixed integer number of
   desired samples rather than a fraction of the domain size.
 - Added Voronoi relaxation via Lloyd's algorithm
+- Fixed default initialisation of RNG in automata.async_iterate

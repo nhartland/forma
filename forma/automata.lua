@@ -155,6 +155,7 @@ end
 -- @param rng a (optional) random number generator (syntax as per math.random).
 -- @return the next iteration, and a bool specifying if convergence has been reached.
 function automata.async_iterate(prevp, domain, ruleset, rng)
+    if rng == nil then rng = math.random end
     assert(getmetatable(prevp)  == pattern,
     "forma.automata: async_iterate requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern,
