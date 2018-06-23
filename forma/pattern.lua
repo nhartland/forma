@@ -672,13 +672,13 @@ end
 --- Test methods
 -- @section Testing
 
---- Returns the maximum hashable coordinate
+--- Returns the maximum hashable coordinate.
 -- @return MAX_COORDINATE
 function pattern.get_max_coordinate()
     return MAX_COORDINATE
 end
 
---- Test the coordinate transform between (x,y) and spatial hash
+--- Test the coordinate transform between (x,y) and spatial hash.
 -- @param x test coordinate x
 -- @param y test coordinate y
 -- @return true if the spatial hash is functioning correctly, false if not
