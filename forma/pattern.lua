@@ -455,8 +455,8 @@ function pattern.enlarge(ip, f)
     assert(type(f) == 'number', 'pattern.enlarge requires a number as the enlargement factor')
 
     local ep = pattern.new()
-    for _, iv in ipairs(ip:cell_list()) do
-        local sv = f*iv
+    for icell in ip:cells() do
+        local sv = f*icell
         for i=0, f-1, 1 do
             for j=0, f-1, 1 do
                 ep:insert(sv.x+i, sv.y+j)

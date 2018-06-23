@@ -30,10 +30,9 @@ function subpattern.mask(ip, mask)
     assert(getmetatable(ip) == pattern, "subpattern.mask requires a pattern as the first argument")
     assert(type(mask) == 'function', 'subpattern.mask requires a function for the mask')
     local np = pattern.new()
-    local cells = ip:cell_list()
-    for i=1,#cells,1 do
-        if mask(cells[i]) == true then
-            np:insert(cells[i].x, cells[i].y)
+    for icell in ip:cells() do
+        if mask(icell) == true then
+            np:insert(icell.x, icell.y)
         end
     end
     return np
@@ -294,16 +293,14 @@ function subpattern.voronoi(seeds, domain, measure)
     assert(getmetatable(seeds) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
     assert(pattern.size(seeds) > 0, "subpattern.voronoi requires at least one target cell/seed")
-    local domaincells = domain:cell_list()
-    local seedcells   = seeds:cell_list()
+    local seedcells = {}
     local segments  = {}
-    for i=1, #seedcells, 1 do
-        local v = seedcells[i]
-        assert(domain:has_cell(v.x, v.y), "forma.voronoi: cell outside of domain: " .. tostring(v))
-        segments[i] = pattern.new()
+    for iseed in seeds:cells() do
+        assert(domain:has_cell(iseed.x, iseed.y), "forma.voronoi: cell outside of domain")
+        table.insert(seedcells, iseed)
+        table.insert(segments, pattern.new())
     end
-    for i=1, #domaincells, 1 do
-        local dp = domaincells[i]
+    for dp in domain:cells() do
         local min_cell = 1
         local min_dist  = measure(dp, seedcells[1])
         for j=2, #seedcells, 1 do

@@ -127,10 +127,10 @@ function testSubPatterns:commonVoronoi(measure)
     -- (should define a voronoi tesselation)
     for _,segment in ipairs(voronoi_segments) do
         -- Loop over all cells in this segment
-        for _, segment_cell in ipairs(segment:cell_list()) do
+        for segment_cell in segment:cells() do
             -- Find the closest seed to this cell
             local closest_seed, seed_distance = nil, math.huge
-            for _, seed_cell in ipairs(self.seeds:cell_list()) do
+            for seed_cell in self.seeds:cells() do
                 local distance = measure(segment_cell, seed_cell)
                 if distance < seed_distance then
                     seed_distance = distance
