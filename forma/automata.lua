@@ -91,28 +91,28 @@ function automata.rule(neighbourhood, rulesig)
 end
 
 --- Pattern neighbour count.
--- Counts how many adjacent cells there are to vec
+-- Counts how many adjacent cells there are to a cell at (ix, iy)
 -- @param pa provided pattern for neighbour count
--- @param pt cell in pattern for neighbour count
 -- @param nbh neighbourhood for testing
--- @return square forma.pattern of size {x,y}
-local function nCount(pa, pt, nbh)
+-- @param ix x-coordinate of point check
+-- @param iy y-coordinate of point check
+local function nCount(pa, nbh, ix, iy)
     local n = 0
     for i=1,#nbh,1 do
-        if pa:has_cell(pt.x+nbh[i].x, pt.y+nbh[i].y) then n = n + 1 end
+        if pa:has_cell(ix+nbh[i].x, iy+nbh[i].y) then n = n + 1 end
     end
     return n
 end
 
 --- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
-local function check_cell(ruleset, ipattern, icell)
+local function check_cell(ruleset, ipattern, ix, iy)
     local alive_cell = true -- Start by assuming the cell will be alive
     for i=1, #ruleset, 1 do
         local irule = ruleset[i]
         assert(irule ~= nil, "forma.automata check_cell: nil element found in ruleset")
-        local count = nCount(ipattern, icell, irule.neighbourhood)
-        local alive = ipattern:has_cell(icell.x, icell.y)
+        local count = nCount(ipattern, irule.neighbourhood, ix, iy)
+        local alive = ipattern:has_cell(ix, iy)
         if     alive == false and irule.B[count] ~= true then  -- Birth
             alive_cell = false break
         elseif alive == true  and irule.S[count] ~= true then  -- Survival
@@ -137,9 +137,9 @@ function automata.iterate(prevp, domain, ruleset)
     assert(getmetatable(domain) == pattern,
     "forma.automata: iterate requires a pattern as a second argument")
     local nextp = pattern.new()
-    for v in domain:cells() do
-        local alive_cell = check_cell(ruleset, prevp, v)
-        if alive_cell == true then nextp:insert(v.x, v.y) end
+    for x, y in domain:cell_coordinates() do
+        local alive_cell = check_cell(ruleset, prevp, x, y)
+        if alive_cell == true then nextp:insert(x, y) end
     end
     local converged = (nextp:size() == prevp:size()) and (nextp-prevp):size() == 0
     return nextp, converged
@@ -159,11 +159,12 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
     assert(getmetatable(domain) == pattern,
     "forma.automata: async_iterate requires a pattern as a second argument")
     for tp in domain:shuffled_cells(rng) do
-        if prevp:has_cell(tp.x, tp.y) and check_cell(ruleset, prevp, tp) == false then
+        local check = check_cell(ruleset, prevp, tp.x, tp.y)
+        if prevp:has_cell(tp.x, tp.y) and check == false then
             -- Copy old pattern, subtracting off newly deactivated cell
             local nextp = prevp - pattern.new():insert(tp.x, tp.y)
             return nextp, false
-        elseif prevp:has_cell(tp.x, tp.y) == false and check_cell(ruleset, prevp, tp) == true then
+        elseif prevp:has_cell(tp.x, tp.y) == false and check == true then
             -- Activate new cell
             local nextp = prevp + pattern.new():insert(tp.x, tp.y)
             return nextp, false
