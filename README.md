@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/nhartland/forma.svg?branch=master)](https://travis-ci.org/nhartland/forma)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 forma
 =====
 
@@ -51,9 +54,7 @@ occasionally occour.
 
 Requirements
 ------------
-
-A lua@5.1 or luajit installation should be all that is required to use this module.
-See the examples folder for some demonstration.
+Compatible with Lua 5.1, 5.2, 5.3 and LuaJIT 2.0, 2.1.
 
 The test suite requires
  - [LuaCov](https://keplerproject.github.io/luacov/)

@@ -1,4 +1,4 @@
--- @script carpet.lua.
+-- carpet.lua.
 -- Using Async Cellular Automata with symmetrising methods.
 -- Demonstration of pattern generation by asynchronous cellular automata
 -- Here a small basic pattern is generated, which is then enlarged by
