@@ -47,7 +47,6 @@
 local automata= {}
 
 local pattern = require('forma.pattern')
-local util    = require('forma.util')
 
 --- Cellular automata rule parsing.
 -- Takes a string signature i.e "X1234" and converts it into a boolean lookup-table
@@ -159,17 +158,14 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
     "forma.automata: async_iterate requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern,
     "forma.automata: async_iterate requires a pattern as a second argument")
-    local testcells = domain:cell_list()
-    util.fisher_yates(testcells, rng)
-    for i=1, #testcells, 1 do
-        local tp = testcells[i]
+    for tp in domain:shuffled_cells(rng) do
         if prevp:has_cell(tp.x, tp.y) and check_cell(ruleset, prevp, tp) == false then
             -- Copy old pattern, subtracting off newly deactivated cell
             local nextp = prevp - pattern.new():insert(tp.x, tp.y)
             return nextp, false
         elseif prevp:has_cell(tp.x, tp.y) == false and check_cell(ruleset, prevp, tp) == true then
             -- Activate new cell
-            local nextp = prevp + pattern.new():insert(testcells[i].x, testcells[i].y)
+            local nextp = prevp + pattern.new():insert(tp.x, tp.y)
             return nextp, false
         end
     end

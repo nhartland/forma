@@ -191,7 +191,7 @@ end
 -- @param ip source pattern for active cell iterator
 -- @param an iterator providing a `cell` table for every active cell in the pattern
 function pattern.cells(ip)
-    assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
+    assert(getmetatable(ip) == pattern, "pattern.cells requires a pattern as the first argument")
     local icell = 0
     local ncell = ip:size()
     return function()
@@ -210,7 +210,7 @@ end
 -- @param ip source pattern for active cell iterator
 -- @return an iterator over cell (x,y) coordinates
 function pattern.cell_coordinates(ip)
-    assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
+    assert(getmetatable(ip) == pattern, "pattern.cell_coordinates requires a pattern as the first argument")
     local icell = 0
     local ncell = ip:size()
     return function()
@@ -220,6 +220,39 @@ function pattern.cell_coordinates(ip)
         end
     end
 end
+
+--- Return an iterator over active cells in the pattern in a random order.
+-- Simmilar to `pattern.cells` but provides an iterator that returns cells in a randomised order.
+-- @param ip source pattern for active cell iterator
+-- @param rng (optional) A random number generating table, following the signature of math.random
+-- @param an iterator providing a `cell` table for every active cell in the pattern, in a randomised order
+function pattern.shuffled_cells(ip, rng)
+    assert(getmetatable(ip) == pattern, "pattern.shuffled_cells requires a pattern as the first argument")
+    if rng == nil then rng = math.random end
+    local icell = 0
+    local ncell = ip:size()
+
+    -- Copy cell keys
+    local skeys = {}
+    for i=1,ncell,1 do
+        skeys[#skeys+1] = ip.cellkey[i]
+    end
+
+    -- Fisher-Yates shuffle
+    for i=ncell,1,-1 do
+        local j = rng(ncell)
+        skeys[i], skeys[j] = skeys[j], skeys[i]
+    end
+
+    return function()
+        icell = icell + 1
+        if icell <= ncell then
+            local x, y = key_to_coordinate(skeys[icell])
+            return cell.new(x,y)
+        end
+    end
+end
+
 
 --- Return a list of cells active in the pattern.
 -- @param ip source pattern for active cell list.
@@ -337,7 +370,7 @@ end
 --- Pattern random cell method.
 -- Returns a cell at random from the pattern.
 -- @param ip pattern for random cell retrieval
--- @param rng (optional )A random number generating table, following the signature of math.random.
+-- @param rng (optional) A random number generating table, following the signature of math.random.
 -- @return a random cell in the pattern
 function pattern.rcell(ip, rng)
     assert(getmetatable(ip) == pattern, "pattern.rcell requires a pattern as the first argument")

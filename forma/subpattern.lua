@@ -14,8 +14,7 @@
 
 local subpattern = {}
 
-local util          = require('forma.util')
-local cell         = require('forma.cell')
+local cell          = require('forma.cell')
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
@@ -54,11 +53,11 @@ function subpattern.random(ip, ncells, rng)
     assert(ncells > 0,                   "subpattern.random requires at least one sample to be requested")
     assert(ncells <= ip:size(),          "subpattern.random requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
-    local cells = ip:cell_list()
-    util.fisher_yates(cells, rng)
     local p = pattern.new()
-    for i = 1, ncells, 1 do
-        p:insert(cells[i].x, cells[i].y)
+    local next_cell = ip:shuffled_cells(rng)
+    while p:size() < ncells do
+        local newcell = next_cell()
+        p:insert(newcell.x, newcell.y)
     end
     return p
 end
