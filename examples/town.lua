@@ -1,5 +1,5 @@
 -- town.lua
--- Generates a plausible small town layout. Following a simmilar setup to the
+-- Generates a plausible small town layout. Following a similar setup to the
 -- corridor example but with more post-processing.
 
 local pattern       = require('forma.pattern')
@@ -26,7 +26,7 @@ repeat
     tp, converged = automata.async_iterate(tp, sq, ruleset)
 until converged == true
 
-tp = pattern.edge(tp) -- Comment this out and you get the 'sewerage system'
+tp = pattern.edge(tp) -- Comment this out and you get a subsystem
 tp = pattern.enlarge(tp,4)
 tp = pattern.surface(tp)
 
