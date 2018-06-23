@@ -5,7 +5,7 @@
 #  - imagemagick
 #  - Input Mono Light font
 
-IMG_TARGET=./docs/readme/img
+IMG_TARGET=./
 
 mkdir tmp
 
@@ -25,5 +25,4 @@ luajit examples/corridors.lua > tmp/corridor.txt
 convert -size 650x320 xc:black +antialias -font "InputMonoL" -pointsize 12 -fill white \
 -annotate +5+12 "@tmp/corridor.txt" $IMG_TARGET/corridor.png
 
-cp -r $IMG_TARGET img
 rm -rf tmp
