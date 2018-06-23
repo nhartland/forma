@@ -16,5 +16,5 @@ before_install:
   - luarocks install luacov
 
 script:
-  - $LUA -lluacov tests/run.lua -o TAP
+  - lua -lluacov tests/run.lua -o TAP
   - ./run_tests.sh
