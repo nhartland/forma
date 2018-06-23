@@ -34,12 +34,10 @@ cell.__index = cell
 -- @param y second coordinate
 -- @return new forma.cell
 function cell.new(x,y)
-    if x == -0 then x = 0 end
-    if y == -0 then y = 0 end
-    local self = { x = x, y = y }
-    assert(x and y, "cell.new requires non-null arguments")
-    assert (self.x == math.floor(self.x) and self.y == math.floor(self.y), "cell.new requires integer inputs")
-    return setmetatable(self, cell)
+    assert(x and y, "cell.new requires two integer arguments")
+    assert(x == math.floor(x) and y == math.floor(y), "cell.new requires two integer inputs")
+    local newcell = { x = x, y = y }
+    return setmetatable(newcell, cell)
 end
 
 --- Perform a copy of a cell.

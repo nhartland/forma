@@ -3,8 +3,9 @@
 -- The **pattern** class is the central class of this module, representing a
 -- set of `cell`s. This set can be initialised as empty, or according to
 -- geometric `primitives`. Once initialised, a pattern can only be modified by
--- the `insert` method, used to add active cells. All other pattern manipulations
--- return a new, modified pattern rather than modifying patterns in-place.
+-- the `insert` method, used to add active cells. All other pattern
+-- manipulations return a new, modified pattern rather than modifying patterns
+-- in-place.
 --
 -- Several pattern manipulators are provided here. For example as a `shift` of
 -- an entire pattern, manipulators that `enlarge` a pattern by a scale factor
@@ -13,8 +14,8 @@
 -- `surface` (inner-hull) of other patterns. These manipulators can be used
 -- with different definitions of a cell's `neighbourhood`.
 --
--- Pattern coordinates should be reasonably reliable in [-65536, 65536] and
--- probably beyond. But don't push your luck.
+-- Pattern coordinates should be reliable in [-65536, 65536]. This is
+-- adjustable through the `MAX_COORDINATE` constant.
 --
 -- Through an abuse of metatables, all functions can be used either 'procedurally' as
 --      pattern.method(input_pattern, ... )
@@ -49,9 +50,12 @@ local neighbourhood = require('forma.neighbourhood')
 -- For enabling syntax sugar pattern:method
 pattern.__index = pattern
 
+-- Pattern coordinates (either x or y) must be within ±MAX_COORDINATE
+local MAX_COORDINATE = 65536
+
 --- Generate the cellmap key from coordinates
 local function coordinates_to_key(x, y)
-    return (x - 65536)*65536 + (y - 65536)
+    return (x - MAX_COORDINATE)*2*MAX_COORDINATE + (y - MAX_COORDINATE)
 end
 
 --- Basic methods.

@@ -11,3 +11,6 @@ Since 0.1
   desired samples rather than a fraction of the domain size.
 - Added Voronoi relaxation via Lloyd's algorithm
 - Fixed default initialisation of RNG in automata.async_iterate
+- Removed special handling of '-0' coordinate in cell: No longer required with
+  integer spatial hash in patterns.
+- Made pattern coordinate limits explicit in MAX_COORDINATE
