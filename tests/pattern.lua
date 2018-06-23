@@ -17,6 +17,20 @@ function testPattern:setUp()
                                   {1,1,1,1,1}})
 end
 
+-- Test the spatial hashing limits
+function testPattern:testSpatialHash()
+    local max = pattern.get_max_coordinate()
+    lu.assertTrue( max > 0 )
+    local limits = { -max, max, 0 }
+    for _, x in ipairs(limits) do
+        for _, y in ipairs(limits) do
+            lu.assertTrue(pattern.test_coordinate_map(x,y))
+        end
+    end
+    -- Test that hash fails outside of specified limits
+    lu.assertFalse(pattern.test_coordinate_map(2*max, 2*max))
+end
+
 -- Test eq, add, sub operators
 function testPattern:testOperators()
     lu.assertEquals(self.pattern_1, self.pattern_1)

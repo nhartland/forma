@@ -52,7 +52,7 @@ pattern.__index = pattern
 
 -- Pattern coordinates (either x or y) must be within ± MAX_COORDINATE
 local MAX_COORDINATE  = 65536
-local COORDINATE_SPAN = 2*MAX_COORDINATE
+local COORDINATE_SPAN = 2*MAX_COORDINATE + 1
 
 --- Generate the cellmap key from coordinates
 local function coordinates_to_key(x, y)
@@ -60,11 +60,12 @@ local function coordinates_to_key(x, y)
 end
 
 --- Generate the coordinates from the key
-local function key_to_coordinate(key)
+local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
     return xp- MAX_COORDINATE, yp - MAX_COORDINATE
 end
+
 
 --- Basic methods.
 -- Methods for the creation, copying and adding of cells to a pattern.
@@ -197,7 +198,7 @@ function pattern.cells(ip)
     return function()
         icell = icell + 1
         if icell <= ncell then
-            local x, y = key_to_coordinate(ip.cellkey[icell])
+            local x, y = key_to_coordinates(ip.cellkey[icell])
             return cell.new(x,y)
         end
     end
@@ -216,7 +217,7 @@ function pattern.cell_coordinates(ip)
     return function()
         icell = icell + 1
         if icell <= ncell then
-            return key_to_coordinate(ip.cellkey[icell])
+            return key_to_coordinates(ip.cellkey[icell])
         end
     end
 end
@@ -247,7 +248,7 @@ function pattern.shuffled_cells(ip, rng)
     return function()
         icell = icell + 1
         if icell <= ncell then
-            local x, y = key_to_coordinate(skeys[icell])
+            local x, y = key_to_coordinates(skeys[icell])
             return cell.new(x,y)
         end
     end
@@ -379,7 +380,7 @@ function pattern.rcell(ip, rng)
     -- Check RNG
     if rng == nil then rng = math.random end
     local icell = rng(#ip.cellkey)
-    local x, y = key_to_coordinate(ip.cellkey[icell])
+    local x, y = key_to_coordinates(ip.cellkey[icell])
     return cell.new(x, y)
 end
 
@@ -663,6 +664,27 @@ function pattern.packtile_centre(a,b)
         end
     end
     return nil
+end
+
+--- Test methods
+-- @section Testing
+
+--- Returns the maximum hashable coordinate
+-- @return MAX_COORDINATE
+function pattern.get_max_coordinate()
+    return MAX_COORDINATE
+end
+
+--- Test the coordinate transform between (x,y) and spatial hash
+-- @param x test coordinate x
+-- @param y test coordinate y
+-- @return true if the spatial hash is functioning correctly, false if not
+function pattern.test_coordinate_map(x,y)
+    assert(type(x) == 'number' and type(y) == 'number',
+           "pattern.test_coordinate_map requires two numbers as arguments")
+    local key = coordinates_to_key(x,y)
+    local tx, ty = key_to_coordinates(key)
+    return (x == tx) and (y == ty)
 end
 
 return pattern
