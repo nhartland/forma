@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/nhartland/forma.svg?branch=master)](https://travis-ci.org/nhartland/forma)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 forma
 =====
