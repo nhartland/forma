@@ -17,4 +17,4 @@ before_install:
 
 script:
   - lua -lluacov tests/run.lua -o TAP
-  - ./run_tests.sh
+  - ./tests/run_examples.sh

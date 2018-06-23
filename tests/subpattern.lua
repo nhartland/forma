@@ -105,12 +105,14 @@ function testSubPatterns:testBinarySpacePartition()
     -- have fewer than 10 active cells.
     local partitions  = subpattern.bsp(self.square, 10)
     local total_points = 0
+    local resum = pattern.new()
     for _, partition in ipairs(partitions) do
+        resum = resum + partition
         total_points = total_points + partition:size()
         lu.assertTrue(partition:size() <= 10 )
     end
     lu.assertEquals(total_points, self.square:size())
-    lu.assertEquals(pattern.sum(unpack(partitions)), self.square)
+    lu.assertEquals(resum, self.square)
     lu.assertFalse(self:check_for_overlap(partitions))
 end
 
