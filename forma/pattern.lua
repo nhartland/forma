@@ -418,20 +418,20 @@ end
 
 --- Generate a copy of a pattern shifted by a vector(x,y)
 -- @param ip pattern to be shifted
--- @param x first coordinate of shift
--- @param y second coordinate of shift
--- @return New pattern consisting of ip shifted by (x,y)
-function pattern.shift(ip, x, y)
+-- @param sx amount to shift x-coordinates by
+-- @param sy amount to shift y-coordinates by
+-- @return New pattern consisting of ip shifted by (sx,sy)
+function pattern.shift(ip, sx, sy)
     assert(getmetatable(ip) == pattern, "pattern.shift requires a pattern as the first argument")
-    assert(type(x) == 'number', 'pattern.shift requires a number for the x coordinate')
-    assert(type(y) == 'number', 'pattern.shift requires a number for the y coordinate')
+    assert(type(sx) == 'number', 'pattern.shift requires a number for the x coordinate')
+    assert(type(sy) == 'number', 'pattern.shift requires a number for the y coordinate')
 
     local sp = pattern.new()
     sp.onchar = ip.onchar
     sp.offchar = ip.offchar
 
-    for v in ip:cells() do
-        sp:insert(v.x+x, v.y+y)
+    for tx, ty in ip:cell_coordinates() do
+        sp:insert(tx+sx, ty+sy)
     end
 
     return sp
