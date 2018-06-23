@@ -14,6 +14,7 @@ before_install:
   - source env/bin/activate
   - luarocks install luaunit
   - luarocks install luacov
+  - luarocks install ldoc
 
 script:
   - lua -lluacov tests/run.lua -o TAP
