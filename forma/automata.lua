@@ -138,8 +138,7 @@ function automata.iterate(prevp, domain, ruleset)
     assert(getmetatable(domain) == pattern,
     "forma.automata: iterate requires a pattern as a second argument")
     local nextp = pattern.new()
-    for i=1, #domain.cellset, 1 do
-        local v = domain.cellset[i]
+    for v in domain:cells() do
         local alive_cell = check_cell(ruleset, prevp, v)
         if alive_cell == true then nextp:insert(v.x, v.y) end
     end

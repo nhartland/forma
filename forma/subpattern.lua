@@ -279,9 +279,9 @@ function subpattern.neighbourhood_categories(ip, nbh)
     for i=1, #nbh.categories, 1 do
         category_patterns[i] = pattern.new()
     end
-    for i=1, #ip.cellset, 1 do
-        local cat = nbh:categorise(ip, ip.cellset[i])
-        pattern.insert(category_patterns[cat], ip.cellset[i].x, ip.cellset[i].y)
+    for icell in ip:cells()  do
+        local cat = nbh:categorise(ip, icell)
+        pattern.insert(category_patterns[cat], icell.x, icell.y)
     end
     return category_patterns
 end
