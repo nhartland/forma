@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/nhartland/forma.svg?branch=master)](https://travis-ci.org/nhartland/forma)
+[License](https://img.shields.io/badge/license-MIT-blue.svg)
 forma
 =====
 
@@ -11,6 +13,8 @@ This package is intended for the generation and manipulation of shapes on a two
 dimensional grid or lattice. It came about as part of experiments in making
 roguelike games. **forma** is therefore particularly suited for the generation
 of roguelike environments.
+
+Compatible with Lua 5.1, 5.2, 5.3 and LuaJIT 2.0, 2.1.
 
 While there are methods for the generation and manipulation of primitive shapes
 (rectangles, circle rasters etc.) The more interesting shapes are, for the
