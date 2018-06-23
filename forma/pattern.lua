@@ -188,7 +188,8 @@ function pattern.has_cell(ip, x, y)
 end
 
 --- Return an iterator over active cells in the pattern.
--- @param ip source pattern for active cell list.
+-- @param ip source pattern for active cell iterator
+-- @param an iterator providing a `cell` table for every active cell in the pattern
 function pattern.cells(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
     local icell = 0
@@ -198,6 +199,24 @@ function pattern.cells(ip)
         if icell <= ncell then
             local x, y = key_to_coordinate(ip.cellkey[icell])
             return cell.new(x,y)
+        end
+    end
+end
+
+--- Return an iterator over active cell coordinates in the pattern.
+-- Simmilar to `pattern.cells` but provides an iterator that runs
+-- over (x,y) coordinates instead of `cell` instances. Unlike in
+-- `pattern.cells` no tables are created here.
+-- @param ip source pattern for active cell iterator
+-- @return an iterator over cell (x,y) coordinates
+function pattern.cell_coordinatess(ip)
+    assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
+    local icell = 0
+    local ncell = ip:size()
+    return function()
+        icell = icell + 1
+        if icell <= ncell then
+            return key_to_coordinate(ip.cellkey[icell])
         end
     end
 end
