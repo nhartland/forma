@@ -18,6 +18,6 @@ repeat
     local converged
     rn, converged = automata.iterate(rn, sq, {moore})
     ite = ite+1
-until converged == true
+until converged == true or ite > 1000
 
 print(sq-rn)
