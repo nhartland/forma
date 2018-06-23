@@ -34,13 +34,13 @@
 
 <h2>Examples</h2>
 <ul class="nowrap">
-  <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
+  <li><strong>binary_space_partition.lua</strong></li>
   <li><a href="../examples/carpet.lua.html">carpet.lua</a></li>
   <li><a href="../examples/caves.lua.html">caves.lua</a></li>
   <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
   <li><a href="../examples/game_of_life.lua.html">game_of_life.lua</a></li>
   <li><a href="../examples/game_of_life_async.lua.html">game_of_life_async.lua</a></li>
-  <li><strong>lloyds_algorithm.lua</strong></li>
+  <li><a href="../examples/lloyds_algorithm.lua.html">lloyds_algorithm.lua</a></li>
   <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
   <li><a href="../examples/primitives.lua.html">primitives.lua</a></li>
   <li><a href="../examples/shapes.lua.html">shapes.lua</a></li>
@@ -65,34 +65,23 @@
 
 <div id="content">
 
-    <h2>lloyds_algorithm.lua</h2>
+    <h2>binary_space_partition.lua</h2>
 <pre>
-<span class="comment">-- voronoi.lua
-</span><span class="comment">-- Demonstration of voronoi relaxation by lloyds algorithm
+<span class="comment">-- binary_space_partition.lua
+</span><span class="comment">-- Example and benchmark of binary space partitioning
 </span>
-<span class="keyword">local</span> cell      = <span class="global">require</span>(<span class="string">'forma.cell'</span>)
-<span class="keyword">local</span> primitives = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
 <span class="keyword">local</span> subpattern = <span class="global">require</span>(<span class="string">'forma.subpattern'</span>)
-<span class="global">math</span>.randomseed(<span class="global">os</span>.time())
+<span class="keyword">local</span> primitives = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
+<span class="global">math</span>.randomseed(<span class="number">0</span>)
 
-<span class="comment">-- Domain for tesselation
-</span><span class="keyword">local</span> sq = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
-<span class="keyword">local</span> seeds = primitives.square(<span class="number">3</span>)
-
-<span class="comment">-- Compute voronoi tesselation for various measures
-</span><span class="keyword">local</span> measure = cell.manhattan
-
-<span class="comment">-- Perform voronoi relaxation at incrementing imax
-</span><span class="comment">-- Note this isn't very efficient as we are displaying intermediate steps,
-</span><span class="comment">-- normally you would only call this function once.
-</span><span class="keyword">local</span> imax = <span class="number">1</span>
-<span class="keyword">repeat</span>
-    <span class="global">print</span>(<span class="string">"Step "</span>..imax)
-    <span class="keyword">local</span> segments, _, converged  = subpattern.voronoi_relax(seeds, sq, measure, imax)
-    <span class="global">table</span>.sort(segments, <span class="keyword">function</span>(a,b) <span class="keyword">return</span> a:com().x &lt; b:com().x <span class="keyword">end</span>)
-    subpattern.pretty_print(sq, segments)
-    imax = imax + <span class="number">1</span>
-<span class="keyword">until</span> converged == <span class="keyword">true</span> <span class="keyword">or</span> imax == <span class="number">100</span></pre>
+<span class="comment">-- stress loops for benchmarking
+</span><span class="keyword">for</span> i=<span class="number">1</span>,<span class="number">100</span>,<span class="number">1</span> <span class="keyword">do</span>
+    <span class="comment">-- Generate an 80x20 square and partition it into segments of maximally 50 cells
+</span>    <span class="keyword">local</span> square = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
+    <span class="keyword">local</span> bsp = subpattern.bsp(square, <span class="number">50</span>)
+    <span class="comment">-- On the last loop, pretty print the segments
+</span>    <span class="keyword">if</span> i==<span class="number">100</span> <span class="keyword">then</span> subpattern.pretty_print(square,bsp) <span class="keyword">end</span>
+<span class="keyword">end</span></pre>
 
 
 </div> <!-- id="content" -->

@@ -71,11 +71,11 @@ end
 -- Methods for the creation, copying and adding of cells to a pattern.
 --@section basic
 
---- forma.pattern constructor.
+--- Pattern constructor.
 -- Points are stored in the pattern in a standard integer keyed table, and
 -- also as elements in a spatial hash map.
 -- @param prototype (optional) an N*N 2D table of ones and zeros.
--- Returns a new forma.pattern. If no prototype is used, then an empty pattern
+-- Returns a new pattern. If no prototype is used, then an empty pattern
 -- is returned. If set with the prototype table {{1,0},{0,1}} will initialise
 -- the pattern:
 --  10
@@ -120,9 +120,9 @@ function pattern.new(prototype)
     return np
 end
 
---- Copy an existing forma.pattern.
+--- Copy an existing pattern.
 -- @param ip input pattern for cloning
--- @return new forma.pattern copy of ip
+-- @return A copy of the pattern ip
 function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local self = pattern.new()
@@ -188,9 +188,40 @@ function pattern.has_cell(ip, x, y)
     return ip.cellmap[key] ~= nil
 end
 
+--- Return a list of cells active in the pattern.
+-- @param ip source pattern for active cell list.
+function pattern.cell_list(ip)
+    assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
+    local newlist = {}
+    for icell in ip:cells() do
+        newlist[#newlist+1] = icell
+    end
+    return newlist
+end
+
+--- Return the number of cells active in a pattern.
+-- @param ip pattern for size check
+function pattern.size(ip)
+    assert(getmetatable(ip) == pattern, "pattern.size requires a pattern as the first argument")
+    return #ip.cellkey
+end
+
+--- Size comparator for two patterns.
+-- Useful for table.sort to rank patterns by size (number of cells)
+-- @param pa the first pattern for comparison
+-- @param pb the second pattern for comparison
+-- @return pa:size() > pb:size()
+function pattern.size_sort(pa, pb)
+    return pa:size() > pb:size()
+end
+
+-----------------------
+--- Iterators.
+-- @section Iterators
+
 --- Return an iterator over active cells in the pattern.
 -- @param ip source pattern for active cell iterator
--- @param an iterator providing a `cell` table for every active cell in the pattern
+-- @return an iterator providing a `cell` table for every active cell in the pattern
 function pattern.cells(ip)
     assert(getmetatable(ip) == pattern, "pattern.cells requires a pattern as the first argument")
     local icell = 0
@@ -226,7 +257,7 @@ end
 -- Simmilar to `pattern.cells` but provides an iterator that returns cells in a randomised order.
 -- @param ip source pattern for active cell iterator
 -- @param rng (optional) A random number generating table, following the signature of math.random
--- @param an iterator providing a `cell` table for every active cell in the pattern, in a randomised order
+-- @return an iterator providing a `cell` table for every active cell in the pattern, in a randomised order
 function pattern.shuffled_cells(ip, rng)
     assert(getmetatable(ip) == pattern, "pattern.shuffled_cells requires a pattern as the first argument")
     if rng == nil then rng = math.random end
@@ -254,34 +285,6 @@ function pattern.shuffled_cells(ip, rng)
     end
 end
 
-
---- Return a list of cells active in the pattern.
--- @param ip source pattern for active cell list.
-function pattern.cell_list(ip)
-    assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
-    local newlist = {}
-    for icell in ip:cells() do
-        newlist[#newlist+1] = icell
-    end
-    return newlist
-end
-
---- Return the number of cells active in a pattern.
--- @param ip pattern for size check
-function pattern.size(ip)
-    assert(getmetatable(ip) == pattern, "pattern.size requires a pattern as the first argument")
-    return #ip.cellkey
-end
-
---- Size comparator for two patterns.
--- Useful for table.sort to rank patterns by size (number of cells)
--- @param pa the first pattern for comparison
--- @param pb the second pattern for comparison
--- @return pa:size() > pb:size()
-function pattern.size_sort(pa, pb)
-    return pa:size() > pb:size()
-end
-
 -----------------------
 --- Metamethods.
 -- @section Metamethods
@@ -289,7 +292,7 @@ end
 --- Render pattern as a string.
 -- Prints the stored pattern to string, rendered using the character stored in
 -- pattern.onchar for activated cells and pattern.offchar for unactivated cells.
--- @param ip the forma.pattern to be rendered as a string
+-- @param ip The pattern to be rendered as a string
 -- @return pattern as string
 function pattern.__tostring(ip)
     local string = ''
@@ -307,7 +310,7 @@ end
 --- Add two patterns to each other.
 -- @param a first pattern to be added
 -- @param b second pattern to be added
--- @return new forma.pattern consisting of the superset of patterns a and b
+-- @return New pattern consisting of the superset of patterns a and b
 function pattern.__add(a,b)
     assert(getmetatable(a) == pattern, "pattern addition requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
@@ -325,7 +328,7 @@ end
 --- Subtract one pattern from another.
 -- @param a base pattern
 -- @param b pattern to be subtracted from a
--- @return new forma.pattern consisting of the subset of cells in a which are not in b
+-- @return New pattern consisting of the subset of cells in a which are not in b
 function pattern.__sub(a,b)
     assert(getmetatable(a) == pattern, "pattern addition requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
@@ -417,7 +420,7 @@ end
 -- @param ip pattern to be shifted
 -- @param x first coordinate of shift
 -- @param y second coordinate of shift
--- @return a new forma.pattern consisting of ip shifted by (x,y)
+-- @return New pattern consisting of ip shifted by (x,y)
 function pattern.shift(ip, x, y)
     assert(getmetatable(ip) == pattern, "pattern.shift requires a pattern as the first argument")
     assert(type(x) == 'number', 'pattern.shift requires a number for the x coordinate')
@@ -436,7 +439,7 @@ end
 
 --- Copy a pattern, shifting its origin to (0,0).
 -- @param ip pattern to be normalised
--- @return a new normalised forma.pattern
+-- @return A new normalised pattern
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
     return pattern.shift(ip, -ip.min.x, -ip.min.y)
@@ -498,7 +501,7 @@ end
 -- inactive neighbours of the provided pattern.
 -- @param ip pattern for which the edges should be calculated
 -- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
--- @return the forma.pattern represeting the edge of ip
+-- @return A pattern representing the edge of ip
 function pattern.edge(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
 
@@ -527,7 +530,7 @@ end
 -- to the provided pattern.
 -- @param ip pattern for which the surface should be calculated
 -- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
--- @return the forma.pattern represeting the surface of ip
+-- @return A pattern representing the surface of ip
 function pattern.surface(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
 
@@ -555,9 +558,9 @@ function pattern.surface(ip, nbh)
     return sp
 end
 
---- Generate a pattern consisting of the intersection of existing patterns
+--- Generate a pattern consisting of the overlapping intersection of existing patterns
 -- @param ... patterns for intersection calculation
--- @return the forma.pattern representing the intersection of the arguments
+-- @return A pattern consisting of the overlapping cells of the input patterns
 function pattern.intersection(...)
     local patterns = {...} table.sort(patterns, function(a,b) return a:size() < b:size() end)
     assert(#patterns > 1, "pattern.intersection requires at least two patterns as arguments")
@@ -578,7 +581,7 @@ end
 
 --- Generate a pattern consisting of the sum of existing patterns
 -- @param ... patterns for summation
--- @return the forma.pattern represeting the sum of the arguments
+-- @return A pattern consisting of the sum of the input patterns
 function pattern.sum(...)
     local patterns = {...}
     assert(#patterns > 1, "pattern.sum requires at least two patterns as arguments")

@@ -1,9 +1,8 @@
 # TODO
 
-- Add a sampling example (random, voronoi relax, farthest-first)
-- Decouple a bit pattern methods from the underlying data structure
+- Add a sampling example (random, Voronoi relax, farthest-first)
 - Standardise examples a bit more 
-- Consider generalising BSP to even-size paritions of any shape (not just
+- Consider generalising BSP to even-size partitions of any shape (not just
   rectangular sub-areas)
 
 #### Computational geometry methods to consider implementing:
