@@ -6,6 +6,8 @@ require('tests.neighbourhood')
 require('tests.subpattern')
 require('tests.automata')
 
+math.randomseed(0)
+
 local runner = lu.LuaUnit.new()
 runner:setOutputType("tap")
 os.exit( runner:run() )
