@@ -126,8 +126,8 @@ function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local self = pattern.new()
 
-    for icell in ip:cells() do
-        pattern.insert(self, icell.x, icell.y)
+    for x, y in ip:cell_coordinates() do
+        pattern.insert(self, x, y)
     end
 
     -- This is important, keep the stored limits, not the actual ones
@@ -209,7 +209,7 @@ end
 -- `pattern.cells` no tables are created here.
 -- @param ip source pattern for active cell iterator
 -- @return an iterator over cell (x,y) coordinates
-function pattern.cell_coordinatess(ip)
+function pattern.cell_coordinates(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
     local icell = 0
     local ncell = ip:size()
@@ -279,9 +279,9 @@ function pattern.__add(a,b)
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
 
     local c = pattern.clone(a)
-    for v in b:cells() do
-        if c:has_cell(v.x, v.y) == false then
-            pattern.insert(c, v.x, v.y)
+    for x,y in b:cell_coordinates() do
+        if c:has_cell(x, y) == false then
+            pattern.insert(c, x, y)
         end
     end
 
@@ -300,9 +300,9 @@ function pattern.__sub(a,b)
     c.onchar = a.onchar
     c.offchar = a.offchar
 
-    for v in a:cells() do
-        if b:has_cell(v.x, v.y) == false then
-            pattern.insert(c, v.x, v.y)
+    for x,y in a:cell_coordinates() do
+        if b:has_cell(x, y) == false then
+            pattern.insert(c, x, y)
         end
     end
 
@@ -323,8 +323,8 @@ function pattern.__eq(a,b)
     if a.max.x ~= b.max.x then return false end
     if a.max.y ~= b.max.y then return false end
     -- Slower checks
-    for v in a:cells() do
-        if b:has_cell(v.x, v.y) == false then return false end
+    for x,y in a:cell_coordinates() do
+        if b:has_cell(x, y) == false then return false end
     end
     return true
 end
@@ -532,9 +532,9 @@ function pattern.intersection(...)
         local tpattern = patterns[i]
         assert(getmetatable(tpattern) == pattern, "pattern.intersection requires a pattern as an argument")
         local newint = pattern.new()
-        for v in intpat:cells() do
-            if tpattern:has_cell(v.x, v.y) then
-                pattern.insert(newint, v.x, v.y)
+        for x, y in intpat:cell_coordinates() do
+            if tpattern:has_cell(x, y) then
+                pattern.insert(newint, x, y)
             end
         end
         intpat = newint
@@ -552,9 +552,9 @@ function pattern.sum(...)
     for i=2, #patterns, 1 do
         local v = patterns[i]
         assert(getmetatable(v) == pattern, "pattern.sum requires a pattern as an argument")
-        for v2 in v:cells() do
-            if sum:has_cell(v2.x, v2.y) == false then
-                pattern.insert(sum, v2.x, v2.y)
+        for x, y in v:cell_coordinates() do
+            if sum:has_cell(x, y) == false then
+                pattern.insert(sum, x, y)
             end
         end
     end
