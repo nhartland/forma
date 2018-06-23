@@ -14,3 +14,8 @@ Since 0.1
 - Removed special handling of '-0' coordinate in cell: No longer required with
   integer spatial hash in patterns.
 - Made pattern coordinate limits explicit in MAX_COORDINATE
+- Changed internal structure of `pattern`, from a list of cells to a list of
+  coordinate hashes
+- Added pattern.cells: an iterator over the constituent cells in a pattern
+- Added cell_coordinates iterator, returning an (x,y) pair rather than a cell
+- Added shuffled_cells iterator, simmilar to cells but in a randomised order
