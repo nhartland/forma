@@ -125,20 +125,20 @@ end
 -- @return A copy of the pattern ip
 function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
-    local self = pattern.new()
+    local newpat = pattern.new()
 
     for x, y in ip:cell_coordinates() do
-        pattern.insert(self, x, y)
+        newpat:insert(x, y)
     end
 
     -- This is important, keep the stored limits, not the actual ones
-    self.max = cell.new(ip.max.x, ip.max.y)
-    self.min = cell.new(ip.min.x, ip.min.y)
+    newpat.max = cell.new(ip.max.x, ip.max.y)
+    newpat.min = cell.new(ip.min.x, ip.min.y)
 
-    self.offchar = ip.offchar
-    self.onchar  = ip.onchar
+    newpat.offchar = ip.offchar
+    newpat.onchar  = ip.onchar
 
-    return self
+    return newpat
 end
 
 --- Insert a new cell into a pattern.
@@ -318,7 +318,7 @@ function pattern.__add(a,b)
     local c = pattern.clone(a)
     for x,y in b:cell_coordinates() do
         if c:has_cell(x, y) == false then
-            pattern.insert(c, x, y)
+            c:insert(x, y)
         end
     end
 
@@ -339,7 +339,7 @@ function pattern.__sub(a,b)
 
     for x,y in a:cell_coordinates() do
         if b:has_cell(x, y) == false then
-            pattern.insert(c, x, y)
+            c:insert(x, y)
         end
     end
 
@@ -431,7 +431,7 @@ function pattern.shift(ip, x, y)
     sp.offchar = ip.offchar
 
     for v in ip:cells() do
-        pattern.insert(sp, v.x+x, v.y+y)
+        sp:insert(v.x+x, v.y+y)
     end
 
     return sp
@@ -442,7 +442,7 @@ end
 -- @return A new normalised pattern
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
-    return pattern.shift(ip, -ip.min.x, -ip.min.y)
+    return ip:shift(-ip.min.x, -ip.min.y)
 end
 
 --- Generate an enlarged version of a pattern.
@@ -477,7 +477,7 @@ function pattern.vreflect(ip)
     local np = pattern.clone(ip)
     for v in ip:cells() do
         local new_y = 2*ip.max.y - v.y + 1
-        pattern.insert(np, v.x, new_y)
+        np:insert(v.x, new_y)
     end
     return np
 end
@@ -491,7 +491,7 @@ function pattern.hreflect(ip)
     local np = pattern.clone(ip)
     for v in ip:cells() do
         local new_x = 2*ip.max.x - v.x + 1
-        pattern.insert(np, new_x, v.y)
+        np:insert(new_x, v.y)
     end
     return np
 end
@@ -516,7 +516,7 @@ function pattern.edge(ip, nbh)
             local vpr = v + nbh[j]
             if ip:has_cell(vpr.x, vpr.y) == false then
                 if ep:has_cell(vpr.x, vpr.y) == false then
-                    pattern.insert(ep, vpr.x, vpr.y)
+                    ep:insert(vpr.x, vpr.y)
                 end
             end
         end
@@ -551,7 +551,7 @@ function pattern.surface(ip, nbh)
         end
 
         if foundEdge == true then
-            pattern.insert(sp, v.x, v.y)
+            sp:insert(v.x, v.y)
         end
     end
 
@@ -571,7 +571,7 @@ function pattern.intersection(...)
         local newint = pattern.new()
         for x, y in intpat:cell_coordinates() do
             if tpattern:has_cell(x, y) then
-                pattern.insert(newint, x, y)
+                newint:insert(x, y)
             end
         end
         intpat = newint
@@ -585,17 +585,17 @@ end
 function pattern.sum(...)
     local patterns = {...}
     assert(#patterns > 1, "pattern.sum requires at least two patterns as arguments")
-    local sum = pattern.clone(patterns[1])
+    local total = pattern.clone(patterns[1])
     for i=2, #patterns, 1 do
         local v = patterns[i]
         assert(getmetatable(v) == pattern, "pattern.sum requires a pattern as an argument")
         for x, y in v:cell_coordinates() do
-            if sum:has_cell(x, y) == false then
-                pattern.insert(sum, x, y)
+            if total:has_cell(x, y) == false then
+                total:insert(x, y)
             end
         end
     end
-    return sum
+    return total
 end
 
 ---------------------------------------------------------------------------
@@ -617,7 +617,7 @@ function pattern.packtile(a,b)
     assert(getmetatable(b) == pattern, "pattern.packtile requires a pattern as a second argument")
     assert(a:size() > 0 , "pattern.packtile requires a non-empty pattern as a first argument")
     -- cell to fix coordinate systems
-    local hinge = pattern.rcell(a)
+    local hinge = a:rcell()
     -- Loop over possible positions in b
     for bcell in b:cells() do
         local coordshift = bcell - hinge -- Get coordinate transformation
@@ -643,8 +643,8 @@ end
 -- @return a cell in `b` where `a` can be placed, nil if no solution found.
 function pattern.packtile_centre(a,b)
     -- cell to fix coordinate systems
-    local hinge = pattern.com(a)
-    local com   = pattern.com(b)
+    local hinge = a:com()
+    local com   = b:com()
     local allcells = b:cell_list()
     local function distance_to_com(k,j)
         local adist = (k.x-com.x)*(k.x-com.x) + (k.y-com.y)*(k.y-com.y)

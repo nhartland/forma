@@ -10,9 +10,8 @@ local neighbourhood = require('forma.neighbourhood')
 math.randomseed(os.time())
 
 local sq = primitives.square(20,10)
-local tp = pattern.new()
 local seed = pattern.rcell(sq)
-pattern.insert(tp, seed.x, seed.y)
+local tp = pattern.new():insert(seed.x, seed.y)
 
 -- Complicated ruleset
 local moore = automata.rule(neighbourhood.moore(),      "B12/S012345678")

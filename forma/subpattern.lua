@@ -73,7 +73,7 @@ function subpattern.floodfill(ip, ipt, nbh)
     local retpat = pattern.new()
     local function ff(pt)
         if ip:has_cell(pt.x, pt.y) and retpat:has_cell(pt.x, pt.y) == false then
-            pattern.insert(retpat, pt.x, pt.y)
+            retpat:insert(pt.x, pt.y)
             for i=1, #nbh, 1 do ff(pt + nbh[i]) end
         end
         return
@@ -279,7 +279,7 @@ function subpattern.neighbourhood_categories(ip, nbh)
     end
     for icell in ip:cells()  do
         local cat = nbh:categorise(ip, icell)
-        pattern.insert(category_patterns[cat], icell.x, icell.y)
+        category_patterns[cat]:insert(icell.x, icell.y)
     end
     return category_patterns
 end
