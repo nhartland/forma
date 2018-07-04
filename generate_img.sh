@@ -9,20 +9,13 @@ IMG_TARGET=./
 
 mkdir tmp
 
-luajit examples/carpet.lua > tmp/header.txt
-convert -size 650x320 xc:black +antialias -font "InputMonoL" -pointsize 12 -fill white \
--annotate +5+12 "@tmp/header.txt" $IMG_TARGET/header.png
+SOURCES=( carpet game_of_life_async caves corridors worley )
 
-luajit examples/game_of_life_async.lua > tmp/symmetry.txt
-convert -size 650x320 xc:black +antialias -font "InputMonoL" -pointsize 12 -fill white \
--annotate +5+12 "@tmp/symmetry.txt" $IMG_TARGET/symmetry.png
-
-luajit examples/caves.lua > tmp/caves.txt
-convert -size 650x320 xc:black +antialias -font "InputMonoL" -pointsize 12 -fill white \
--annotate +5+12 "@tmp/caves.txt" $IMG_TARGET/caves.png
-
-luajit examples/corridors.lua > tmp/corridor.txt
-convert -size 650x320 xc:black +antialias -font "InputMonoL" -pointsize 12 -fill white \
--annotate +5+12 "@tmp/corridor.txt" $IMG_TARGET/corridor.png
+for i in "${SOURCES[@]}"; do
+    echo $i
+    luajit examples/$i.lua > tmp/$i.txt
+    convert -size 650x320 xc:black +antialias -font "InputMonoL" -pointsize 12 -fill white \
+    -annotate +5+12 "@tmp/$i.txt" $IMG_TARGET/$i.png
+done
 
 rm -rf tmp
