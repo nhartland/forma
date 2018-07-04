@@ -335,9 +335,11 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
         local newseeds = pattern.new()
         local no_change = true --  Test for convergence
         for iseg = 1, #tesselation, 1 do
-            local com = tesselation[iseg]:com()
-            newseeds:insert(com.x, com.y)
-            no_change = no_change and seeds:has_cell(com.x, com.y)
+            if tesselation[iseg]:size() > 0 then
+                local com = tesselation[iseg]:com()
+                newseeds:insert(com.x, com.y)
+                no_change = no_change and seeds:has_cell(com.x, com.y)
+            end
         end
         seeds  = newseeds
         if no_change then return tesselation, seeds, true end -- converged
