@@ -7,7 +7,7 @@ local subpattern = require('forma.subpattern')
 math.randomseed(os.time())
 
 -- Generate a random pattern and its voronoi tesselation
-local sq = primitives.square(60,20)
+local sq = primitives.square(80,20)
 local rn = subpattern.random(sq, math.floor(sq:size()*0.01))
 
 -- Compute voronoi tesselation for various measures

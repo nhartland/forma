@@ -1,5 +1,6 @@
 # TODO
 
+- Promote Worley noise example to a more general case in forma.subpattern
 - Add a sampling example (random, Voronoi relax, farthest-first)
 - Standardise examples a bit more 
 - Consider generalising BSP to even-size partitions of any shape (not just

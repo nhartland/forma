@@ -18,4 +18,5 @@ Since 0.1
   coordinate hashes
 - Added pattern.cells: an iterator over the constituent cells in a pattern
 - Added cell_coordinates iterator, returning an (x,y) pair rather than a cell
-- Added shuffled_cells iterator, simmilar to cells but in a randomised order
+- Added shuffled_cells iterator, similar to cells but in a randomised order
+- Added example of Worley noise

@@ -36,7 +36,7 @@
 <ul class="nowrap">
   <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
   <li><a href="../examples/carpet.lua.html">carpet.lua</a></li>
-  <li><strong>caves.lua</strong></li>
+  <li><a href="../examples/caves.lua.html">caves.lua</a></li>
   <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
   <li><a href="../examples/game_of_life.lua.html">game_of_life.lua</a></li>
   <li><a href="../examples/game_of_life_async.lua.html">game_of_life_async.lua</a></li>
@@ -46,7 +46,7 @@
   <li><a href="../examples/primitives.lua.html">primitives.lua</a></li>
   <li><a href="../examples/shapes.lua.html">shapes.lua</a></li>
   <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
-  <li><a href="../examples/worley.lua.html">worley.lua</a></li>
+  <li><strong>worley.lua</strong></li>
 </ul>
 <h2>Modules</h2>
 <ul class="nowrap">
@@ -66,31 +66,46 @@
 
 <div id="content">
 
-    <h2>caves.lua</h2>
+    <h2>worley.lua</h2>
 <pre>
-<span class="comment">-- caves.lua
-</span><span class="comment">-- Demonstration of classic cellular-automata cave generation (4-5 rule)
+<span class="comment">-- worley.lua
+</span><span class="comment">-- Demonstration of thresholded Worley noise
+</span><span class="comment">-- https://en.wikipedia.org/wiki/Worley_noise
 </span>
-<span class="keyword">local</span> primitives    = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
+<span class="comment">-- Here we take the noise field N = F_2 - F_1,
+</span><span class="comment">-- where F_n is the chebyshev distance to the nth
+</span><span class="comment">-- nearest neighbour, and take the threshold N &gt; 1
+</span>
+<span class="comment">-- Makes a good ice floe generator
+</span>
+<span class="keyword">local</span> cell          = <span class="global">require</span>(<span class="string">'forma.cell'</span>)
 <span class="keyword">local</span> subpattern    = <span class="global">require</span>(<span class="string">'forma.subpattern'</span>)
-<span class="keyword">local</span> automata      = <span class="global">require</span>(<span class="string">'forma.automata'</span>)
-<span class="keyword">local</span> neighbourhood = <span class="global">require</span>(<span class="string">'forma.neighbourhood'</span>)
+<span class="keyword">local</span> primitives    = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
 <span class="global">math</span>.randomseed( <span class="global">os</span>.time() )
 
-<span class="keyword">local</span> sq = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
-<span class="keyword">local</span> rn = subpattern.random(sq, <span class="global">math</span>.floor(sq:size()*<span class="number">0.5</span>))
-sq.onchar, sq.offchar = <span class="string">"#"</span>, <span class="string">" "</span>
+<span class="comment">-- Distance measure and threshold
+</span><span class="keyword">local</span> measure = cell.chebyshev
+<span class="keyword">local</span> threshold = <span class="number">1</span>
 
-<span class="comment">-- Moore neighbourhood rule
-</span><span class="keyword">local</span> moore = automata.rule(neighbourhood.moore(), <span class="string">"B5678/S45678"</span>)
-<span class="keyword">local</span> ite = <span class="number">0</span>
-<span class="keyword">repeat</span>
-    <span class="keyword">local</span> converged
-    rn, converged = automata.iterate(rn, sq, {moore})
-    ite = ite+<span class="number">1</span>
-<span class="keyword">until</span> converged == <span class="keyword">true</span> <span class="keyword">or</span> ite &gt; <span class="number">1000</span>
+<span class="comment">-- Domain and seeds
+</span><span class="keyword">local</span> sq = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
+<span class="keyword">local</span> rn = subpattern.random(sq, <span class="global">math</span>.floor(sq:size()*<span class="number">0.01</span>)):cell_list()
 
-<span class="global">print</span>(sq-rn)</pre>
+<span class="comment">-- Worley noise mask
+</span><span class="keyword">local</span> mask = <span class="keyword">function</span>(tcell)
+    <span class="keyword">local</span> sortfn = <span class="keyword">function</span>(a,b)
+        <span class="keyword">return</span> measure(tcell, a) &lt; measure(tcell, b)
+    <span class="keyword">end</span>
+    <span class="global">table</span>.sort(rn, sortfn)
+    <span class="keyword">local</span> d1 = measure(rn[<span class="number">1</span>], tcell)
+    <span class="keyword">local</span> d2 = measure(rn[<span class="number">2</span>], tcell)
+    <span class="keyword">return</span> d2 - d1  &gt; threshold
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> noise = subpattern.mask(sq, mask)
+noise.offchar = <span class="string">'~'</span>
+noise.onchar  = <span class="string">'▓'</span>
+<span class="global">print</span>(noise)</pre>
 
 
 </div> <!-- id="content" -->
