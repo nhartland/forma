@@ -1,7 +1,8 @@
 --- Tests of basic forma pattern functions
 local lu = require('luaunit')
-local pattern    = require("forma.pattern")
-local primitives = require("forma.primitives")
+local pattern       = require("forma.pattern")
+local primitives    = require("forma.primitives")
+local neighbourhood = require("forma.neighbourhood")
 
 testPattern = {}
 
@@ -62,6 +63,32 @@ function testPattern:testInsert()
     lu.assertEquals(pattern_1_clone.max.y,1)
     lu.assertEquals(pattern_1_clone.min.x,-1)
     lu.assertEquals(pattern_1_clone.min.y,-1)
+end
+
+function testPattern:testSurface()
+    -- Surface of a single point should just return that point back
+    local surface_pattern_3 = self.pattern_3:surface()
+    lu.assertEquals(surface_pattern_3, self.pattern_3)
+
+    -- Test pattern for surface determination
+    local test = pattern.new({{1,1,1,1,1},
+                              {1,0,1,0,1},
+                              {1,1,1,1,1},
+                              {1,0,1,0,1},
+                              {1,1,1,1,1}})
+
+    -- Moore neighbourhood surface - should be the same pattern
+    local moore_surface = test:surface()
+    lu.assertEquals(moore_surface, test)
+
+    -- von Neumann neighbourhood surface - centre tile should be zero
+    local vn_surface = test:surface(neighbourhood.von_neumann())
+    local vn_check = pattern.new({{1,1,1,1,1},
+                                  {1,0,1,0,1},
+                                  {1,1,0,1,1},
+                                  {1,0,1,0,1},
+                                  {1,1,1,1,1}})
+    lu.assertEquals(vn_surface, vn_check)
 end
 
 function testPattern:testEnlarge()
