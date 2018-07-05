@@ -334,9 +334,6 @@ function pattern.__sub(a,b)
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
 
     local c = pattern.new()
-    c.onchar = a.onchar
-    c.offchar = a.offchar
-
     for x,y in a:cell_coordinates() do
         if b:has_cell(x, y) == false then
             c:insert(x, y)
@@ -427,9 +424,6 @@ function pattern.shift(ip, sx, sy)
     assert(type(sy) == 'number', 'pattern.shift requires a number for the y coordinate')
 
     local sp = pattern.new()
-    sp.onchar = ip.onchar
-    sp.offchar = ip.offchar
-
     for tx, ty in ip:cell_coordinates() do
         sp:insert(tx+sx, ty+sy)
     end
@@ -504,12 +498,7 @@ end
 -- @return A pattern representing the edge of ip
 function pattern.edge(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
-
     local ep = pattern.new()
-    ep.onchar  = ip.onchar
-    ep.offchar = ip.offchar
-
-    -- Default is eight
     nbh = nbh or neighbourhood.moore()
     for v in ip:cells() do
         for j=1, #nbh, 1 do
@@ -521,7 +510,6 @@ function pattern.edge(ip, nbh)
             end
         end
     end
-
     return ep
 end
 
@@ -533,28 +521,17 @@ end
 -- @return A pattern representing the surface of ip
 function pattern.surface(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
-
     local sp = pattern.new()
-    sp.onchar  = ip.onchar
-    sp.offchar = ip.offchar
-
-    -- Default is eight
     nbh = nbh or neighbourhood.moore()
     for v in ip:cells() do
-        local foundEdge = false
         for j=1, #nbh, 1 do
             local vpr = v + nbh[j]
             if ip:has_cell(vpr.x, vpr.y) == false then
-                foundEdge = true
+                sp:insert(v.x, v.y)
                 break
             end
         end
-
-        if foundEdge == true then
-            sp:insert(v.x, v.y)
-        end
     end
-
     return sp
 end
 
