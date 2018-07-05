@@ -7,7 +7,7 @@
 LUA=${LUA:=luajit}
 
 # Run luaunit tests
-$LUA tests/run.lua
+$LUA tests/run.lua -o TAP
 if [ $? -ne 0 ]; then
     exit $?
 fi
