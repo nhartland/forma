@@ -22,4 +22,4 @@ script:
   - lua -lluacov tests/run.lua
 
 after_success:
-  - luacov-coveralls -c .luacov
+  - luacov-coveralls -v --exclude luaunit.lua
