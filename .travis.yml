@@ -12,11 +12,14 @@ before_install:
   - pip install hererocks
   - hererocks env --$LUA -rlatest
   - source env/bin/activate
-  - luarocks install luaunit
-  - luarocks install luacov
   - luarocks install ldoc
+  - luarocks install luaunit
+  - luarocks install luacov-coveralls
 
 script:
-  - lua -lluacov tests/run.lua -o TAP
   - ./tests/run_examples.sh
   - ldoc --output contents --dir docs .
+  - lua -lluacov tests/run.lua
+
+after_success:
+  - luacov-coveralls -v --exclude luaunit.lua
