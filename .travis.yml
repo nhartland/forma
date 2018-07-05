@@ -18,9 +18,9 @@ before_install:
   - luarocks install luacov-coveralls
 
 script:
-  - lua -lluacov tests/run.lua
   - ./tests/run_examples.sh
   - ldoc --output contents --dir docs .
+  - lua -lluacov tests/run.lua
 
 after_success:
   - luacov-coveralls
