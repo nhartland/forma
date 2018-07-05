@@ -44,7 +44,7 @@ end
 -- @param icell to be copied
 -- @return copy of `icell`
 function cell.clone(icell)
-    assert(getmetatable(icell) == cell, "cell.clone requires a cell as an argument")
+    -- Rely on cell.new to catch non-cell inputs
     return cell.new(icell.x, icell.y)
 end
 

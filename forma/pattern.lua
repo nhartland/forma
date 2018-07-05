@@ -43,6 +43,9 @@
 -- @module forma.pattern
 local pattern = {}
 
+local min = math.min
+local max = math.max
+
 local cell          = require('forma.cell')
 local neighbourhood = require('forma.neighbourhood')
 
@@ -160,10 +163,10 @@ function pattern.insert( ip, x, y )
     ip.cellkey[#ip.cellkey+1] = key
 
     -- reset pattern extent
-    ip.max.x = math.max(ip.max.x, x)
-    ip.max.y = math.max(ip.max.y, y)
-    ip.min.x = math.min(ip.min.x, x)
-    ip.min.y = math.min(ip.min.y, y)
+    ip.max.x = max(ip.max.x, x)
+    ip.max.y = max(ip.max.y, y)
+    ip.min.x = min(ip.min.x, x)
+    ip.min.y = min(ip.min.y, y)
 
     return ip
 end
