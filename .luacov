@@ -1,3 +1,4 @@
 return {
+  ["exclude"] = { 'luaunit.lua' },
   ["include"] = { 'forma/*' },
 }
