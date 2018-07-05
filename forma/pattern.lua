@@ -84,8 +84,8 @@ end
 function pattern.new(prototype)
     local np = {}
 
-    np.max = cell.new(0,0)
-    np.min = cell.new(0,0)
+    np.max = cell.new(-math.huge,-math.huge)
+    np.min = cell.new( math.huge, math.huge)
 
     -- Characters to be used with tostring metamethod
     np.offchar = '0'
@@ -158,12 +158,6 @@ function pattern.insert( ip, x, y )
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
     ip.cellmap[key] = true
     ip.cellkey[#ip.cellkey+1] = key
-
-    -- First added cell, set limits
-    if ip:size() == 1 then
-        ip.min = cell.new(x,y)
-        ip.max = cell.new(x,y)
-    end
 
     -- reset pattern extent
     ip.max.x = math.max(ip.max.x, x)

@@ -191,6 +191,7 @@ end
 -- @return a list of forma.patterns comprising the enclosed areas of ip
 function subpattern.enclosed(ip, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
+    assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
     nbh = nbh or neighbourhood.von_neumann()
     local size = ip.max - ip.min + 1
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
@@ -358,6 +359,7 @@ end
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
 function subpattern.pretty_print(domain, segments, chars)
+    assert(domain:size() > 0, "subpattern.pretty_print: domain must have at least one cell")
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
         local start_char = 47
