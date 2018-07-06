@@ -41,8 +41,8 @@ example a 'corridor' structure:
 In addition to pattern generation tools, **forma** implements several useful
 methods for the manipulation of patterns. Basic operations such as pattern
 addition or subtraction, enlargement and reflection are included. On top of
-these, various useful methods are provided, such as flood-filling, Voronoi
-tessellation, hull finding or Binary Space Partitioning. Once again most of
+these, more involved methods such as flood-filling, Voronoi tessellation, hull
+finding or Binary Space Partitioning are also available. Once again most of
 these operations can be performed under custom definitions of the cellular
 neighbourhood.
 
