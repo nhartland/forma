@@ -15,8 +15,8 @@ dimensional grid or lattice. It came about as part of experiments in making
 roguelike games. **forma** is therefore particularly suited for the generation
 of roguelike environments.
 
-Shapes can be generated in several ways. From primitive shape rasters of
-circles, lines and squares to random sampling of custom domains. A [Cellular
+Shapes can be generated in several ways. Simple rasters of primitive shapes like
+circles, lines and squares are included. A [Cellular
 Automata](https://en.wikipedia.org/wiki/Cellular_automaton) (CA) implementation
 is provided, with both synchronous and asynchronous updating. Using the CA
 methods, patterns such as the classic 4-5 rule 'cave' systems can be generated:
