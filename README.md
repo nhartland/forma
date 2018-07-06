@@ -46,8 +46,8 @@ finding or Binary Space Partitioning are also available. Once again most of
 these operations can be performed under custom definitions of the cellular
 neighbourhood.
 
-Further operations upon patterns can be easily implemented making use of a
-masking procedure, as shown in an example demonstrating thresholded [Worley
+Custom pattern operations can be easily implemented making use of a masking
+procedure, as shown in an example demonstrating thresholded [Worley
 noise](https://en.wikipedia.org/wiki/Worley_noise):
 
 <p align="center">
