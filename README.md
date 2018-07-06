@@ -18,8 +18,8 @@ of roguelike environments.
 Shapes can be generated in several ways. From simple rasters of primitive shapes
 like circles, lines and squares, to pattern generation by a [Cellular
 Automata](https://en.wikipedia.org/wiki/Cellular_automaton) (CA) implementation,
-with both synchronous and asynchronous updating. Using the CA methods, patterns
-such as the classic 4-5 rule 'cave' systems can be generated:
+including both synchronous and asynchronous update rules. Using the CA methods,
+patterns such as the classic 4-5 rule 'cave' systems can be generated:
 
 <p align="center">
   <img width="650" height="320" src="https://i.imgur.com/r6D7hxb.png">
