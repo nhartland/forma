@@ -20,3 +20,5 @@ Since 0.1
 - Added cell_coordinates iterator, returning an (x,y) pair rather than a cell
 - Added shuffled_cells iterator, similar to cells but in a randomised order
 - Added example of Worley noise
+- Various small optimisations
+- Added centroid and medoid (with general distance measure) methods and tests

@@ -331,22 +331,25 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
    assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
    assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
    assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain: " .. seeds:size() .. " vs " .. domain:size())
-   local tesselation = subpattern.voronoi(seeds, domain, measure)
-   for _=1, max_ite, 1 do
-        local newseeds = pattern.new()
-        local no_change = true --  Test for convergence
+   local current_seeds = seeds:clone()
+   for ite=1, max_ite, 1 do
+        local tesselation = subpattern.voronoi(current_seeds, domain, measure)
+        local next_seeds  = pattern.new()
         for iseg = 1, #tesselation, 1 do
             if tesselation[iseg]:size() > 0 then
-                local com = tesselation[iseg]:com()
-                newseeds:insert(com.x, com.y)
-                no_change = no_change and seeds:has_cell(com.x, com.y)
+                -- The centroid of a convex shape is always inside it, shouldn't need to use a medoid
+                local cent = tesselation[iseg]:centroid()
+                next_seeds:insert(cent.x, cent.y)
             end
         end
-        seeds  = newseeds
-        if no_change then return tesselation, seeds, true end -- converged
-        tesselation = subpattern.voronoi(seeds, domain, measure)
+        if current_seeds == next_seeds then
+            return tesselation, current_seeds, true  -- converged
+        elseif ite == max_ite then
+            return tesselation, current_seeds, false -- max ite
+        end
+        current_seeds = next_seeds
    end
-   return tesselation, seeds, false
+   assert(false, "This should not be reachable")
 end
 
 --- Utilities

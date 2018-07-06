@@ -8,7 +8,7 @@ math.randomseed(os.time())
 
 -- Domain for tesselation
 local sq = primitives.square(80,20)
-local seeds = primitives.square(3)
+local seeds = subpattern.random(sq, 9)
 
 -- Compute voronoi tesselation for various measures
 local measure = cell.manhattan
@@ -20,7 +20,7 @@ local imax = 1
 repeat
     print("Step "..imax)
     local segments, _, converged  = subpattern.voronoi_relax(seeds, sq, measure, imax)
-    table.sort(segments, function(a,b) return a:com().x < b:com().x end)
+    table.sort(segments, function(a,b) return a:centroid().x < b:centroid().x end)
     subpattern.pretty_print(sq, segments)
     imax = imax + 1
 until converged == true or imax == 100

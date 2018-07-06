@@ -134,10 +134,6 @@ function pattern.clone(ip)
         newpat:insert(x, y)
     end
 
-    -- This is important, keep the stored limits, not the actual ones
-    newpat.max = cell.new(ip.max.x, ip.max.y)
-    newpat.min = cell.new(ip.min.x, ip.min.y)
-
     newpat.offchar = ip.offchar
     newpat.onchar  = ip.onchar
 
@@ -381,28 +377,67 @@ function pattern.rcell(ip, rng)
     return cell.new(x, y)
 end
 
---- Pattern centre of mass cell method.
--- Returns the cell closest to the mass-centre (euclidean distance) of the pattern.
--- TODO: Should think about how to extend this to other distance measures, but cell only
--- operating on integers makes this a bit difficult.
--- @param ip pattern for centre of mass retrieval
--- @return the centre of mass cell in the pattern
-function pattern.com(ip)
-    assert(getmetatable(ip) == pattern, "pattern.com requires a pattern as the first argument")
-    assert(ip:size() > 0, 'pattern.com requires a filled pattern!')
+--- Compute the centroid of a pattern.
+-- Returns the (arithmetic) mean position of all cells in an input pattern.
+-- The centroid is rounded to the nearest integer-coordinate cell. Note this
+-- does not neccesarily correspond to an /active/ cell in the input pattern.
+-- If you need the closest active cell to the centroid, use `pattern.medoid`.
+-- @param ip input pattern
+-- @return the cell-coordinate centroid of `ip`
+function pattern.centroid(ip)
+    assert(getmetatable(ip) == pattern, "pattern.centroid requires a pattern as the first argument")
+    assert(ip:size() > 0, 'pattern.centroid requires a filled pattern!')
 
-    local com = cell.new(0,0)
-    local allcells = ip:cell_list()
-    for i=1, #allcells, 1 do com = com + allcells[i] end
-    local comx, comy = com.x / #allcells, com.y / #allcells
-
-    local function distance_to_com(a,b)
-        local adist = (a.x-comx)*(a.x-comx) + (a.y-comy)*(a.y-comy)
-        local bdist = (b.x-comx)*(b.x-comx) + (b.y-comy)*(b.y-comy)
-        return adist < bdist
+    -- 0.5 to round rather than truncate at the end
+    local sumx, sumy = 0, 0
+    for x, y in ip:cell_coordinates() do
+        sumx = sumx + x
+        sumy = sumy + y
     end
-    table.sort(allcells, distance_to_com)
-    return cell.clone(allcells[1])
+    local n = ip:size()
+
+    -- Clamp to integer coordinates
+    local intx = math.floor(sumx/n + 0.5)
+    local inty = math.floor(sumy/n + 0.5)
+
+    return cell.new( intx, inty )
+end
+
+--- Compute the medoid cell of a pattern.
+-- Returns the cell with the minimum distance to all other cells in the
+-- pattern, judged by any valid distance measure (default is Euclidean). The
+-- medoid cell represents the centremost active cell of a pattern, for a given
+-- distance metric.
+-- @param ip input pattern
+-- @param measure (optional) distance measure, default euclidean
+-- @return the medoid cell of `ip` for distance metric `measure`
+function pattern.medoid(ip, measure)
+    assert(getmetatable(ip) == pattern, "pattern.medoid requires a pattern as the first argument")
+    assert(ip:size() > 0, 'pattern.medoid requires a filled pattern!')
+    measure = measure or cell.euclidean2
+
+    local ncells = ip:size()
+    local cell_list = ip:cell_list()
+
+    -- Initialise distance table
+    local distance = {}
+    for _=1, ncells, 1 do distance[#distance+1] = 0 end
+
+    local minimal_distance = math.huge
+    local minimal_index = -1
+    for i=1, ncells, 1 do
+        for j=i, ncells, 1 do -- Could be i+1, but simpler to not (saves ncells=1)
+            local ij_distance = measure(cell_list[i], cell_list[j])
+            distance[i] = distance[i] + ij_distance
+            distance[j] = distance[j] + ij_distance
+        end
+        if distance[i] < minimal_distance then
+            minimal_index = i
+            minimal_distance = distance[i]
+        end
+    end
+
+    return cell_list[minimal_index]
 end
 
 ---------------------------------------------------------------------------
@@ -536,21 +571,29 @@ end
 -- @param ... patterns for intersection calculation
 -- @return A pattern consisting of the overlapping cells of the input patterns
 function pattern.intersection(...)
-    local patterns = {...} table.sort(patterns, function(a,b) return a:size() < b:size() end)
+    local patterns = {...}
     assert(#patterns > 1, "pattern.intersection requires at least two patterns as arguments")
-    local intpat = pattern.clone(patterns[1])
-    for i=2, #patterns, 1 do
-        local tpattern = patterns[i]
-        assert(getmetatable(tpattern) == pattern, "pattern.intersection requires a pattern as an argument")
-        local newint = pattern.new()
-        for x, y in intpat:cell_coordinates() do
-            if tpattern:has_cell(x, y) then
-                newint:insert(x, y)
+    table.sort(patterns, pattern.size_sort)
+    -- Use smallest pattern as domain
+    local domain = patterns[#patterns]
+    local inter  = pattern.new()
+    for x, y in domain:cell_coordinates() do
+        local foundCell = true
+        for i=#patterns-1, 1, -1 do
+            local tpattern = patterns[i]
+            assert(getmetatable(tpattern) == pattern,
+            "pattern.intersection requires a pattern as an argument")
+            if not tpattern:has_cell(x, y) then
+                foundCell = false
+                break
             end
         end
-        intpat = newint
+        -- Cell exists in all segments
+        if foundCell == true then
+            inter:insert(x, y)
+        end
     end
-    return intpat
+    return inter
 end
 
 --- Generate a pattern consisting of the sum of existing patterns
@@ -611,14 +654,14 @@ function pattern.packtile(a,b)
 end
 
 --- Center-weighted version of pattern.packtile.
--- Tries to fit pattern `a` as close as possible to pattern `b`'s centre of mass.
+-- Tries to fit pattern `a` as close as possible to pattern `b`'s centre.
 -- @param a the pattern to be packed into pattern `b`.
 -- @param b the domain which we are searching for packing solutions
 -- @return a cell in `b` where `a` can be placed, nil if no solution found.
 function pattern.packtile_centre(a,b)
     -- cell to fix coordinate systems
-    local hinge = a:com()
-    local com   = b:com()
+    local hinge = a:medoid()
+    local com   = b:centroid()
     local allcells = b:cell_list()
     local function distance_to_com(k,j)
         local adist = (k.x-com.x)*(k.x-com.x) + (k.y-com.y)*(k.y-com.y)
@@ -658,7 +701,7 @@ end
 -- @return true if the spatial hash is functioning correctly, false if not
 function pattern.test_coordinate_map(x,y)
     assert(type(x) == 'number' and type(y) == 'number',
-           "pattern.test_coordinate_map requires two numbers as arguments")
+    "pattern.test_coordinate_map requires two numbers as arguments")
     local key = coordinates_to_key(x,y)
     local tx, ty = key_to_coordinates(key)
     return (x == tx) and (y == ty)
