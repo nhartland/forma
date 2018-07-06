@@ -326,20 +326,31 @@ end
 -- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
 -- @return (segments, segment centres, convergence bool)
 function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
-   if max_ite == nil then max_ite = 30 end
-   assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
-   assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
-   assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
-   assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain: " .. seeds:size() .. " vs " .. domain:size())
-   local current_seeds = seeds:clone()
-   for ite=1, max_ite, 1 do
+    if max_ite == nil then max_ite = 30 end
+    assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
+    assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
+    assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain: " .. seeds:size() .. " vs " .. domain:size())
+    local current_seeds = seeds:clone()
+    for ite=1, max_ite, 1 do
         local tesselation = subpattern.voronoi(current_seeds, domain, measure)
         local next_seeds  = pattern.new()
         for iseg = 1, #tesselation, 1 do
             if tesselation[iseg]:size() > 0 then
-                -- The centroid of a convex shape is always inside it, shouldn't need to use a medoid
+                -- Mostly the centroid should be within the domain
+                -- If not, attempt the medoid. In either case if
+                -- there is a collision, drop the cell
                 local cent = tesselation[iseg]:centroid()
-                next_seeds:insert(cent.x, cent.y)
+                if domain:has_cell(cent.x, cent.y) then
+                    if not next_seeds:has_cell(cent.x, cent.y) then
+                        next_seeds:insert(cent.x, cent.y)
+                    end
+                else
+                    local med = tesselation[iseg]:medoid()
+                    if not next_seeds:has_cell(med.x, med.y) then
+                        next_seeds:insert(med.x, med.y)
+                    end
+                end
             end
         end
         if current_seeds == next_seeds then
@@ -348,8 +359,8 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
             return tesselation, current_seeds, false -- max ite
         end
         current_seeds = next_seeds
-   end
-   assert(false, "This should not be reachable")
+    end
+    assert(false, "This should not be reachable")
 end
 
 --- Utilities
