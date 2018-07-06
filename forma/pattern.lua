@@ -30,9 +30,9 @@
 -- -- 'Method' style with chaining used for :insert
 -- local p2 = pattern.new():insert(1,1) -- Idential as to p1
 --
--- -- Fetch a random cell and the centre-of-mass cell from a pattern
+-- -- Fetch a random cell and the medoid (centre-of-mass) cell from a pattern
 -- local random_cell = p1:rcell()
--- local com_cell = p1:com()
+-- local medoid_cell = p1:medoid()
 --
 -- -- Compute the outer (outside the existing pattern) hull
 -- -- Using 8-direction (Moore) neighbourhood
