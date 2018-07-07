@@ -1,4 +1,8 @@
-Since 0.1
+0.1
+---
+- Initial release
+
+0.2
 ---------
 
 - Improved circle raster (no longer repeats points)
