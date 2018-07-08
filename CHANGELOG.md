@@ -2,7 +2,7 @@
 ---
 - Initial release
 
-0.2
+0.2b
 ---------
 
 - Improved circle raster (no longer repeats points)
@@ -26,3 +26,4 @@
 - Added example of Worley noise
 - Various small optimisations
 - Added centroid and medoid (with general distance measure) methods and tests
+- Added a Poisson-disc sampling subpattern
