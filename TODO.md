@@ -10,7 +10,6 @@
 #### Computational geometry methods to consider implementing:
 
 - Farthest-first traversal
-- Poisson-disc sampling
-- Marching squares (or something else to draw isolines)
+- Isoline drawing (mask-then-surface)
   Might be useful to explain 'categories' a bit better
 - Boundary/contour tracing in place of pattern.edge or pattern.surface

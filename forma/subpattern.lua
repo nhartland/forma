@@ -61,6 +61,34 @@ function subpattern.random(ip, ncells, rng)
     return p
 end
 
+--- Poisson-disc random subpattern.
+-- Sample a domain according to the Poisson-disc procedure. For a given
+-- distance measure `distance`, this generates samples that are never closer
+-- together than a specified radius.  While much slower than `subpattern.random`,
+-- it provides a more uniform distribution of points in the domain (simmilar to
+-- that of `subpattern.voronoi_relax`).
+-- @param ip domain pattern to sampling from
+-- @param distance a measure  of distance between two cells d(a,b) e.g cell.euclidean
+-- @param radius the minimum separation in `distance` between two sample points.
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return a Poisson-disc sample of `domain`
+function subpattern.poisson_disc(ip, distance, radius, rng)
+    assert(getmetatable(ip) == pattern,  "subpattern.poisson_disc requires a pattern as the first argument")
+    assert(distance(cell.new(5,5), cell.new(5,5)) == 0,
+           "subpattern.poisson_disc requires a distance measure as the second argument")
+    assert(type(radius) == "number", "subpattern.poisson_disc requires a number as the target radius")
+    if rng == nil then rng = math.random end
+    local sample = pattern.new()
+    local domain = ip:clone()
+    while domain:size() > 0 do
+        local dart = domain:rcell(rng)
+        local mask = function(icell) return distance(icell, dart) >= radius end
+        domain = subpattern.mask(domain, mask)
+        sample:insert(dart.x, dart.y)
+    end
+    return sample
+end
+
 --- Returns the contiguous sub-pattern of ip that surrounts cell pt
 -- @param ip pattern upon which the flood fill is to be performed
 -- @param ipt specifies where the flood fill should begin
