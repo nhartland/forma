@@ -89,17 +89,19 @@ end
 
 --  Poisson-disc sampling ------------------------------------------------------------------
 function testSubPatterns:testPoissonDisk()
-    -- In a poisson disc sample, all sample points should be at least `r` from each other
     local r = 3
     local measure  = cell.chebyshev
     local domain = primitives.square(10)
     local sample = subpattern.poisson_disc(domain, measure, r)
+    -- In a poisson disc sample, all sample points should be at least `r` from each other
     local cell_list = sample:cell_list()
-    for i in 1, #cell_list, 1 do
-        for j in i+1, #cell_list, 1 do
-            lu.assertTrue(measure(cell_list[i], cell_list[j]) > r )
+    for i = 1, #cell_list, 1 do
+        for j = i+1, #cell_list, 1 do
+            lu.assertTrue(measure(cell_list[i], cell_list[j]) >= r )
         end
     end
+    -- Check that domain is unmodified
+    lu.assertEquals(domain:size(), 100)
     -- Check that the sample doesn't fall out of the domain
     lu.assertTrue(self:check_for_overlap({domain, sample}))
 end
@@ -176,7 +178,7 @@ end
 
 -- Helper functions ------------------------------------------------------------------
 function testSubPatterns:check_for_overlap(segments)
-    -- Check that no segments overlap
+    -- Check that segments overlap
     -- Returns true if there is an overlap, false otherwise
     for i=1, #segments-1, 1 do
         for j=i+1, #segments, 1 do
