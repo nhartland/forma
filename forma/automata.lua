@@ -99,7 +99,8 @@ end
 local function nCount(pa, nbh, ix, iy)
     local n = 0
     for i=1,#nbh,1 do
-        if pa:has_cell(ix+nbh[i].x, iy+nbh[i].y) then n = n + 1 end
+        local x, y = ix+nbh[i].x, iy+nbh[i].y
+        if pa:has_cell(x, y) then n = n + 1 end
     end
     return n
 end
@@ -107,19 +108,30 @@ end
 --- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
 local function check_cell(ruleset, ipattern, ix, iy)
-    local alive_cell = true -- Start by assuming the cell will be alive
-    for i=1, #ruleset, 1 do
-        local irule = ruleset[i]
-        assert(irule ~= nil, "forma.automata check_cell: nil element found in ruleset")
-        local count = nCount(ipattern, irule.neighbourhood, ix, iy)
-        local alive = ipattern:has_cell(ix, iy)
-        if     alive == false and irule.B[count] ~= true then  -- Birth
-            alive_cell = false break
-        elseif alive == true  and irule.S[count] ~= true then  -- Survival
-            alive_cell = false break
+    local alive = ipattern:has_cell(ix, iy)
+    if alive == false then -- Check Birth
+        for i=1, #ruleset, 1 do
+            local irule = ruleset[i]
+            local count = nCount(ipattern, irule.neighbourhood, ix, iy)
+            if irule.B[count] == nil then return false end
+        end
+    else -- Check Survival
+        for i=1, #ruleset, 1 do
+            local irule = ruleset[i]
+            local count = nCount(ipattern, irule.neighbourhood, ix, iy)
+            if irule.S[count] == nil then return false end
         end
     end
-    return alive_cell
+    return true
+end
+
+--- Check that the ruleset has no nil entries
+local function check_ruleset(ruleset)
+    for i=1, #ruleset, 1 do
+        assert(ruleset[i], "forma.automata check_ruleset: nil element found in ruleset")
+        assert(ruleset[i].B, "forma.automata check_ruleset: invalid rule found in ruleset")
+        assert(ruleset[i].S, "forma.automata check_ruleset: invalid rule found in ruleset")
+    end
 end
 
 --- CA Iteration
@@ -136,6 +148,7 @@ function automata.iterate(prevp, domain, ruleset)
     "forma.automata: iterate requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern,
     "forma.automata: iterate requires a pattern as a second argument")
+    check_ruleset(ruleset)
     local nextp = pattern.new()
     for x, y in domain:cell_coordinates() do
         local alive_cell = check_cell(ruleset, prevp, x, y)
@@ -158,6 +171,7 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
     "forma.automata: async_iterate requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern,
     "forma.automata: async_iterate requires a pattern as a second argument")
+    check_ruleset(ruleset)
     for tp in domain:shuffled_cells(rng) do
         local check = check_cell(ruleset, prevp, tp.x, tp.y)
         if prevp:has_cell(tp.x, tp.y) and check == false then

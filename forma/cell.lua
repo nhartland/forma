@@ -1,9 +1,9 @@
 --- Integer point/vector class defining the position of a cell.
 --
 -- The **cell** class behaves much as a normal 2D vector class, with the
--- restriction that its components must be integer-valued. Several normal
--- vector operations are available such as a vector equality check, vector
--- addition, subtraction, and multiplication by an integer.
+-- restriction that its components must be integer-valued. A subset of normal
+-- vector operations are available, namely a vector addition and subtraction,
+-- along with a vector equality check.
 --
 -- Along with the `cell` class definition, a number of distance measures
 -- between cell positions are provided. Specifically, the Manhattan, Chebyshev
@@ -16,7 +16,7 @@
 -- local c3 = c1:clone()     -- Clone ('method' stype)
 --
 -- -- Arithmetic
--- local c4 = (c1 + c2) - c3*5
+-- local c4 = (c1 + c2) - c3
 --
 -- -- Distance measures
 -- local d1 = cell.manhattan(c1,c2) -- Manhattan distance ('procedural' stype)
@@ -24,6 +24,11 @@
 --
 -- @module forma.cell
 local cell = {}
+
+local abs   = math.abs
+local max   = math.max
+local sqrt  = math.sqrt
+local floor = math.floor
 
 -- Cell indexing
 -- For enabling syntax sugar cell:method
@@ -34,8 +39,8 @@ cell.__index = cell
 -- @param y second coordinate
 -- @return new forma.cell
 function cell.new(x,y)
-    assert(x and y, "cell.new requires two integer arguments")
-    assert(x == math.floor(x) and y == math.floor(y), "cell.new requires two integer inputs")
+    assert(x == floor(x), "cell.new requires two integer inputs")
+    assert(y == floor(y), "cell.new requires two integer inputs")
     local newcell = { x = x, y = y }
     return setmetatable(newcell, cell)
 end
@@ -48,73 +53,30 @@ function cell.clone(icell)
     return cell.new(icell.x, icell.y)
 end
 
---- Add two cells, or add a number to a cell.
+--- Add two cell positions
 -- @within Metamethods
--- @param a first cell or number
--- @param b second cell or number
+-- @param a first cell
+-- @param b second cell
 -- @return c = a + b
 function cell.__add(a, b)
-    if type(a) == "number" and getmetatable(b) == cell then
-        return cell.new(a + b.x, a + b.y)
-    elseif type(b) == "number" and getmetatable(a) == cell then
-        return cell.new(a.x + b, a.y + b)
-    else
-        assert(getmetatable(a) == cell and getmetatable(b) == cell)
-        return cell.new(a.x + b.x, a.y + b.y)
-    end
+    return cell.new(a.x + b.x, a.y + b.y)
 end
 
---- Subtract two cells, or a number and a cell.
+--- Subtract two cell positions
 -- @within Metamethods
--- @param a first cell or number
--- @param b second cell or number
+-- @param a first cell
+-- @param b second cell
 -- @return c = a - b
 function cell.__sub(a, b)
-    if type(a) == "number" and getmetatable(b) == cell then
-        return cell.new(a - b.x, a - b.y)
-    elseif type(b) == "number" and getmetatable(a) == cell then
-        return cell.new(a.x - b, a.y - b)
-    else
-        assert(getmetatable(a) == cell and getmetatable(b) == cell)
-        return cell.new(a.x - b.x, a.y - b.y)
-    end
+    return cell.new(a.x - b.x, a.y - b.y)
 end
 
---- Multiply a cell by an number.
--- @within Metamethods
--- @param a first cell or number
--- @param b second cell or number
--- @return c = a*b
-function cell.__mul(a, b)
-    if type(a) == "number" and getmetatable(b) == cell then
-        return cell.new(b.x * a, b.y * a )
-    elseif type(b) == "number" and getmetatable(a) == cell then
-        return cell.new(a.x * b, a.y * b )
-    end
-    assert("forma.cell.__mul: unrecognised argument. Expected arguments are a forma.cell and a number.")
-end
-
---- Divide a cell position by a number.
--- @within Metamethods
--- @param a a forma.cell
--- @param b a number
--- @return c = a/b
-function cell.__div(a, b)
-    if type(a) == "number" and getmetatable(b) == cell then
-        assert(false, "Cannot divide a number by a cell")
-    elseif type(b) == "number" and getmetatable(a) == cell then
-        return cell.new(a.x / b, a.y / b )
-    end
-    assert("forma.cell.__div: unrecognised argument. Expected arguments are a forma.cell and a number.")
-end
-
---- Test for equality of two cells.
+--- Test for equality of two cell vectors.
 -- @within Metamethods
 -- @param a first cell
 -- @param b second cell
 -- @return a == b
 function cell.__eq(a, b)
-    assert(getmetatable(a) == cell and getmetatable(b) == cell)
     return a.x == b.x and a.y == b.y
 end
 
@@ -132,7 +94,7 @@ end
 -- @param b second cell
 -- @return L1(a,b) = |a.x-b.x| + |a.y-b.y|
 function cell.manhattan(a,b)
-    return math.abs(a.x - b.x) + math.abs(a.y - b.y)
+    return abs(a.x - b.x) + abs(a.y - b.y)
 end
 
 --- Chebyshev distance between cells.
@@ -141,7 +103,7 @@ end
 -- @param b second cell
 -- @return L_inf(a,b) = max(|a.x-b.x|, |a.y-b.y|)
 function cell.chebyshev(a,b)
-    return math.max(math.abs(a.x-b.x), math.abs(a.y-b.y))
+    return max(abs(a.x-b.x), abs(a.y-b.y))
 end
 
 --- Squared Euclidean distance between cells.
@@ -161,7 +123,7 @@ end
 -- @param b second cell
 -- @return L_2(a,b) = sqrt((a-b)^2)
 function cell.euclidean(a,b)
-    return math.sqrt(cell.euclidean2(a,b))
+    return sqrt(cell.euclidean2(a,b))
 end
 
 return cell

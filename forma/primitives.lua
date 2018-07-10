@@ -62,24 +62,24 @@ function primitives.line(start, finish)
     local line = pattern.new():insert(x,y)
 
     if deltax >= deltay then
-        local error = deltay - deltax/2.
+        local err = deltay - deltax/2.
         while x ~= finish.x do
-            if error > 0 or (error == 0 and sx > 0 ) then
-                error = error - deltax
+            if err > 0 or (err == 0 and sx > 0 ) then
+                err = err - deltax
                 y = y + sy
             end
-            error = error + deltay
+            err = err + deltay
             x = x + sx
             line:insert(x,y)
         end
     else
-        local error = deltax - deltay/2.
+        local err = deltax - deltay/2.
         while y ~= finish.y do
-            if error > 0 or (error == 0 and sy > 0) then
-                error = error - deltay
+            if err > 0 or (err == 0 and sy > 0) then
+                err = err - deltay
                 x = x + sx
             end
-            error = error + deltax
+            err = err + deltax
             y = y + sy
             line:insert(x,y)
         end

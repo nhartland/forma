@@ -43,8 +43,9 @@
 -- @module forma.pattern
 local pattern = {}
 
-local min = math.min
-local max = math.max
+local min   = math.min
+local max   = math.max
+local floor = math.floor
 
 local cell          = require('forma.cell')
 local neighbourhood = require('forma.neighbourhood')
@@ -149,9 +150,8 @@ end
 -- @param y second coordinate of new cell
 -- @return ip for method cascading
 function pattern.insert( ip, x, y )
-    assert(getmetatable(ip) == pattern, "pattern.insert requires a pattern as the first argument")
-    assert(type(x) == 'number', 'pattern.insert requires a number for the x coordinate')
-    assert(type(y) == 'number', 'pattern.insert requires a number for the y coordinate')
+    assert(floor(x) == x, 'pattern.insert requires an integer for the x coordinate')
+    assert(floor(y) == y, 'pattern.insert requires an integer for the y coordinate')
 
     local key = coordinates_to_key(x, y)
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
@@ -168,15 +168,12 @@ function pattern.insert( ip, x, y )
 end
 
 --- Check if a cell is active in a pattern.
+-- This has fewer checks than usual as it's a common inner-loop call.
 -- @param ip pattern for cell check
 -- @param x first coordinate of cell to be returned
 -- @param y second coordinate of cell to be returned
 -- @return True if pattern `ip` includes the cell at (x,y), False otherwise
 function pattern.has_cell(ip, x, y)
-    assert(getmetatable(ip) == pattern, "pattern.has_cell requires a pattern as the first argument")
-    assert(type(x) == 'number', 'pattern.has_cell requires a number for the x coordinate')
-    assert(type(y) == 'number', 'pattern.has_cell requires a number for the y coordinate')
-
     local key = coordinates_to_key(x, y)
     return ip.cellmap[key] ~= nil
 end
@@ -222,7 +219,8 @@ function pattern.cells(ip)
     return function()
         icell = icell + 1
         if icell <= ncell then
-            local x, y = key_to_coordinates(ip.cellkey[icell])
+            local ikey = ip.cellkey[icell]
+            local x, y = key_to_coordinates(ikey)
             return cell.new(x,y)
         end
     end
@@ -241,7 +239,8 @@ function pattern.cell_coordinates(ip)
     return function()
         icell = icell + 1
         if icell <= ncell then
-            return key_to_coordinates(ip.cellkey[icell])
+            local ikey = ip.cellkey[icell]
+            return key_to_coordinates(ikey)
         end
     end
 end
@@ -272,7 +271,8 @@ function pattern.shuffled_cells(ip, rng)
     return function()
         icell = icell + 1
         if icell <= ncell then
-            local x, y = key_to_coordinates(skeys[icell])
+            local ikey = skeys[icell]
+            local x, y = key_to_coordinates(ikey)
             return cell.new(x,y)
         end
     end
@@ -345,10 +345,8 @@ function pattern.__eq(a,b)
     assert(getmetatable(b) == pattern, "pattern equality test requires a pattern as the second argument")
     -- Easy and fast checks
     if a:size() ~= b:size() then return false end
-    if a.min.x ~= b.min.x then return false end
-    if a.min.y ~= b.min.y then return false end
-    if a.max.x ~= b.max.x then return false end
-    if a.max.y ~= b.max.y then return false end
+    if a.min ~= b.min then return false end
+    if a.max ~= b.max then return false end
     -- Slower checks
     for x,y in a:cell_coordinates() do
         if b:has_cell(x, y) == false then return false end
@@ -373,7 +371,8 @@ function pattern.rcell(ip, rng)
     -- Check RNG
     if rng == nil then rng = math.random end
     local icell = rng(#ip.cellkey)
-    local x, y = key_to_coordinates(ip.cellkey[icell])
+    local ikey = ip.cellkey[icell]
+    local x, y = key_to_coordinates(ikey)
     return cell.new(x, y)
 end
 
@@ -388,17 +387,16 @@ function pattern.centroid(ip)
     assert(getmetatable(ip) == pattern, "pattern.centroid requires a pattern as the first argument")
     assert(ip:size() > 0, 'pattern.centroid requires a filled pattern!')
 
-    -- 0.5 to round rather than truncate at the end
     local sumx, sumy = 0, 0
     for x, y in ip:cell_coordinates() do
         sumx = sumx + x
         sumy = sumy + y
     end
-    local n = ip:size()
 
     -- Clamp to integer coordinates
-    local intx = math.floor(sumx/n + 0.5)
-    local inty = math.floor(sumy/n + 0.5)
+    local n = ip:size()
+    local intx = floor(sumx/n + 0.5)
+    local inty = floor(sumy/n + 0.5)
 
     return cell.new( intx, inty )
 end
@@ -452,12 +450,14 @@ end
 -- @return New pattern consisting of ip shifted by (sx,sy)
 function pattern.shift(ip, sx, sy)
     assert(getmetatable(ip) == pattern, "pattern.shift requires a pattern as the first argument")
-    assert(type(sx) == 'number', 'pattern.shift requires a number for the x coordinate')
-    assert(type(sy) == 'number', 'pattern.shift requires a number for the y coordinate')
+    assert(floor(sx) == sx, 'pattern.shift requires an integer for the x coordinate')
+    assert(floor(sy) == sy, 'pattern.shift requires an integer for the y coordinate')
 
     local sp = pattern.new()
     for tx, ty in ip:cell_coordinates() do
-        sp:insert(tx+sx, ty+sy)
+        local nx = tx+sx
+        local ny = ty+sy
+        sp:insert(nx, ny)
     end
 
     return sp
@@ -485,7 +485,7 @@ function pattern.enlarge(ip, f)
 
     local ep = pattern.new()
     for icell in ip:cells() do
-        local sv = f*icell
+        local sv = cell.new(f*icell.x, f*icell.y)
         for i=0, f-1, 1 do
             for j=0, f-1, 1 do
                 ep:insert(sv.x+i, sv.y+j)

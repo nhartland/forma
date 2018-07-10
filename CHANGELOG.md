@@ -24,6 +24,8 @@
 - Added cell_coordinates iterator, returning an (x,y) pair rather than a cell
 - Added shuffled_cells iterator, similar to cells but in a randomised order
 - Added example of Worley noise
-- Various small optimisations
+- Various optimisations
 - Added centroid and medoid (with general distance measure) methods and tests
 - Added a Poisson-disc sampling subpattern
+- Removed some (confusing) functionality from `cell`, namely addition and
+  multiplication with a number value.

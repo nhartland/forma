@@ -184,7 +184,7 @@ end
 function subpattern.maxrectangle(ip)
     assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
     local min, max = maxrectangle_coordinates(ip)
-    local size = max - min + 1
+    local size = max - min + cell.new(1,1)
     return primitives.square(size.x, size.y):shift(min.x, min.y)
 end
 
@@ -221,7 +221,7 @@ function subpattern.enclosed(ip, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
     assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
     nbh = nbh or neighbourhood.von_neumann()
-    local size = ip.max - ip.min + 1
+    local size = ip.max - ip.min + cell.new(1,1)
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
     local segments = subpattern.segments(interior, nbh)
     local enclosed = {}
