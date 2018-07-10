@@ -10,10 +10,10 @@ __2D grid shape generation in Lua__
   <img width="650" height="320" src="https://i.imgur.com/si0FhKN.png">
 </p>
 
-This package is intended for the generation and manipulation of shapes on a two
-dimensional grid or lattice. It came about as part of experiments in making
-roguelike games. **forma** is therefore particularly suited for the generation
-of roguelike environments.
+**forma** is a utility library for the procedural generation and manipulation of
+shapes on a two dimensional grid or lattice. It came about as part of
+experiments in making roguelike games. **forma** is therefore particularly
+suited for (but not limited to) the generation of roguelike environments.
 
 Shapes can be generated in several ways. From simple rasters of primitive shapes
 like circles, lines and squares, to pattern generation by a [Cellular
