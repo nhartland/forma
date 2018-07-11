@@ -29,3 +29,4 @@
 - Added a Poisson-disc sampling subpattern
 - Removed some (confusing) functionality from `cell`, namely addition and
   multiplication with a number value.
+- Added isoline drawing example
