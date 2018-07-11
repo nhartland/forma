@@ -13,13 +13,10 @@ math.randomseed( os.time() )
 -- Domain and seed
 local measure = cell.chebyshev
 local domain   = primitives.square(80,20)
-local random   = subpattern.random(domain, 40)
-local poisson  = subpattern.poisson_disc(domain, measure, 5)
-local _, lloyd = subpattern.voronoi_relax(random, domain, measure)
 
-print("Random -----------------------------------------------------------------------")
-subpattern.pretty_print(domain, {random})
-print("Lloyd's algorithm ------------------------------------------------------------")
-subpattern.pretty_print(domain, {lloyd})
-print("Poisson-disc -----------------------------------------------------------------")
-subpattern.pretty_print(domain, {poisson})
+-- Random samples, uncomment these turn by turn to see the differences
+local random  = subpattern.poisson_disc(domain, measure, 5)
+--local random   = subpattern.random(domain, 40)
+--local _, random = subpattern.voronoi_relax(random, domain, measure)
+
+subpattern.pretty_print(domain, {random}, {'#'})
