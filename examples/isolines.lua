@@ -1,6 +1,10 @@
 -- isolines.lua
--- Simmilar to worley.lua but showing isolines
--- of the d2-d1 scalar field.
+-- Rasterising isolines of a scalar field.
+
+-- Here we generate a pattern randomly filled with points, and take as the
+-- field N(cell) = F_2(cell) - F_1(cell), where F_n is the chebyshev distance
+-- to the nth nearest neighbour. Isolines at N = 0 are drawn by thresholding N
+-- at 1 and taking the surface.
 
 local cell          = require('forma.cell')
 local subpattern    = require('forma.subpattern')
@@ -20,16 +24,12 @@ local mask = function(tcell)
         return measure(tcell, a) < measure(tcell, b)
     end
     table.sort(rn, sortfn)
-    local d1 = measure(rn[1], tcell)
-    local d2 = measure(rn[2], tcell)
-    return d2 - d1  > 1
+    local F1 = measure(rn[1], tcell)
+    local F2 = measure(rn[2], tcell)
+    return F2 - F1  > 1
 end
 
--- Compute the d2-d1 thresholded pattern and take its surface
+-- Compute the thresholded pattern and print its surface
 local noise = subpattern.mask(sq, mask)
-noise = noise:surface()
+subpattern.pretty_print(sq, {noise:surface()}, {'#'})
 
--- Print to screen
-noise.offchar = '~'
-noise.onchar  = '▓'
-print(noise)

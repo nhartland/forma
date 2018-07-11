@@ -402,6 +402,7 @@ end
 -- @param chars the characters to be printed for each segment (optional).
 function subpattern.pretty_print(domain, segments, chars)
     assert(domain:size() > 0, "subpattern.pretty_print: domain must have at least one cell")
+    assert(type(segments) == "table", "subpattern.pretty_print: second argument must be a *table* of patterns")
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
         local start_char = 47

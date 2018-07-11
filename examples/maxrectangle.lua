@@ -1,15 +1,19 @@
 -- maxrectangle.lua
--- Example and benchmark of maximum rectangle finding
+-- Example of maximum rectangle finding in a general domain
 
 local pattern    = require('forma.pattern')
 local subpattern = require('forma.subpattern')
 local primitives = require('forma.primitives')
-math.randomseed(0)
 
--- Generate some messy base pattern
+math.randomseed( os.time() )
+
+-- Generate a messy pattern inside a domain
+local domain = primitives.square(80, 20)
 local total_pattern = pattern.new()
-for _=1,100,1 do
-    local tp = primitives.square(math.random(5)):shift(math.random(20), math.random(20))
+for _=1,200,1 do
+    -- Generate a randomly sized square at a random point of the domain
+    local rpoint = domain:rcell()
+    local tp = primitives.square(math.random(7)):shift(rpoint.x, rpoint.y)
     total_pattern = total_pattern + tp
 end
 
