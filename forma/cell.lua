@@ -9,19 +9,6 @@
 -- between cell positions are provided. Specifically, the Manhattan, Chebyshev
 -- and Euclidean distances.
 --
--- @usage
--- -- Initialisation and cloning of points
--- local c1 = cell.new(x,y)  -- Constructor
--- local c2 = cell.clone(c1) -- Clone ('procedural' style)
--- local c3 = c1:clone()     -- Clone ('method' stype)
---
--- -- Arithmetic
--- local c4 = (c1 + c2) - c3
---
--- -- Distance measures
--- local d1 = cell.manhattan(c1,c2) -- Manhattan distance ('procedural' stype)
--- local d2 = c1:manhattan(c2)      -- Manhattan distance ('method' style)
---
 -- @module forma.cell
 local cell = {}
 
@@ -35,6 +22,9 @@ local floor = math.floor
 cell.__index = cell
 
 --- Initialise a new forma.cell.
+-- @usage
+-- local x, y = 1, 5
+-- local new_cell = cell.new(x,y)
 -- @param x first coordinate
 -- @param y second coordinate
 -- @return new forma.cell
@@ -46,6 +36,9 @@ function cell.new(x,y)
 end
 
 --- Perform a copy of a cell.
+-- @usage
+-- local old_cell = cell.new(1,1)
+-- local new_cell = old_cell:clone()
 -- @param icell to be copied
 -- @return copy of `icell`
 function cell.clone(icell)
@@ -54,6 +47,10 @@ function cell.clone(icell)
 end
 
 --- Add two cell positions
+-- @usage
+-- local c1, c2 = cell.new(1,1), cell.new(0,0)
+-- local c3 = c2 + c1
+-- assert(c3 == c1)
 -- @within Metamethods
 -- @param a first cell
 -- @param b second cell
@@ -63,6 +60,10 @@ function cell.__add(a, b)
 end
 
 --- Subtract two cell positions
+-- @usage
+-- local c1, c2 = cell.new(1,1), cell.new(2,2)
+-- local c3 = c2 - c1
+-- assert(c3 == c1)
 -- @within Metamethods
 -- @param a first cell
 -- @param b second cell
@@ -72,6 +73,7 @@ function cell.__sub(a, b)
 end
 
 --- Test for equality of two cell vectors.
+-- assert(cell.new(0,1) == cell.new(0,1)
 -- @within Metamethods
 -- @param a first cell
 -- @param b second cell
@@ -81,6 +83,8 @@ function cell.__eq(a, b)
 end
 
 --- Render a cell as a string.
+-- @usage
+-- print(cell.new(1,1))
 -- @within Metamethods
 -- @param icell the forma.cell being rendered as a string
 -- @return string of the form `(icell.x, icell.y)`
@@ -89,6 +93,8 @@ function cell.__tostring(icell)
 end
 
 --- Manhattan distance between cells.
+-- @usage
+-- local distance = cell.manhattan(acell, bcell)
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
@@ -98,6 +104,8 @@ function cell.manhattan(a,b)
 end
 
 --- Chebyshev distance between cells.
+-- @usage
+-- local distance = cell.chebyshev(acell, bcell)
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
@@ -106,7 +114,21 @@ function cell.chebyshev(a,b)
     return max(abs(a.x-b.x), abs(a.y-b.y))
 end
 
+--- Euclidean distance between cells.
+-- @usage
+-- local distance = cell.euclidean(acell, bcell)
+-- @within Distance measures
+-- @param a first cell
+-- @param b second cell
+-- @return L_2(a,b) = sqrt((a-b)^2)
+function cell.euclidean(a,b)
+    return sqrt(cell.euclidean2(a,b))
+end
+
 --- Squared Euclidean distance between cells.
+-- A little faster than `cell.euclidean` as it avoids the sqrt.
+-- @usage
+-- local distance = cell.euclidean2(acell, bcell)
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
@@ -115,15 +137,6 @@ function cell.euclidean2(a,b)
     local dx = a.x - b.x
     local dy = a.y - b.y
     return dx*dx+dy*dy
-end
-
---- Euclidean distance between cells.
--- @within Distance measures
--- @param a first cell
--- @param b second cell
--- @return L_2(a,b) = sqrt((a-b)^2)
-function cell.euclidean(a,b)
-    return sqrt(cell.euclidean2(a,b))
 end
 
 return cell
