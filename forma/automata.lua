@@ -160,6 +160,7 @@ end
 
 --- Asynchronous cellular automata iteration.
 -- Performs a CA update on one cell (chosen randomly) in the specified domain.
+-- This corresponds to a 'random independent scheme' update.
 -- @usage
 --  -- Domain and initial state (500 seed points) for the CA
 --  local domain = primitives.square(100)
