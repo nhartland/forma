@@ -106,6 +106,18 @@ function testSubPatterns:testPoissonDisk()
     lu.assertTrue(self:check_for_overlap({domain, sample}))
 end
 
+-- Mitchell's best-candidate sampling -------------------------------------------------
+function testSubPatterns:testMitchellSampling()
+    -- Approximate Poisson-disc by Mitchell's best-candidate algorithm
+    local measure = cell.chebyshev
+    local domain  = primitives.square(10)
+    local sample  = subpattern.mitchell_sample(domain, measure, 10, 10)
+    -- Check that domain is unmodified
+    lu.assertEquals(domain:size(), 100)
+    -- Check that the sample doesn't fall out of the domain
+    lu.assertTrue(self:check_for_overlap({domain, sample}))
+end
+
 --  Maximum Rectangle  ---------------------------------------------------------------
 function testSubPatterns:testMaxRectangle()
     -- Basic test of the 'maximum rectangular area' subpattern finder.

@@ -67,7 +67,7 @@ end
 -- together than a specified radius.  While much slower than `subpattern.random`,
 -- it provides a more uniform distribution of points in the domain (simmilar to
 -- that of `subpattern.voronoi_relax`).
--- @param ip domain pattern to sampling from
+-- @param ip domain pattern to sample from
 -- @param distance a measure  of distance between two cells d(a,b) e.g cell.euclidean
 -- @param radius the minimum separation in `distance` between two sample points.
 -- @param rng (optional) a random number generator, following the signature of math.random.
@@ -85,6 +85,56 @@ function subpattern.poisson_disc(ip, distance, radius, rng)
         local mask = function(icell) return distance(icell, dart) >= radius end
         domain = subpattern.mask(domain, mask)
         sample:insert(dart.x, dart.y)
+    end
+    return sample
+end
+
+--- Mitchell's best candidate sampling.
+-- Generates an approximate Poisson-disc sampling by Mitchell's algorithm.
+-- Picks 'k' sample point attempts at every iteration, and picks the candidate
+-- that maximises the distance to existing samples. Halts when `n` samples are
+-- picked.
+-- @param ip domain pattern to sample from
+-- @param distance a measure of distance between two cells d(a,b) e.g cell.euclidean
+-- @param n the requested number of samples
+-- @param k the number of candidates samples at each iteration
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return an approximate Poisson-disc sample of `domain`
+function subpattern.mitchell_sample(ip, distance, n, k, rng)
+    -- Bridson's Poisson Disk would be better, but it's hard to implement as it
+    -- needs a rasterised form of an isosurface for a general distance matric.
+    assert(getmetatable(ip) == pattern,
+           "subpattern.mitchell_sample requires a pattern as the first argument")
+    assert(ip:size() >= n,
+           "subpattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
+    assert(distance(cell.new(5,5), cell.new(5,5)) == 0,
+           "subpattern.mitchell_sample requires a distance measure as the second argument")
+    assert(type(n) == "number", "subpattern.mitchell_sample requires a target number of samples")
+    assert(type(k) == "number", "subpattern.mitchell_sample requires a target number of candidate tries")
+    if rng == nil then rng = math.random end
+    local seed = ip:rcell()
+    local sample = pattern.new():insert(seed.x, seed.y)
+    for _ = 2, n, 1 do
+
+        local min_distance = 0
+        local min_sample   = nil
+
+        -- Generate k samples, keeping the furthest
+        for _=1, k, 1 do
+            local jcell = ip:rcell(rng)
+            while sample:has_cell(jcell.x, jcell.y) do
+                jcell = ip:rcell(rng) end
+            local jdistance = math.huge
+            for vcell in sample:cells() do
+                jdistance = math.min(jdistance, distance(jcell, vcell))
+            end
+            if jdistance > min_distance then
+                min_sample   = jcell
+                min_distance = jdistance
+            end
+        end
+        -- Push selected sample
+        sample:insert(min_sample.x, min_sample.y)
     end
     return sample
 end
