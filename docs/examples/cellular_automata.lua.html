@@ -37,8 +37,8 @@
   <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
   <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
   <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
-  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
-  <li><strong>corridors.lua</strong></li>
+  <li><strong>cellular_automata.lua</strong></li>
+  <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
   <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
   <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
   <li><a href="../examples/platformer.lua.html">platformer.lua</a></li>
@@ -63,47 +63,34 @@
 
 <div id="content">
 
-    <h2>corridors.lua</h2>
+    <h2>cellular_automata.lua</h2>
 <pre>
-<span class="comment">-- corridors.lua
-</span><span class="comment">-- Demonstration of forma asynchronous cellular automata
-</span><span class="comment">-- Generates a plausible corridor system in an 80x20 box
+<span class="comment">-- cellular_automata.lua
+</span><span class="comment">-- Demonstration of classic cellular-automata cave generation (4-5 rule)
 </span>
-<span class="comment">-- 'asynchronous CA' follow the same rules as normal CA, but the rule is
-</span><span class="comment">-- applied at random to only once cell at a time, unlike normal synchronous
-</span><span class="comment">-- rules where the whole pattern is updated.
-</span>
-<span class="keyword">local</span> pattern       = <span class="global">require</span>(<span class="string">'forma.pattern'</span>)
 <span class="keyword">local</span> primitives    = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
-<span class="keyword">local</span> automata      = <span class="global">require</span>(<span class="string">'forma.automata'</span>)
 <span class="keyword">local</span> subpattern    = <span class="global">require</span>(<span class="string">'forma.subpattern'</span>)
+<span class="keyword">local</span> automata      = <span class="global">require</span>(<span class="string">'forma.automata'</span>)
 <span class="keyword">local</span> neighbourhood = <span class="global">require</span>(<span class="string">'forma.neighbourhood'</span>)
 
-<span class="global">math</span>.randomseed(<span class="global">os</span>.time())
+<span class="global">math</span>.randomseed( <span class="global">os</span>.time() )
 
-<span class="keyword">local</span> sq = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
-<span class="keyword">local</span> seed = sq:rcell()
+<span class="comment">-- Domain for CA
+</span><span class="keyword">local</span> sq = primitives.square(<span class="number">80</span>,<span class="number">20</span>)
 
-<span class="keyword">local</span> tp = pattern.new()
-tp:insert(seed.x, seed.y)
+<span class="comment">-- CA initial condition: sample at random from the domain
+</span><span class="keyword">local</span> ca = subpattern.random(sq, <span class="global">math</span>.floor(sq:size()*<span class="number">0.5</span>))
 
-<span class="comment">-- Complicated ruleset (leaving diag2 out provides a denser pattern)
-</span><span class="keyword">local</span> moore = automata.rule(neighbourhood.moore(),      <span class="string">"B12/S012345678"</span>)
-<span class="keyword">local</span> diag  = automata.rule(neighbourhood.diagonal(),   <span class="string">"B0123/S01234"</span>)
-<span class="keyword">local</span> diag2 = automata.rule(neighbourhood.diagonal_2(), <span class="string">"B01/S01234"</span>)
-<span class="keyword">local</span> vn    = automata.rule(neighbourhood.von_neumann(),<span class="string">"B12/S01234"</span>)
-<span class="keyword">local</span> ruleset = {diag2, diag, vn, moore}
+<span class="comment">-- Moore neighbourhood 4-5 rule
+</span><span class="keyword">local</span> moore = automata.rule(neighbourhood.moore(), <span class="string">"B5678/S45678"</span>)
+<span class="keyword">local</span> ite, converged = <span class="number">0</span>, <span class="keyword">false</span>
+<span class="keyword">while</span> converged == <span class="keyword">false</span> <span class="keyword">and</span> ite &lt; <span class="number">1000</span> <span class="keyword">do</span>
+    ca, converged = automata.iterate(ca, sq, {moore})
+    ite = ite+<span class="number">1</span>
+<span class="keyword">end</span>
 
-<span class="keyword">local</span> ite = <span class="number">0</span>
-<span class="keyword">repeat</span>
-    <span class="keyword">local</span> converged
-    tp, converged = automata.async_iterate(tp, sq, ruleset)
-    ite = ite + <span class="number">1</span>
-<span class="keyword">until</span> converged == <span class="keyword">true</span>
-
-<span class="keyword">local</span> nbh = neighbourhood.von_neumann()
-<span class="keyword">local</span> segments = subpattern.neighbourhood_categories(tp, nbh)
-subpattern.pretty_print(tp, segments, nbh:category_label())</pre>
+ca.onchar, ca.offchar = <span class="string">"#"</span>, <span class="string">" "</span>
+<span class="global">print</span>(ca)</pre>
 
 
 </div> <!-- id="content" -->

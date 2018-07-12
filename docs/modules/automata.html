@@ -43,7 +43,7 @@
   <li><a href="../modules/forma.pattern.html">forma.pattern</a></li>
   <li><a href="../modules/forma.primitives.html">forma.primitives</a></li>
   <li><a href="../modules/forma.subpattern.html">forma.subpattern</a></li>
-  <li><strong>forma.automata</strong></li>
+  <li><strong>automata</strong></li>
   <li><a href="../modules/forma.neighbourhood.html">forma.neighbourhood</a></li>
 </ul>
 <h2>Readme</h2>
@@ -68,39 +68,42 @@
 
 <div id="content">
 
-<h1>Module <code>forma.automata</code></h1>
+<h1>Module <code>automata</code></h1>
 <p>Pattern manipulation with Cellular Automata.</p>
 <p>
 
 
+<p> This module provides various functions for the generation or modification of
+ a <code>pattern</code> by means of <strong>Cellular Automata</strong>.</p>
+
 <p> Cellular Automata are defined here by two parameters. Firstly a
- <a href="../modules/forma.neighbourhood.html">neighbourhood</a> that the rule acts on. Secondly a <a href="../modules/forma.automata.html#rule">rule</a> specifying the
+ <code>neighbourhood</code> that the rule acts on. Secondly a <a href="../modules/automata.html#rule">rule</a> specifying the
  conditions under which cells are <em>Born</em> (B) or <em>Survive</em> (S). These rules
  are initialised with a string rule in the "Golly" format. i.e a rule which
  activates cells with one neighbour and deactivates cells with two would have
  the rule string "B1/S2". The neighbourhood is specified by an instance of
- the <a href="../modules/forma.neighbourhood.html">neighbourhood</a> submodule as usual.</p>
+ the <code>neighbourhood</code> submodule as usual.</p>
 
 <p> Once a rule is specified, there are two provided implementations of a CA.
- Firstly the standard <em>synchronous</em> CA is implemented in <a href="../modules/forma.automata.html#iterate">automata.iterate</a>
+ Firstly the standard <em>synchronous</em> CA is implemented in <a href="../modules/automata.html#iterate">automata.iterate</a>
  whereby all cells are updated simultaneously. Secondly an <em>asynchronous</em>
- update is provided in <a href="../modules/forma.automata.html#async_iterate">automata.async_iterate</a> in which each iteration
+ update is provided in <a href="../modules/automata.html#async_iterate">automata.async_iterate</a> in which each iteration
  updates only one cell at random.</p>
 
 <p> For both methods, multiple rules can be applied simultaneously through the
- ruleset by supplying a table containting more than one <a href="../modules/forma.automata.html#rule">rule</a>. Rule
+ ruleset by supplying a table containting more than one <a href="../modules/automata.html#rule">rule</a>. Rule
  conflicts are resolved in favour of cell deactivation, i.e if there are two
  nested rulesets, with a cell passing one and failing the other either
  survival or birth rules, the cell will be deactivated in the next iteration.</p>
-
-<p> All CA updates here are only possible on a <em>finite</em> domain of cells. That
- domain must be specified as a <a href="../modules/forma.pattern.html">pattern</a> in the iteration call.</p>
 
 <p> Both the synchronous and asynchronous iterations return the result of one CA
  iteration and a bool specifying whether or not the iteration has converged
  to a stable pattern.</p>
 
-<h3>Relevant examples</h3>
+<p> All CA updates here are only possible on a <em>finite</em> domain of cells. That
+ domain must be specified as a <code>pattern</code> in the iteration call.</p>
+
+<h2>Relevant examples</h2>
 
 <ul>
     <li><a href="../examples/cellular_automata.lua.html#">cellular_automata.lua</a></li>
@@ -112,7 +115,7 @@
 <h2><a href="#Ruleset_Generation">Ruleset Generation </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#rule">rule (neighbourhood, rule_string)</a></td>
+	<td class="name" nowrap><a href="#rule">rule (neighbourhood, rulesig)</a></td>
 	<td class="summary">Define a cellular automata rule.</td>
 	</tr>
 </table>
@@ -137,11 +140,11 @@
     <dl class="function">
     <dt>
     <a name = "rule"></a>
-    <strong>rule (neighbourhood, rule_string)</strong>
+    <strong>rule (neighbourhood, rulesig)</strong>
     </dt>
     <dd>
     Define a cellular automata rule.
- CA rules in forma are defined by a <a href="../modules/forma.neighbourhood.html">neighbourhood</a> in the usual CA sense and
+ CA rules in forma are defined by a <code>neighbourhood</code> in the usual CA sense and
  a string signature in the 'Golly' format (BXX/SXX). This function
  initialises a rule, and performs a few consistency checks.
 
@@ -149,9 +152,9 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">neighbourhood</span>
-         specifying the <a href="../modules/forma.neighbourhood.html">neighbourhood</a> the rule is to be applied in.
+         specifying the <code>neighbourhood</code> the rule is to be applied in.
         </li>
-        <li><span class="parameter">rule_string</span>
+        <li><span class="parameter">rulesig</span>
          string specifying the ruleset (i.e B23/S1).
         </li>
     </ul>
@@ -276,7 +279,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-07-13 01:06:54 </i>
+<i style="float:right;">Last updated 2018-07-13 00:47:33 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
