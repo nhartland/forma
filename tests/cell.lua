@@ -24,6 +24,10 @@ function testCell:testClone()
     lu.assertEvalToTrue(self.test_cell_1 == self.test_cell_4)
 end
 
+function testCell:testToString()
+    lu.assertEquals(tostring(self.test_cell_1), "(1,2)")
+end
+
 function testCell:testManhattan()
     local d1 = cell.manhattan(self.test_cell_1, self.test_cell_2)
     local d2 = self.test_cell_1:manhattan(self.test_cell_2)
