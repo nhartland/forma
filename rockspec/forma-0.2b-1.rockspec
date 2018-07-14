@@ -1,8 +1,8 @@
 package = "forma"
-version = "scm-1"
+version = "0.2b-1"
 source = {
-   url = "https://github.com/nhartland/forma/archive/master.zip",
-   dir = "forma-master",
+   url = "git://github.com/nhartland/forma",
+   tag = "v0.2b",
 }
 
 description = {
