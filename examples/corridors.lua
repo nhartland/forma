@@ -1,4 +1,4 @@
--- Multiple CA rules
+-- Combining cellular automata rules
 -- Here the way multiple CA rules can be combined into a single ruleset is
 -- demonstrated. A asynchronous cellular automata with a complicated ruleset
 -- generates an interesting 'corridor' like pattern.

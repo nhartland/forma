@@ -1,4 +1,4 @@
--- Cellular Automata
+-- Cellular automata
 -- Demonstration of classic cellular-automata cave generation (4-5 rule).
 local primitives    = require('forma.primitives')
 local subpattern    = require('forma.subpattern')

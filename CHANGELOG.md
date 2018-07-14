@@ -30,4 +30,5 @@
 - Removed some (confusing) functionality from `cell`, namely addition and
   multiplication with a number value.
 - Added isoline drawing example
-- Added Mitchells Best-Candidate sampling (approximate Poisson-Disc)
+- Added Mitchell's Best-Candidate sampling (approximate Poisson-Disc)
+- Renamed pretty_print to print_patterns

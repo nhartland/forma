@@ -1,4 +1,4 @@
--- Example of circle primitives
+-- Circle primitives
 local cell       = require('forma.cell')
 local pattern    = require('forma.pattern')
 local primitives = require('forma.primitives')

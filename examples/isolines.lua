@@ -1,4 +1,4 @@
--- Rasterising Isolines
+-- Rasterising isolines
 -- Here we generate a pattern randomly filled with points, and take as a scalar
 -- field `N(cell) = F_2(cell) - F_1(cell)`, where `F_n` is the Chebyshev distance
 -- to the nth nearest neighbour. Isolines at `N = 0` are drawn by thresholding `N`

@@ -1,4 +1,4 @@
--- Asynchronous Cellular Automata
+-- Asynchronous cellular automata
 -- Here the use of an asynchronous cellular automata is demonstrated, making
 -- use also of symmetrisation methods to generate a final, symmetric pattern.
 

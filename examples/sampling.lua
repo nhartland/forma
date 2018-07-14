@@ -1,7 +1,7 @@
 --- Sampling methods
 -- Demonstrations of various methods for sampling from a pattern.
 -- 1. `pattern.random` generates white noise, it's fast and irreguarly distributed.
--- 2. Lloyd's algorithm when a specific number of uniform samples are desired
+-- 2. Lloyd's algorithm when a specific number of uniform samples are desired.
 -- 3. Mitchell's algorithm is a good (fast) approximation of (2).
 -- 3. Poisson-disc when a minimum separation between samples is the only requirement.
 

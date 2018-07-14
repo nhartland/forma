@@ -1,4 +1,3 @@
 # TODO
 
 - Luarocks
-- Example gallery
