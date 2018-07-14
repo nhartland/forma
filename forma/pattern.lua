@@ -256,18 +256,18 @@ function pattern.shuffled_cells(ip, rng)
     local icell = 0
     local ncell = ip:size()
 
-    -- Copy cell keys
+    -- Copy and Fisher-Yates shuffle
+    local cellkeys = ip.cellkey
     local skeys = {}
-    for i=1,ncell,1 do
-        skeys[#skeys+1] = ip.cellkey[i]
+    for i = 1, ncell, 1 do
+        local j = rng(1, i)
+        if j ~= i then
+            skeys[i] = skeys[j]
+        end
+        skeys[j] = cellkeys[i]
     end
 
-    -- Fisher-Yates shuffle
-    for i=ncell,1,-1 do
-        local j = rng(ncell)
-        skeys[i], skeys[j] = skeys[j], skeys[i]
-    end
-
+    -- Return iterator
     return function()
         icell = icell + 1
         if icell <= ncell then

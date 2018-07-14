@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>forma Reference Manual</title>
+    <title>forma Reference</title>
     <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
 <body>
@@ -52,19 +52,16 @@
 </ul>
 <h2>Examples</h2>
 <ul class="nowrap">
+  <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
   <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
-  <li><a href="../examples/carpet.lua.html">carpet.lua</a></li>
-  <li><a href="../examples/caves.lua.html">caves.lua</a></li>
+  <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
+  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
   <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
-  <li><a href="../examples/game_of_life.lua.html">game_of_life.lua</a></li>
-  <li><a href="../examples/game_of_life_async.lua.html">game_of_life_async.lua</a></li>
-  <li><a href="../examples/lloyds_algorithm.lua.html">lloyds_algorithm.lua</a></li>
+  <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
   <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
-  <li><a href="../examples/platformer.lua.html">platformer.lua</a></li>
-  <li><a href="../examples/primitives.lua.html">primitives.lua</a></li>
-  <li><a href="../examples/shapes.lua.html">shapes.lua</a></li>
+  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
+  <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
   <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
-  <li><a href="../examples/worley.lua.html">worley.lua</a></li>
 </ul>
 
 </div>
@@ -73,56 +70,49 @@
 
 <h1>Module <code>forma.automata</code></h1>
 <p>Pattern manipulation with Cellular Automata.</p>
-<p> This module provides various functions useful for the generation or
- modification of a <a href="../modules/forma.pattern.html">pattern</a> by means of <strong>Cellular Automata</strong>.</p>
+<p>
+
 
 <p> Cellular Automata are defined here by two parameters. Firstly a
- <a href="../modules/forma.neighbourhood.html">neighbourhood</a> that the rule acts on, and secondly conditions under which
- cells are <em>Born</em> (B) or <em>Survive</em> (S). The neighbourhood is specified with
- a <a href="../modules/forma.neighbourhood.html">neighbourhood</a> class and the B/S conditions by a string rule in the
- "Golly" format. i.e a rule which activates <a href="../modules/forma.cell.html">cell</a>s with one neighbour and
- deactivates cells with two would have the rule string "B1/S2".</p>
+ <a href="../modules/forma.neighbourhood.html">neighbourhood</a> that the rule acts on. Secondly a <a href="../modules/forma.automata.html#rule">rule</a> specifying the
+ conditions under which cells are <em>Born</em> (B) or <em>Survive</em> (S). These rules
+ are initialised with a string rule in the "Golly" format. i.e a rule which
+ activates cells with one neighbour and deactivates cells with two would have
+ the rule string "B1/S2". The neighbourhood is specified by an instance of
+ the <a href="../modules/forma.neighbourhood.html">neighbourhood</a> submodule as usual.</p>
 
-<p> Once a rule is specified, there are two implementations of CA used here.
+<p> Once a rule is specified, there are two provided implementations of a CA.
  Firstly the standard <em>synchronous</em> CA is implemented in <a href="../modules/forma.automata.html#iterate">automata.iterate</a>
  whereby all cells are updated simultaneously. Secondly an <em>asynchronous</em>
- update is provided in <code>automata.iterate_async</code> in which each iteration
+ update is provided in <a href="../modules/forma.automata.html#async_iterate">automata.async_iterate</a> in which each iteration
  updates only one cell at random.</p>
 
 <p> For both methods, multiple rules can be applied simultaneously through the
- ruleset by supplying a table containting more than one <code>forma.rule</code>. Rule
+ ruleset by supplying a table containting more than one <a href="../modules/forma.automata.html#rule">rule</a>. Rule
  conflicts are resolved in favour of cell deactivation, i.e if there are two
  nested rulesets, with a cell passing one and failing the other either
  survival or birth rules, the cell will be deactivated in the next iteration.</p>
+
+<p> All CA updates here are only possible on a <em>finite</em> domain of cells. That
+ domain must be specified as a <a href="../modules/forma.pattern.html">pattern</a> in the iteration call.</p>
 
 <p> Both the synchronous and asynchronous iterations return the result of one CA
  iteration and a bool specifying whether or not the iteration has converged
  to a stable pattern.</p>
 
-<p> All CA updates here are only possible on a <em>finite</em> domain of cells. That
- domain must be specified in the iteration call.</p>
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">Domain and start seed for the CA
-local domain     = primitives.square(80,20)
-local ca_pattern = subpattern.random(sq, 0.5*sq:size())
+<h3>Relevant examples</h3>
 
--- Game of life rule
-local life = automata.rule(neighbourhood.moore(), &quot;B3/S23&quot;)
-
--- Repeat iteration until convergence is reached
-local converged = false
-repeat
-	ca_pattern, converged = automata.iterate(ca_pattern, domain, {life})
-until converged == true
-</pre>
-    </ul>
+<ul>
+    <li><a href="../examples/cellular_automata.lua.html#">cellular_automata.lua</a></li>
+    <li><a href="../examples/async_automata.lua.html#">async_automata.lua</a></li>
+</ul>
+</p>
 
 
 <h2><a href="#Ruleset_Generation">Ruleset Generation </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#rule">rule (neighbourhood, rulesig)</a></td>
+	<td class="name" nowrap><a href="#rule">rule (neighbourhood, rule_string)</a></td>
 	<td class="summary">Define a cellular automata rule.</td>
 	</tr>
 </table>
@@ -147,7 +137,7 @@ until converged == true
     <dl class="function">
     <dt>
     <a name = "rule"></a>
-    <strong>rule (neighbourhood, rulesig)</strong>
+    <strong>rule (neighbourhood, rule_string)</strong>
     </dt>
     <dd>
     Define a cellular automata rule.
@@ -161,7 +151,7 @@ until converged == true
         <li><span class="parameter">neighbourhood</span>
          specifying the <a href="../modules/forma.neighbourhood.html">neighbourhood</a> the rule is to be applied in.
         </li>
-        <li><span class="parameter">rulesig</span>
+        <li><span class="parameter">rule_string</span>
          string specifying the ruleset (i.e B23/S1).
         </li>
     </ul>
@@ -169,7 +159,7 @@ until converged == true
     <h3>Returns:</h3>
     <ol>
 
-        a verified rule for CA
+        A verified rule for use with the CA methods.
     </ol>
 
 
@@ -177,7 +167,7 @@ until converged == true
     <h3>Usage:</h3>
     <ul>
         <pre class="example"><span class="comment">-- Initialise a rule corresponding to Conway's Game of Life
-</span><span class="keyword">local</span> rule = automata.rule(neighbourhood.moore(), <span class="string">"B3/S23"</span>)</pre>
+</span><span class="keyword">local</span> gol_rule = automata.rule(neighbourhood.moore(), <span class="string">"B3/S23"</span>)</pre>
     </ul>
 
 </dd>
@@ -203,18 +193,31 @@ until converged == true
          the cells in which the CA operates
         </li>
         <li><span class="parameter">ruleset</span>
-         a list of forma.rules for performing the CA on
+         a table of forma.rules defining the CA
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
-
-        the next iteration, and a bool specifying if convergence has been reached.
+        <li>
+        The result of the CA iteration [pattern].</li>
+        <li>
+        Convergence flag [bool: true if converged, false otherwise].</li>
     </ol>
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="comment">-- Domain and initial state (500 seed points) for the CA
+</span><span class="keyword">local</span> domain = primitives.square(<span class="number">100</span>)
+<span class="keyword">local</span> ca_pat = subpattern.random(sq, <span class="number">500</span>)
+<span class="comment">-- Repeat iteration until convergence is reached
+</span><span class="keyword">local</span> converged = <span class="keyword">false</span>
+<span class="keyword">repeat</span>
+	ca_pat, converged = automata.iterate(ca_pat, domain, {gol_rule})
+<span class="keyword">until</span> converged == <span class="keyword">true</span></pre>
+    </ul>
 
 </dd>
     <dt>
@@ -224,6 +227,7 @@ until converged == true
     <dd>
     Asynchronous cellular automata iteration.
  Performs a CA update on one cell (chosen randomly) in the specified domain.
+ This corresponds to a 'random independent scheme' update.
 
 
     <h3>Parameters:</h3>
@@ -235,7 +239,7 @@ until converged == true
          the cells in which the CA operates
         </li>
         <li><span class="parameter">ruleset</span>
-         a list of forma.rules for performing the CA on
+         a table of forma.rules defining the CA
         </li>
         <li><span class="parameter">rng</span>
          a (optional) random number generator (syntax as per math.random).
@@ -244,12 +248,26 @@ until converged == true
 
     <h3>Returns:</h3>
     <ol>
-
-        the next iteration, and a bool specifying if convergence has been reached.
+        <li>
+        The result of the CA iteration [pattern].</li>
+        <li>
+        Convergence flag [bool: true if converged, false otherwise].</li>
     </ol>
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="comment">-- Domain and initial state (500 seed points) for the CA
+</span><span class="keyword">local</span> domain = primitives.square(<span class="number">100</span>)
+<span class="keyword">local</span> ca_pat = subpattern.random(sq, <span class="number">500</span>)
+<span class="keyword">local</span> rng    = <span class="global">math</span>.random
+<span class="comment">-- Repeat iteration until convergence is reached
+</span><span class="keyword">local</span> converged = <span class="keyword">false</span>
+<span class="keyword">repeat</span>
+	ca_pat, converged = automata.async_iterate(ca_pat, domain, {gol_rule}, rng)
+<span class="keyword">until</span> converged == <span class="keyword">true</span></pre>
+    </ul>
 
 </dd>
 </dl>
@@ -259,7 +277,7 @@ until converged == true
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-07-08 14:23:43 </i>
+<i style="float:right;">Last updated 2018-07-14 16:06:25 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

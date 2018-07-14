@@ -3,12 +3,12 @@
 -- `pattern`. The simplest of these is the `random` sampling of a fraction of
 -- `cell`s from the parent.
 --
--- Several of these finders return a list of all relevant sub-patterns. For
--- example the `segments` method which returns a list of all contiguous
+-- Several of these finders return a table of all relevant sub-patterns. For
+-- example the `segments` method which returns a table of all contiguous
 -- (according to some `neighbourhood`) sub-patterns by using a `floodfill`.
 --
--- In addition to the subpattern finders, a `pretty_print` utility is provided
--- to render these lists of sub-patterns into text.
+-- In addition to the subpattern finders, a `print_patterns` utility is provided
+-- to render these tables of sub-patterns into text.
 --
 -- @module forma.subpattern
 
@@ -26,6 +26,7 @@ local neighbourhood = require('forma.neighbourhood')
 -- Generate a subpattern by applying a boolean mask to an input pattern.
 -- @param ip the pattern to be masked.
 -- @param mask a function that takes a `cell` and returns true if the cell passes the mask
+-- @return A pattern consisting only of those cells in `domain` which pass the `mask` argument.
 function subpattern.mask(ip, mask)
     assert(getmetatable(ip) == pattern, "subpattern.mask requires a pattern as the first argument")
     assert(type(mask) == 'function', 'subpattern.mask requires a function for the mask')
@@ -67,7 +68,7 @@ end
 -- together than a specified radius.  While much slower than `subpattern.random`,
 -- it provides a more uniform distribution of points in the domain (simmilar to
 -- that of `subpattern.voronoi_relax`).
--- @param ip domain pattern to sampling from
+-- @param ip domain pattern to sample from
 -- @param distance a measure  of distance between two cells d(a,b) e.g cell.euclidean
 -- @param radius the minimum separation in `distance` between two sample points.
 -- @param rng (optional) a random number generator, following the signature of math.random.
@@ -85,6 +86,56 @@ function subpattern.poisson_disc(ip, distance, radius, rng)
         local mask = function(icell) return distance(icell, dart) >= radius end
         domain = subpattern.mask(domain, mask)
         sample:insert(dart.x, dart.y)
+    end
+    return sample
+end
+
+--- Mitchell's best candidate sampling.
+-- Generates an approximate Poisson-disc sampling by Mitchell's algorithm.
+-- Picks 'k' sample point attempts at every iteration, and picks the candidate
+-- that maximises the distance to existing samples. Halts when `n` samples are
+-- picked.
+-- @param ip domain pattern to sample from
+-- @param distance a measure of distance between two cells d(a,b) e.g cell.euclidean
+-- @param n the requested number of samples
+-- @param k the number of candidates samples at each iteration
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return an approximate Poisson-disc sample of `domain`
+function subpattern.mitchell_sample(ip, distance, n, k, rng)
+    -- Bridson's Poisson Disk would be better, but it's hard to implement as it
+    -- needs a rasterised form of an isosurface for a general distance matric.
+    assert(getmetatable(ip) == pattern,
+           "subpattern.mitchell_sample requires a pattern as the first argument")
+    assert(ip:size() >= n,
+           "subpattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
+    assert(distance(cell.new(5,5), cell.new(5,5)) == 0,
+           "subpattern.mitchell_sample requires a distance measure as the second argument")
+    assert(type(n) == "number", "subpattern.mitchell_sample requires a target number of samples")
+    assert(type(k) == "number", "subpattern.mitchell_sample requires a target number of candidate tries")
+    if rng == nil then rng = math.random end
+    local seed = ip:rcell()
+    local sample = pattern.new():insert(seed.x, seed.y)
+    for _ = 2, n, 1 do
+
+        local min_distance = 0
+        local min_sample   = nil
+
+        -- Generate k samples, keeping the furthest
+        for _=1, k, 1 do
+            local jcell = ip:rcell(rng)
+            while sample:has_cell(jcell.x, jcell.y) do
+                jcell = ip:rcell(rng) end
+            local jdistance = math.huge
+            for vcell in sample:cells() do
+                jdistance = math.min(jdistance, distance(jcell, vcell))
+            end
+            if jdistance > min_distance then
+                min_sample   = jcell
+                min_distance = jdistance
+            end
+        end
+        -- Push selected sample
+        sample:insert(min_sample.x, min_sample.y)
     end
     return sample
 end
@@ -180,7 +231,7 @@ end
 
 --- Find the maximal contiguous rectangular area within a pattern.
 -- @param ip the input pattern
--- @return the subpattern of `ip` consisting of its largest contiguous rectangular area.
+-- @return The subpattern of `ip` consisting of its largest contiguous rectangular area.
 function subpattern.maxrectangle(ip)
     assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
     local min, max = maxrectangle_coordinates(ip)
@@ -192,12 +243,12 @@ end
 --- Lists of sub-patterns
 -- @section subpattern_lists
 
---- Generate a list of contiguous 'segments' or sub-patterns.
+--- Generate a table of contiguous 'segments' or sub-patterns.
 -- This performs a series of flood-fill operations until all
 -- pattern cells are accounted for in the sub-patterns
 -- @param ip pattern for which the segments are to be extracted
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
--- @return a table of forma.patterns consisting of contiguous sub-patterns of ip
+-- @return A table of forma.patterns consisting of contiguous sub-patterns of ip.
 function subpattern.segments(ip, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
     nbh = nbh or neighbourhood.moore()
@@ -211,12 +262,12 @@ function subpattern.segments(ip, nbh)
     return segs
 end
 
---- Returns a list of 'enclosed' segments of a pattern.
+--- Returns a table of 'enclosed' segments of a pattern.
 -- Enclosed areas are the inactive areas of a pattern which are
 -- completely surrounded by active areas
 -- @param ip pattern for which the enclosed areas should be computed
 -- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
--- @return a list of forma.patterns comprising the enclosed areas of ip
+-- @return A table of forma.patterns comprising the enclosed areas of ip.
 function subpattern.enclosed(ip, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
     assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
@@ -296,7 +347,7 @@ end
 -- into one of the neighbourhood's categories.
 -- @param ip the pattern in which cells are to be categorised
 -- @param nbh the forma.neighbourhood used for the categorisation
--- @return a table of #nbh patterns, where each cell in ip is categorised
+-- @return A table of #nbh patterns, where each cell in ip is categorised.
 function subpattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(ip) == pattern,
     "subpattern.neighbourhood_categories requires a pattern as a first argument")
@@ -317,7 +368,7 @@ end
 -- @param seeds the set of seed cells for the tesselation
 -- @param domain the domain of the tesselation
 -- @param measure the measure used to judge distance between cells
--- @return a list of Voronoi segments
+-- @return A table of Voronoi segments.
 function subpattern.voronoi(seeds, domain, measure)
     assert(getmetatable(seeds) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
@@ -352,7 +403,9 @@ end
 -- @param domain the domain to be tesselated
 -- @param measure the distance measure to be used between cells
 -- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
--- @return (segments, segment centres, convergence bool)
+-- @return A table of resuling Voronoi segments.
+-- @return A `pattern` consisting of the voronoi segment centres.
+-- @return A bool, true if the algorithm converged, false if not.
 function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
     if max_ite == nil then max_ite = 30 end
     assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
@@ -394,25 +447,26 @@ end
 --- Utilities
 -- @section subpattern_utils
 
---- Pretty print a list of forma.pattern segments.
--- Prints a list of pattern segments to `io.output`. If provided, a table of
+--- Print a table of forma.patterns.
+-- Prints a table of pattern segments to `io.output`. If provided, a table of
 -- segment labels can be used, with one entry per segment.
 -- @param domain the basic pattern from which the segments were generated.
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
-function subpattern.pretty_print(domain, segments, chars)
-    assert(domain:size() > 0, "subpattern.pretty_print: domain must have at least one cell")
+function subpattern.print_patterns(domain, segments, chars)
+    assert(domain:size() > 0, "subpattern.print_patterns: domain must have at least one cell")
+    assert(type(segments) == "table", "subpattern.print_patterns: second argument must be a *table* of patterns")
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
         local start_char = 47
-        assert(#segments < (200 - start_char), "subpattern.pretty_print: too many segments")
+        assert(#segments < (200 - start_char), "subpattern.print_patterns: too many segments")
         chars = {}
         for i=1, #segments, 1 do
             table.insert(chars, string.char(i+start_char))
         end
     end
     assert(#segments == #chars,
-    "subpattern.pretty_print: there must be as many character list entries as segments")
+    "subpattern.print_patterns: there must be as many character table entries as segments")
     -- Print out the segments to a map
     for i=domain.min.y, domain.max.y,1 do
         local string = ''

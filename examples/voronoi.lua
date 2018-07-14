@@ -1,23 +1,14 @@
--- voronoi.lua
--- Demonstration of voronoi tesselation
-
-local cell      = require('forma.cell')
+-- Voronoi tesselation
+local cell       = require('forma.cell')
 local primitives = require('forma.primitives')
 local subpattern = require('forma.subpattern')
-math.randomseed(os.time())
 
--- Generate a random pattern and its voronoi tesselation
+-- Generate a random pattern in a specified domain
 local sq = primitives.square(80,20)
-local rn = subpattern.random(sq, math.floor(sq:size()*0.01))
+local rn = subpattern.random(sq, 10)
 
--- Compute voronoi tesselation for various measures
-local measures = {}
-measures.Chebyshev = cell.chebyshev
-measures.Euclidean = cell.euclidean
-measures.Manhattan = cell.manhattan
+-- Compute the corresponding voronoi tesselation
+local measure  = cell.chebyshev
+local segments = subpattern.voronoi(rn, sq, measure)
 
-for label, measure in pairs(measures) do
-    local segments = subpattern.voronoi(rn, sq, measure)
-    print(label)
-    subpattern.pretty_print(sq, segments)
-end
+subpattern.print_patterns(sq, segments)

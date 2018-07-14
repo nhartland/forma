@@ -1,19 +1,14 @@
--- maxrectangle.lua
--- Example and benchmark of maximum rectangle finding
+-- Maximum rectangle finding
+-- This generates a messy random pattern, and finds the largest contiguous
+-- rectangle of active cells within it.
 
-local pattern    = require('forma.pattern')
 local subpattern = require('forma.subpattern')
 local primitives = require('forma.primitives')
-math.randomseed(0)
 
--- Generate some messy base pattern
-local total_pattern = pattern.new()
-for _=1,100,1 do
-    local tp = primitives.square(math.random(5)):shift(math.random(20), math.random(20))
-    total_pattern = total_pattern + tp
-end
+-- Generate a domain and a messy 'blocking' pattern
+local domain = primitives.square(80, 20)
+local blocks = subpattern.random(domain, 80)
 
--- Find the largest contiguous rectangle in the base pattern
-local mxrect = subpattern.maxrectangle(total_pattern)
-local rest_pattern = total_pattern - mxrect
-subpattern.pretty_print(total_pattern,{rest_pattern, mxrect}, {'.','#'})
+-- Find the largest contiguous 'unblocked' rectangle in the base pattern
+local mxrect = subpattern.maxrectangle(domain - blocks)
+subpattern.print_patterns(domain,{blocks, mxrect}, {'o','#'})

@@ -1,5 +1,5 @@
 project = 'forma'
-title = 'forma Reference Manual'
+title = 'forma Reference'
 description = 'A 2D grid shape generation package'
 kind_names={topic='Readme'}
 format = 'markdown' 
