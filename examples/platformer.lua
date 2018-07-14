@@ -28,12 +28,12 @@ repeat
     tp, converged = automata.async_iterate(tp, sq, ruleset)
 until converged == true
 
-tp = pattern.edge(tp) -- Comment this out and you get a subsystem
+tp = pattern.surface(tp) -- Comment this out and you get a subsystem
 tp = pattern.enlarge(tp,4)
 tp = pattern.surface(tp)
 
--- Pretty print according to neighbourhood
+-- Print according to neighbourhood
 local nbh = neighbourhood.von_neumann()
 local segments = subpattern.neighbourhood_categories(tp, nbh)
-subpattern.pretty_print(tp, segments, nbh:category_label())
+subpattern.print_patterns(tp, segments, nbh:category_label())
 

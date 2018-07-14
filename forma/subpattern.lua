@@ -7,7 +7,7 @@
 -- example the `segments` method which returns a table of all contiguous
 -- (according to some `neighbourhood`) sub-patterns by using a `floodfill`.
 --
--- In addition to the subpattern finders, a `pretty_print` utility is provided
+-- In addition to the subpattern finders, a `print_patterns` utility is provided
 -- to render these tables of sub-patterns into text.
 --
 -- @module forma.subpattern
@@ -447,26 +447,26 @@ end
 --- Utilities
 -- @section subpattern_utils
 
---- Pretty print a table of forma.pattern segments.
+--- Print a table of forma.patterns.
 -- Prints a table of pattern segments to `io.output`. If provided, a table of
 -- segment labels can be used, with one entry per segment.
 -- @param domain the basic pattern from which the segments were generated.
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
-function subpattern.pretty_print(domain, segments, chars)
-    assert(domain:size() > 0, "subpattern.pretty_print: domain must have at least one cell")
-    assert(type(segments) == "table", "subpattern.pretty_print: second argument must be a *table* of patterns")
+function subpattern.print_patterns(domain, segments, chars)
+    assert(domain:size() > 0, "subpattern.print_patterns: domain must have at least one cell")
+    assert(type(segments) == "table", "subpattern.print_patterns: second argument must be a *table* of patterns")
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
         local start_char = 47
-        assert(#segments < (200 - start_char), "subpattern.pretty_print: too many segments")
+        assert(#segments < (200 - start_char), "subpattern.print_patterns: too many segments")
         chars = {}
         for i=1, #segments, 1 do
             table.insert(chars, string.char(i+start_char))
         end
     end
     assert(#segments == #chars,
-    "subpattern.pretty_print: there must be as many character table entries as segments")
+    "subpattern.print_patterns: there must be as many character table entries as segments")
     -- Print out the segments to a map
     for i=domain.min.y, domain.max.y,1 do
         local string = ''

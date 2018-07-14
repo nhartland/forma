@@ -1,18 +1,13 @@
--- corridors.lua
--- Demonstration of forma asynchronous cellular automata
--- Generates a plausible corridor system in an 80x20 box
-
--- 'asynchronous CA' follow the same rules as normal CA, but the rule is
--- applied at random to only once cell at a time, unlike normal synchronous
--- rules where the whole pattern is updated.
+-- Multiple CA rules
+-- Here the way multiple CA rules can be combined into a single ruleset is
+-- demonstrated. A asynchronous cellular automata with a complicated ruleset
+-- generates an interesting 'corridor' like pattern.
 
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
 local subpattern    = require('forma.subpattern')
 local neighbourhood = require('forma.neighbourhood')
-
-math.randomseed(os.time())
 
 local sq = primitives.square(80,20)
 local seed = sq:rcell()
@@ -27,13 +22,11 @@ local diag2 = automata.rule(neighbourhood.diagonal_2(), "B01/S01234")
 local vn    = automata.rule(neighbourhood.von_neumann(),"B12/S01234")
 local ruleset = {diag2, diag, vn, moore}
 
-local ite = 0
 repeat
     local converged
     tp, converged = automata.async_iterate(tp, sq, ruleset)
-    ite = ite + 1
-until converged == true
+until converged
 
 local nbh = neighbourhood.von_neumann()
 local segments = subpattern.neighbourhood_categories(tp, nbh)
-subpattern.pretty_print(tp, segments, nbh:category_label())
+subpattern.print_patterns(tp, segments, nbh:category_label())

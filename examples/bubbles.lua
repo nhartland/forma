@@ -4,7 +4,6 @@ local pattern    = require('forma.pattern')
 local primitives = require('forma.primitives')
 local subpattern = require('forma.subpattern')
 
-math.randomseed( os.time() )
 local max_radius = 4
 
 -- Setup domain and some random seeds
@@ -18,6 +17,6 @@ for seed in seeds:cells() do
     shapes = shapes + circle:shift(seed.x, seed.y)
 end
 
-subpattern.pretty_print(domain, {shapes}, {'o'})
+subpattern.print_patterns(domain, {shapes}, {'o'})
 
 

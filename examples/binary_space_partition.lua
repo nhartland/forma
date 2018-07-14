@@ -1,6 +1,4 @@
--- binary_space_partition.lua
--- Example of binary space partitioning
-
+-- Binary space partitioning
 local subpattern = require('forma.subpattern')
 local primitives = require('forma.primitives')
 
@@ -8,6 +6,6 @@ local primitives = require('forma.primitives')
 local square = primitives.square(80,20)
 local bsp = subpattern.bsp(square, 50)
 
--- Pretty print resulting pattern segments
-subpattern.pretty_print(square,bsp)
+-- Print resulting pattern segments
+subpattern.print_patterns(square,bsp)
 

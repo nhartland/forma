@@ -1,4 +1,4 @@
---- sampling.lua
+--- Sampling methods
 -- Demonstrations of various methods for sampling from a pattern.
 -- 1. `pattern.random` generates white noise, it's fast and irreguarly distributed.
 -- 2. Lloyd's algorithm when a specific number of uniform samples are desired
@@ -8,7 +8,6 @@
 local cell          = require('forma.cell')
 local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
-math.randomseed( os.time() )
 
 -- Domain and seed
 local measure = cell.chebyshev
@@ -20,4 +19,4 @@ local random  = subpattern.poisson_disc(domain, measure, 4)
 --local random   = subpattern.random(domain, 40)
 --local _, random = subpattern.voronoi_relax(random, domain, measure)
 
-subpattern.pretty_print(domain, {random}, {'#'})
+subpattern.print_patterns(domain, {random}, {'#'})
