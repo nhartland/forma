@@ -36,11 +36,11 @@ suited for (but not limited to) the generation of roguelike environments.
     - Binary space partitioning
     - Voronoi tessellation / Lloyd's algorithm
 
-With all of these methods able to use custom definitions of the cellular
+Results can be nested to produce complex patterns, and all of these methods are
+able to use custom distance measures and definitions of the cellular
 **neighbourhood** (e.g
 [Moore](https://en.wikipedia.org/wiki/Moore_neighborhood), [von
-Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)) and distance
-measures. Results can also be nested to produce complex results.
+Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
 
 ## Examples
 * [Example Gallery](examples/)
