@@ -47,12 +47,11 @@ finding or Binary Space Partitioning are also available. Once again most of
 these operations can be performed under custom definitions of the cellular
 neighbourhood.
 
-Installation
------------------------------
+## Installation
 
 **forma** is compatible with Lua 5.1, 5.2, 5.3 and LuaJIT 2.0, 2.1. The library
-is written in pure Lua, no compilation is required. Including the project is
-then as simple as including the `forma` directory in your Lua path.
+is written in pure Lua, no compilation is required. Including the project is as
+simple as including the `forma` directory in your project or Lua path.
 
 The easiest way to do this is via LuaRocks:
 
@@ -60,8 +59,7 @@ The easiest way to do this is via LuaRocks:
     luarocks install forma
 ```
 
-Generating documentation
-------------------------
+## Generating documentation
 
 Documentation is hosted [here](https://nhartland.github.io/forma/).
 
@@ -74,8 +72,7 @@ Simply running
 
 in the root directory should generate all the required pages.
 
-Testing
--------
+## Testing
 
 Unit tests and coverage reports are provided. The test suite requires
  - [LuaCov](https://keplerproject.github.io/luacov/)
