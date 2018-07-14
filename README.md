@@ -16,7 +16,7 @@ shapes on a two dimensional grid or lattice. It came about as part of
 experiments in making roguelike games. **forma** is therefore particularly
 suited for (but not limited to) the generation of roguelike environments.
 
-[Example Gallery](examples/)
+<center>[Example Gallery](examples/)</center>
 
 ## Features
 
@@ -77,11 +77,6 @@ local segments = subpattern.segments(ca, neighbourhood.von_neumann())
 -- Print a representation to io.output
 subpattern.print_patterns(domain, segments)
 ```
-### Output
-
-<p align="center">
-  <img width="650" height="320" src="https://i.imgur.com/h9O3W2c.png">
-</p>
 
 ## Installation
 
