@@ -9,7 +9,6 @@ local subpattern    = require('forma.subpattern')
 local automata      = require('forma.automata')
 local neighbourhood = require('forma.neighbourhood')
 
-
 -- Generate a square box to run the CA inside
 local domain = primitives.square(80,20)
 
