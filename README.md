@@ -14,7 +14,7 @@ __2D grid shape generation in Lua__
 **forma** is a utility library for the procedural generation and manipulation of
 shapes on a two dimensional grid or lattice. It came about as part of
 experiments in making roguelike games. **forma** is therefore particularly
-suited for (but not limited to) the generation of roguelike environments.
+suited (but not limited) to the generation of roguelike environments.
 
 
 ## Features
@@ -63,9 +63,9 @@ end
 
 -- Access a subpattern's cell coordinates for external use
 for icell in ca:cells() do
-    -- local foo = bar(cell)
+    -- local foo = bar(icell)
     -- or
-    -- local foo = bar(cell.x, cell.y)
+    -- local foo = bar(icell.x, icell.y)
 end
 
 -- Find all 4-contiguous segments of the CA pattern
