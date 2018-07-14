@@ -16,7 +16,6 @@ shapes on a two dimensional grid or lattice. It came about as part of
 experiments in making roguelike games. **forma** is therefore particularly
 suited for (but not limited to) the generation of roguelike environments.
 
-<center>[Example Gallery](examples/)</center>
 
 ## Features
 
@@ -43,8 +42,8 @@ With all of these methods able to use custom definitions of the cellular
 Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)) and distance
 measures. Results can also be nested to produce complex results.
 
-## Example
-
+## Examples
+* [Example Gallery](examples/)
 ```lua
 -- Generate a square box to run the CA inside
 local domain = primitives.square(80,20)
