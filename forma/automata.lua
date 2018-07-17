@@ -154,7 +154,7 @@ function automata.iterate(prevp, domain, ruleset)
         local alive_cell = check_cell(ruleset, prevp, x, y)
         if alive_cell == true then nextp:insert(x, y) end
     end
-    local converged = (nextp:size() == prevp:size()) and (nextp-prevp):size() == 0
+    local converged = nextp == prevp
     return nextp, converged
 end
 
