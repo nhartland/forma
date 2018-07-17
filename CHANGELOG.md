@@ -2,7 +2,7 @@
 ---
 - Initial release
 
-0.2b
+0.2
 ---------
 
 ### Features
@@ -36,3 +36,10 @@
   multiplication with a number value.
 - Added isoline drawing example
 - Renamed pretty_print to print_patterns
+
+Since 0.2
+---------
+
+# Misc
+- Slightly faster convergence check for automata.iterate
+- Slightly streamlined corridors example
