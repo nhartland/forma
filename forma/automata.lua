@@ -184,15 +184,15 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
     assert(getmetatable(domain) == pattern,
     "forma.automata: async_iterate requires a pattern as a second argument")
     check_ruleset(ruleset)
-    for tp in domain:shuffled_cells(rng) do
-        local check = check_cell(ruleset, prevp, tp.x, tp.y)
-        if prevp:has_cell(tp.x, tp.y) and check == false then
+    for x, y in domain:shuffled_coordinates(rng) do
+        local check = check_cell(ruleset, prevp, x, y)
+        if prevp:has_cell(x, y) and check == false then
             -- Copy old pattern, subtracting off newly deactivated cell
-            local nextp = prevp - pattern.new():insert(tp.x, tp.y)
+            local nextp = prevp - pattern.new():insert(x, y)
             return nextp, false
-        elseif prevp:has_cell(tp.x, tp.y) == false and check == true then
+        elseif prevp:has_cell(x, y) == false and check == true then
             -- Activate new cell
-            local nextp = prevp + pattern.new():insert(tp.x, tp.y)
+            local nextp = prevp + pattern.new():insert(x, y)
             return nextp, false
         end
     end
