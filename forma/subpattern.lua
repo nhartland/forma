@@ -140,9 +140,9 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
     return sample
 end
 
---- Returns the contiguous sub-pattern of ip that surrounts cell pt
+--- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
 -- @param ip pattern upon which the flood fill is to be performed
--- @param ipt specifies where the flood fill should begin
+-- @param ipt a `cell` specifying the origin of the flood fill
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a forma.pattern consisting of the contiguous segment about cell
 function subpattern.floodfill(ip, ipt, nbh)
