@@ -3,16 +3,14 @@
 -- demonstrated. A asynchronous cellular automata with a complicated ruleset
 -- generates an interesting 'corridor' like pattern.
 
-local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
 local subpattern    = require('forma.subpattern')
 local neighbourhood = require('forma.neighbourhood')
 
--- Generate a domain, and an initial state ca with a random seed
+-- Generate a domain, and an initial state ca with one random seed cell
 local domain = primitives.square(80,20)
-local seed = domain:rcell()
-local ca = pattern.new():insert(seed.x, seed.y)
+local ca = subpattern.random(domain, 1)
 
 -- Complicated ruleset, try leaving out or adding more rules
 local moore = automata.rule(neighbourhood.moore(),      "B12/S012345678")
