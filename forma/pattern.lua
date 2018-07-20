@@ -70,6 +70,19 @@ local function key_to_coordinates(key)
     return xp- MAX_COORDINATE, yp - MAX_COORDINATE
 end
 
+-- Copies an input table in a randomly shuffled order
+local function shuffled_copy(intable, rng)
+    -- Copy and Fisher-Yates shuffle
+    local extable = {}
+    for i = 1, #intable, 1 do
+        local j = rng(1, i)
+        if j ~= i then
+            extable[i] = extable[j]
+        end
+        extable[j] = intable[i]
+    end
+    return extable
+end
 
 --- Basic methods.
 -- Methods for the creation, copying and adding of cells to a pattern.
@@ -209,16 +222,15 @@ end
 --- Iterators.
 -- @section Iterators
 
---- Return an iterator over active cells in the pattern.
+--- Iterator over active cells in the pattern.
 -- @param ip source pattern for active cell iterator
--- @return an iterator providing a `cell` table for every active cell in the pattern
+-- @return an iterator returning a `cell` for every active cell in the pattern
 function pattern.cells(ip)
     assert(getmetatable(ip) == pattern, "pattern.cells requires a pattern as the first argument")
-    local icell = 0
-    local ncell = ip:size()
+    local icell, ncells = 0, ip:size()
     return function()
         icell = icell + 1
-        if icell <= ncell then
+        if icell <= ncells then
             local ikey = ip.cellkey[icell]
             local x, y = key_to_coordinates(ikey)
             return cell.new(x,y)
@@ -226,54 +238,75 @@ function pattern.cells(ip)
     end
 end
 
---- Return an iterator over active cell coordinates in the pattern.
--- Simmilar to `pattern.cells` but provides an iterator that runs
--- over (x,y) coordinates instead of `cell` instances. Unlike in
--- `pattern.cells` no tables are created here.
+--- Iterator over active cell coordinates in the pattern.
+-- Simmilar to `pattern.cells` but provides an iterator that runs over (x,y)
+-- coordinates instead of `cell` instances. Normally faster than
+-- `pattern.cells` as no tables are created here.
 -- @param ip source pattern for active cell iterator
--- @return an iterator over cell (x,y) coordinates
+-- @return an iterator returning active cell (x,y) coordinates
 function pattern.cell_coordinates(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_coordinates requires a pattern as the first argument")
-    local icell = 0
-    local ncell = ip:size()
+    local icell, ncells = 0, ip:size()
     return function()
         icell = icell + 1
-        if icell <= ncell then
+        if icell <= ncells then
             local ikey = ip.cellkey[icell]
             return key_to_coordinates(ikey)
         end
     end
 end
 
---- Return an iterator over active cells in the pattern in a random order.
--- Simmilar to `pattern.cells` but provides an iterator that returns cells in a randomised order.
+
+--- Shuffled iterator over active cells in the pattern.
+-- Simmilar to `pattern.cells` but provides an iterator that returns cells in a
+-- randomised order, according to a provided random number generator.
 -- @param ip source pattern for active cell iterator
 -- @param rng (optional) A random number generating table, following the signature of math.random
--- @return an iterator providing a `cell` table for every active cell in the pattern, in a randomised order
+-- @return an iterator returning a `cell` for every active cell in the pattern, in a randomised order
 function pattern.shuffled_cells(ip, rng)
-    assert(getmetatable(ip) == pattern, "pattern.shuffled_cells requires a pattern as the first argument")
+    assert(getmetatable(ip) == pattern,
+           "pattern.shuffled_cells requires a pattern as the first argument")
     if rng == nil then rng = math.random end
-    local icell = 0
-    local ncell = ip:size()
+    local icell, ncells = 0, ip:size()
 
     -- Copy and Fisher-Yates shuffle
     local cellkeys = ip.cellkey
-    local skeys = {}
-    for i = 1, ncell, 1 do
-        local j = rng(1, i)
-        if j ~= i then
-            skeys[i] = skeys[j]
-        end
-        skeys[j] = cellkeys[i]
-    end
+    local skeys = shuffled_copy(cellkeys, rng)
 
     -- Return iterator
     return function()
         icell = icell + 1
-        if icell <= ncell then
+        if icell <= ncells then
             local ikey = skeys[icell]
             local x, y = key_to_coordinates(ikey)
             return cell.new(x,y)
+        end
+    end
+end
+
+--- Shuffled iterator over active cell coordinates in the pattern.
+-- Simmilar to `pattern.cell_coordinates` but returns cell (x,y) coordinates in
+-- a randomised order according to a provided random number generator.
+-- @param ip source pattern for active cell
+-- iterator
+-- @param rng (optional) A random number generating table, following the signature of math.random
+-- @return an iterator returning active cell (x,y) coordinates, randomly shuffled
+function pattern.shuffled_coordinates(ip, rng)
+    assert(getmetatable(ip) == pattern,
+           "pattern.shuffled_coordinates requires a pattern as the first argument")
+    if rng == nil then rng = math.random end
+    local icell, ncells = 0, ip:size()
+
+    -- Copy and Fisher-Yates shuffle
+    local cellkeys = ip.cellkey
+    local skeys = shuffled_copy(cellkeys, rng)
+
+    -- Return iterator
+    return function()
+        icell = icell + 1
+        if icell <= ncells then
+            local ikey = skeys[icell]
+            return key_to_coordinates(ikey)
         end
     end
 end
