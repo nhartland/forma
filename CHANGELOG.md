@@ -40,7 +40,10 @@
 Since 0.2
 ---------
 
+# Features
+- Shuffled version of cell_coordinates iterator
+- Pattern rotation operator
+
 # Misc
 - Slightly faster convergence check for automata.iterate
 - Slightly streamlined corridors example
-- Shuffled version of cell_coordinates iterator
