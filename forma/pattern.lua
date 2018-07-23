@@ -356,8 +356,8 @@ end
 -- @param b pattern to be subtracted from a
 -- @return New pattern consisting of the subset of cells in a which are not in b
 function pattern.__sub(a,b)
-    assert(getmetatable(a) == pattern, "pattern addition requires a pattern as the first argument")
-    assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
+    assert(getmetatable(a) == pattern, "pattern subtraction requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern subtraction requires a pattern as the second argument")
 
     local c = pattern.new()
     for x,y in a:cell_coordinates() do

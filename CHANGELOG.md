@@ -47,3 +47,6 @@ Since 0.2
 # Misc
 - Slightly faster convergence check for automata.iterate
 - Slightly streamlined corridors example
+
+# Bugfix
+- Corrected assert error message in pattern subtraction
