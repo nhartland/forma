@@ -528,6 +528,18 @@ function pattern.enlarge(ip, f)
     return ep
 end
 
+--- Rotate a pattern by 90° clockwise about the origin
+-- @param ip pattern to be rotated
+-- @return copy of `ip` which has been rotated by 90°
+function pattern.rotate(ip)
+    assert(getmetatable(ip) == pattern, "pattern.rotate requires a pattern as the first argument")
+    local np = pattern.new()
+    for x, y in ip:cell_coordinates() do
+        np:insert(y, -x)
+    end
+    return np
+end
+
 --- Generate a copy of a pattern, mirroring it vertically.
 -- @param ip pattern for reflection
 -- @return copy of `ip` which has been is reflected vertically

@@ -20,8 +20,7 @@ suited (but not limited) to the generation of roguelike environments.
 ## Features
 
 - **A spatial-hashing pattern** class for fast lookup of active cells.
-- **Pattern manipulators** such as addition, subtraction and reflection for the
-  generation of symmetrical patterns.
+- **Pattern manipulators** such as the addition, subtraction, rotation and reflection of patterns.
 - **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares.
 - A very flexible **cellular automata** implementation with
     - Synchronous and asynchronous updates

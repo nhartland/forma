@@ -161,3 +161,16 @@ function testPattern:testEnlarge()
     lu.assertEquals(enlarged_pattern_1:size(),0)
     lu.assertEquals(enlarged_pattern_2:size(),100)
 end
+
+function testPattern:testRotate()
+    -- Test that radially symmetric pattern is unchanged after rotation
+    local rotate_pattern_2 = self.pattern_2:rotate():normalise()
+    lu.assertEquals(rotate_pattern_2, self.pattern_2)
+    -- Test non-radially symmetric pattern
+    local test = pattern.new({{1,0},{1,1}}):rotate():normalise()
+    local expectation = pattern.new({{1,1},{1,0}})
+    lu.assertEquals(test, expectation)
+    -- Test 2pi rotation
+    local test2 = test:rotate():rotate():rotate():rotate()
+    lu.assertEquals(test, test2)
+end
