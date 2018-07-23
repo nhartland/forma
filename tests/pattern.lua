@@ -71,6 +71,38 @@ function testPattern:testInsert()
     lu.assertEquals(insert_test.min.y,-1)
 end
 
+-- Test the standard iterator methods
+function testPattern:testIterators()
+    local sqpat = primitives.square(20)
+    -- These should return alive cells in the same order
+    local cells = sqpat:cells()
+    local coords = sqpat:cell_coordinates()
+    for i=1, sqpat:size(), 1 do
+        local ncell  = cells()
+        local nx, ny = coords()
+        -- Same order in cells and coordinates
+        lu.assertEquals(ncell.x, nx)
+        lu.assertEquals(ncell.y, ny)
+        -- Is a valid cell
+        lu.assertTrue(sqpat:has_cell(nx, ny))
+    end
+    -- Test that the iterators terminate
+    lu.assertEquals(cells(), nil)
+    lu.assertEquals(coords(), nil)
+end
+
+-- Test the shuffled iterator methods
+-- It's a bit tricky to test, given the randomness
+function testPattern:testShuffledIterators()
+    local sqpat = primitives.square(20)
+    for icell in sqpat:shuffled_cells() do
+        lu.assertTrue(sqpat:has_cell(icell.x, icell.y))
+    end
+    for x, y in sqpat:shuffled_coordinates() do
+        lu.assertTrue(sqpat:has_cell(x, y))
+    end
+end
+
 function testPattern:testCentroid()
     -- Test five patterns which should have the same
     -- centroid, and one which should not
