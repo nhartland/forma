@@ -88,7 +88,7 @@ The easiest way to do this is via LuaRocks:
     luarocks install forma
 ```
 
-## Generating documentation
+## Documentation
 
 Documentation is hosted [here](https://nhartland.github.io/forma/).
 
