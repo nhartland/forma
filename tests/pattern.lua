@@ -35,10 +35,12 @@ end
 -- Test eq, add, sub operators
 function testPattern:testOperators()
     lu.assertEquals(self.pattern_1, self.pattern_1)
-    lu.assertEquals(self.pattern_1 +self.pattern_2,
+    lu.assertEquals(self.pattern_1 + self.pattern_2,
                     self.pattern_2)
-    lu.assertEquals(self.pattern_2 -self.pattern_2,
+    lu.assertEquals(self.pattern_2 - self.pattern_2,
                     self.pattern_1)
+    lu.assertEquals(self.pattern_2 - self.pattern_1,
+                    self.pattern_2)
 end
 
 function testPattern:testConstructor()
@@ -55,6 +57,27 @@ function testPattern:testClone()
     local pattern_5_clone = self.pattern_5:clone()
     lu.assertEquals(pattern_5_clone, self.pattern_5)
     lu.assertNotEquals(pattern_5_clone, self.pattern_4)
+end
+
+function testPattern:testSum()
+    -- Test pattern.sum() helper function
+    local tp1 = pattern.new({{1,1,1,1,1},
+                             {1,0,0,0,1},
+                             {1,0,0,0,1},
+                             {1,0,0,0,1},
+                             {1,1,1,1,1}})
+    local tp2 = pattern.new({{0,0,0,0,0},
+                             {0,1,1,1,0},
+                             {0,1,1,1,0},
+                             {0,1,1,1,0},
+                             {0,0,0,0,0}})
+    local tp12 = primitives.square(5)
+    local sum  = pattern.sum(tp1, tp2)
+    lu.assertEquals(tp1+tp2, tp12)
+    lu.assertEquals(tp1+tp2, sum)
+    lu.assertEquals(tp12, sum)
+    lu.assertNotEquals(tp1, sum)
+    lu.assertNotEquals(tp2, sum)
 end
 
 -- Test insert methods
