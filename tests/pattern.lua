@@ -52,6 +52,12 @@ function testPattern:testConstructor()
     lu.assertEquals(self.pattern_5, self.pattern_2)
 end
 
+function testPattern:testToString()
+    -- Test pattern tostring method
+    local pattern_5_string = tostring(self.pattern_5)
+    lu.assertIsString(pattern_5_string)
+end
+
 function testPattern:testClone()
     -- Test pattern cloning
     local pattern_5_clone = self.pattern_5:clone()
