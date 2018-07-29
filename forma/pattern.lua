@@ -323,13 +323,12 @@ end
 function pattern.__tostring(ip)
     local string = ''
     for y = ip.min.y, ip.max.y, 1 do
-        string = string
         for x = ip.min.x, ip.max.x, 1 do
-            string = string .. (ip:has_cell(x,y) and ip.onchar or ip.offchar)
+            local char = ip:has_cell(x,y) and ip.onchar or ip.offchar
+            string = string .. char
         end
         string = string .. '\n'
     end
-
     return string
 end
 
