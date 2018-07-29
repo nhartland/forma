@@ -52,17 +52,17 @@ function testPattern:testConstructor()
     lu.assertEquals(self.pattern_5, self.pattern_2)
 end
 
-function testPattern:testToString()
-    -- Test pattern tostring method
-    local pattern_5_string = tostring(self.pattern_5)
-    lu.assertIsString(pattern_5_string)
-end
-
 function testPattern:testClone()
     -- Test pattern cloning
     local pattern_5_clone = self.pattern_5:clone()
     lu.assertEquals(pattern_5_clone, self.pattern_5)
     lu.assertNotEquals(pattern_5_clone, self.pattern_4)
+end
+
+function testPattern:testToString()
+    -- Test pattern tostring method
+    local pattern_5_string = tostring(self.pattern_5)
+    lu.assertIsString(pattern_5_string)
 end
 
 function testPattern:testSum()
@@ -214,6 +214,23 @@ function testPattern:testSurface()
                                   {1,0,1,0,1},
                                   {1,1,1,1,1}})
     lu.assertEquals(vn_surface, vn_check)
+end
+
+function testPattern:testNormalise()
+    -- Test pattern normalisation
+    -- the normalise method should set the origin of any pattern to (0,0)
+    local test_pattern_1 = primitives.square(5)
+    local test_pattern_2 = test_pattern_1:shift(100,100)
+    local test_pattern_3 = test_pattern_2:normalise()
+    lu.assertNotEquals(test_pattern_1, test_pattern_2)
+    lu.assertNotEquals(test_pattern_2, test_pattern_3)
+    lu.assertEquals(test_pattern_1, test_pattern_3)
+    -- Test that doesn't depend on :shift
+    local test_pattern_4 = pattern.new():insert(5,5)
+    local test_pattern_5 = test_pattern_4:normalise()
+    lu.assertTrue (test_pattern_4:has_cell(5,5))
+    lu.assertFalse(test_pattern_5:has_cell(5,5))
+    lu.assertTrue (test_pattern_5:has_cell(0,0))
 end
 
 function testPattern:testEnlarge()
