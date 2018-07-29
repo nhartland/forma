@@ -240,6 +240,19 @@ function testPattern:testEnlarge()
     lu.assertEquals(enlarged_pattern_2:size(),100)
 end
 
+function testPattern:testReflect()
+    -- Test that a square pattern rotated both vertically and horizontally
+    -- is a square pattern of twice the side length
+    local test_square_4 = primitives.square(4)
+    local test_square_8 = primitives.square(8)
+    local test_reflect = test_square_4:vreflect():hreflect()
+    lu.assertEquals(test_square_8, test_reflect)
+    -- Test for reflections on a more irregular pattern
+    local test_irreg = pattern.new({{1,0},{0,1}}):vreflect()
+    local test_irreg_reflect = pattern.new({{1,0,0,1},{0,1,1,0},{0,0,0,0},{0,0,0,0}})
+    lu.assertEquals(test_irreg, test_irreg_reflect)
+end
+
 function testPattern:testRotate()
     -- Test that radially symmetric pattern is unchanged after rotation
     local rotate_pattern_2 = self.pattern_2:rotate():normalise()
