@@ -573,9 +573,10 @@ end
 -- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
 -- @return A pattern representing the edge of ip
 function pattern.edge(ip, nbh)
-    assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
     local ep = pattern.new()
     nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.edge requires a neighbourhood as an argument")
     for v in ip:cells() do
         for j=1, #nbh, 1 do
             local vpr = v + nbh[j]

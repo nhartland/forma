@@ -190,6 +190,26 @@ function testPattern:testMedoid()
     lu.assertNotEquals(medoid5, medoid6)
 end
 
+function testPattern:testEdge()
+    -- Test pattern for edge determination
+    local test = pattern.new({{0,0,0},
+                              {0,1,0},
+                              {0,0,0}})
+    -- Moore neighbourhood edge
+    local moore_edge = pattern.new({{1,1,1},
+                                    {1,0,1},
+                                    {1,1,1}})
+    -- Von Neumann neighbourhood edge
+    local vn_edge    = pattern.new({{0,1,0},
+                                    {1,0,1},
+                                    {0,1,0}})
+
+    -- Moore neighbourhood edge: default case
+    lu.assertEquals(test:edge(), moore_edge)
+    -- Von Neumann edge test
+    lu.assertEquals(test:edge(neighbourhood.von_neumann()), vn_edge)
+end
+
 function testPattern:testSurface()
     -- Surface of a single point should just return that point back
     local surface_pattern_3 = self.pattern_3:surface()
