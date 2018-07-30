@@ -203,11 +203,17 @@ function testPattern:testEdge()
     local vn_edge    = pattern.new({{0,1,0},
                                     {1,0,1},
                                     {0,1,0}})
+    -- Diagonal neighbourhood edge
+    local d_edge     = pattern.new({{1,0,1},
+                                    {0,0,0},
+                                    {1,0,1}})
 
     -- Moore neighbourhood edge: default case
     lu.assertEquals(test:edge(), moore_edge)
     -- Von Neumann edge test
     lu.assertEquals(test:edge(neighbourhood.von_neumann()), vn_edge)
+    -- Diagonal edge test
+    lu.assertEquals(test:edge(neighbourhood.diagonal()), d_edge)
 end
 
 function testPattern:testSurface()
