@@ -248,8 +248,12 @@ function testPattern:testReflect()
     local test_reflect = test_square_4:vreflect():hreflect()
     lu.assertEquals(test_square_8, test_reflect)
     -- Test for reflections on a more irregular pattern
-    local test_irreg = pattern.new({{1,0},{0,1}}):vreflect()
-    local test_irreg_reflect = pattern.new({{1,0,0,1},{0,1,1,0},{0,0,0,0},{0,0,0,0}})
+    local test_irreg = pattern.new({{1,0},
+                                    {0,1}}):hreflect()
+    local test_irreg_reflect = pattern.new({{1,0,0,1},
+                                            {0,1,1,0},
+                                            {0,0,0,0},
+                                            {0,0,0,0}})
     lu.assertEquals(test_irreg, test_irreg_reflect)
 end
 
@@ -258,8 +262,15 @@ function testPattern:testRotate()
     local rotate_pattern_2 = self.pattern_2:rotate():normalise()
     lu.assertEquals(rotate_pattern_2, self.pattern_2)
     -- Test non-radially symmetric pattern
+    -- This expectation might be a bit counter-intuitive, but remember
+    -- that the coordinate system is 'terminal-like' i.e
+    --        ------> +x
+    --        |
+    --        |
+    --        |
+    --       +y
     local test = pattern.new({{1,0},{1,1}}):rotate():normalise()
-    local expectation = pattern.new({{1,1},{1,0}})
+    local expectation = pattern.new({{0,1},{1,1}})
     lu.assertEquals(test, expectation)
     -- Test 2pi rotation
     local test2 = test:rotate():rotate():rotate():rotate()

@@ -126,7 +126,7 @@ function pattern.new(prototype)
             for j=1,N,1 do
                 local icell = row[j]
                 if icell == 1 then
-                    np:insert(i-1,j-1) -- Patterns start from zero
+                    np:insert(j-1,i-1) -- Patterns start from zero
                 else
                     assert(icell == 0, 'pattern.new: invalid prototype entry (must be 1 or 0): '.. icell)
                 end
@@ -321,7 +321,7 @@ end
 -- @param ip The pattern to be rendered as a string
 -- @return pattern as string
 function pattern.__tostring(ip)
-    local string = ''
+    local string = '- pattern origin: ' .. tostring(ip.min) .. '\n'
     for y = ip.min.y, ip.max.y, 1 do
         for x = ip.min.x, ip.max.x, 1 do
             local char = ip:has_cell(x,y) and ip.onchar or ip.offchar

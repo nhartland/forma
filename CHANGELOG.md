@@ -45,8 +45,11 @@ Since 0.2
 - Pattern rotation operator
 
 # Misc
+- Several more tests
 - Slightly faster convergence check for automata.iterate
 - Slightly streamlined corridors example
+- Changed coordinate handling of pattern.new with prototype to match behaviour
+  from pattern:\_tostring
 
 # Bugfix
 - Corrected assert error message in pattern subtraction
