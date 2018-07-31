@@ -54,10 +54,10 @@ function subpattern.random(ip, ncells, rng)
     assert(ncells <= ip:size(),          "subpattern.random requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
     local p = pattern.new()
-    local next_cell = ip:shuffled_cells(rng)
+    local next_coords = ip:shuffled_coordinates(rng)
     while p:size() < ncells do
-        local newcell = next_cell()
-        p:insert(newcell.x, newcell.y)
+        local x, y = next_coords()
+        p:insert(x, y)
     end
     return p
 end
