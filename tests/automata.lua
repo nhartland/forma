@@ -90,7 +90,7 @@ function testAutomata:testAsynchronous()
         lu.assertEquals(math.abs(newoscillator:size() - oscillator:size()), 1)
     end
     -- Verify block CA remains a still-life in asynchronous update
-    local _, converged = automata.iterate(self.block, self.sixbysix, {self.life_rule})
+    local _, converged = automata.async_iterate(self.block, self.sixbysix, {self.life_rule})
     lu.assertTrue(converged)
 end
 
