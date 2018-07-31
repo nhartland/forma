@@ -150,14 +150,18 @@ function subpattern.floodfill(ip, ipt, nbh)
     assert(ipt, "subpattern.floodfill requires a cell as the second argument")
     nbh = nbh or neighbourhood.moore()
     local retpat = pattern.new()
-    local function ff(pt)
-        if ip:has_cell(pt.x, pt.y) and retpat:has_cell(pt.x, pt.y) == false then
-            retpat:insert(pt.x, pt.y)
-            for i=1, #nbh, 1 do ff(pt + nbh[i]) end
+    local function ff(x, y)
+        if ip:has_cell(x, y) and retpat:has_cell(x, y) == false then
+            retpat:insert(x, y)
+            for i=1, #nbh, 1 do
+                local nx = nbh[i].x + x
+                local ny = nbh[i].y + y
+                ff(nx, ny)
+            end
         end
         return
     end
-    ff(ipt)
+    ff(ipt.x, ipt.y)
     return retpat
 end
 
