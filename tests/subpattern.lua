@@ -148,11 +148,10 @@ function testSubPatterns:testBinarySpacePartition()
 end
 
 -- Voronoi tesselation ---------------------------------------------------------------
-function testSubPatterns:commonVoronoi(measure)
-    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
+function testSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
 
     -- Check for the correct number of segments, and that there are no overlaps
-    lu.assertEquals(#voronoi_segments, self.seeds:size())
+    lu.assertEquals(#voronoi_segments, seeds:size())
     lu.assertFalse(self:check_for_overlap(voronoi_segments))
 
     -- Check that, for every cell in every segment, the
@@ -163,7 +162,7 @@ function testSubPatterns:commonVoronoi(measure)
         for segment_cell in segment:cells() do
             -- Find the closest seed to this cell
             local closest_seed, seed_distance = nil, math.huge
-            for seed_cell in self.seeds:cells() do
+            for seed_cell in seeds:cells() do
                 local distance = measure(segment_cell, seed_cell)
                 if distance < seed_distance then
                     seed_distance = distance
@@ -179,15 +178,25 @@ end
 
 -- Test Voronoi tesselation with various distance measures
 function testSubPatterns:testVoronoi_Manhattan()
-    self:commonVoronoi(cell.manhattan)
+    local measure = cell.manhattan
+    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
+    self:commonVoronoi(voronoi_segments, self.seeds, measure)
 end
 function testSubPatterns:testVoronoi_Euclidean()
-    self:commonVoronoi(cell.euclidean)
+    local measure = cell.euclidean
+    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
+    self:commonVoronoi(voronoi_segments, self.seeds, measure)
 end
 function testSubPatterns:testVoronoi_Chebyshev()
-    self:commonVoronoi(cell.chebyshev)
+    local measure = cell.chebyshev
+    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
+    self:commonVoronoi(voronoi_segments, self.seeds, measure)
 end
-
+function testSubPatterns:testLloydsAlgorithm()
+    local measure = cell.chebyshev
+    local segments, centres, converged = subpattern.voronoi_relax(self.seeds, self.square, measure)
+    self:commonVoronoi(segments, centres, measure)
+end
 -- Helper functions ------------------------------------------------------------------
 function testSubPatterns:check_for_overlap(segments)
     -- Check that segments overlap
