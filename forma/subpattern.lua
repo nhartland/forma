@@ -55,7 +55,7 @@ function subpattern.random(ip, ncells, rng)
     if rng == nil then rng = math.random end
     local p = pattern.new()
     local next_coords = ip:shuffled_coordinates(rng)
-    while p:size() < ncells do
+    for _=1, ncells, 1 do
         local x, y = next_coords()
         p:insert(x, y)
     end
