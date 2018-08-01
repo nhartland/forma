@@ -140,6 +140,19 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
     return sample
 end
 
+-- Helper function for subpattern.floodfill
+local function floodfill(x, y, nbh, domain, retpat)
+    if domain:has_cell(x, y) and retpat:has_cell(x, y) == false then
+        retpat:insert(x, y)
+        for i=1, #nbh, 1 do
+            local nx = nbh[i].x + x
+            local ny = nbh[i].y + y
+            floodfill(nx, ny, nbh, domain, retpat)
+        end
+    end
+    return
+end
+
 --- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
 -- @param ip pattern upon which the flood fill is to be performed
 -- @param ipt a `cell` specifying the origin of the flood fill
@@ -148,20 +161,9 @@ end
 function subpattern.floodfill(ip, ipt, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.floodfill requires a pattern as the first argument")
     assert(ipt, "subpattern.floodfill requires a cell as the second argument")
-    nbh = nbh or neighbourhood.moore()
+    if nbh == nil then nbh = neighbourhood.moore() end
     local retpat = pattern.new()
-    local function ff(x, y)
-        if ip:has_cell(x, y) and retpat:has_cell(x, y) == false then
-            retpat:insert(x, y)
-            for i=1, #nbh, 1 do
-                local nx = nbh[i].x + x
-                local ny = nbh[i].y + y
-                ff(nx, ny)
-            end
-        end
-        return
-    end
-    ff(ipt.x, ipt.y)
+    floodfill(ipt.x, ipt.y, nbh, ip, retpat)
     return retpat
 end
 
