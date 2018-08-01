@@ -358,7 +358,7 @@ function subpattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(nbh) == neighbourhood,
     "subpattern.neighbourhood_categories requires a neighbourhood as a second argument")
     local category_patterns = {}
-    for i=1, #nbh.categories, 1 do
+    for i=1, nbh:get_ncategories(), 1 do
         category_patterns[i] = pattern.new()
     end
     for icell in ip:cells()  do

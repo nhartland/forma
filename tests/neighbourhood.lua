@@ -13,14 +13,14 @@ end
 
 -- Tests a generic neighbourhood with `nelm` elements, for which `pmax` is a
 -- pattern with a medoid cell with a completely filled neighbourhood.
-function testNeighbourhood:commonTest(neighbourhood, nelm, pmax)
+function testNeighbourhood:commonTest(nbh, nelm, pmax)
      -- There should be 2^n categories for a neighbourhood with n elements.
      local ncat = math.pow(2, nelm)
-     lu.assertEquals(nelm, #neighbourhood )
-     lu.assertEquals(ncat, #neighbourhood.categories )
+     lu.assertEquals(nelm, #nbh )
+     lu.assertEquals(ncat, nbh:get_ncategories() )
      -- Test categorisation
-     local ctmin = neighbourhood:categorise(self.pattern_1, self.pattern_1:medoid())
-     local ctmax = neighbourhood:categorise(pmax, pmax:medoid())
+     local ctmin = nbh:categorise(self.pattern_1, self.pattern_1:medoid())
+     local ctmax = nbh:categorise(pmax, pmax:medoid())
      lu.assertEquals(ncat, ctmin) -- Lowest category (single cell)
      lu.assertEquals(   1, ctmax) -- Highest category (full neighbourhood)
 end

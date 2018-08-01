@@ -134,7 +134,7 @@ function neighbourhood.new(neighbour_cells)
     for _,v in ipairs(neighbour_cells) do
         table.insert(nbh, cell.clone(v))
     end
-    nbh.categories = generate_categories(nbh)
+    nbh.categories = nil -- Generated on demand
     nbh = setmetatable(nbh, neighbourhood)
     return nbh
 end
@@ -152,7 +152,8 @@ end
 -- @return the index of 'icats' that 'cell' belongs to
 -- This assumes that the categories table is sorted - should fix this
 function neighbourhood.categorise(nbh, ip, icell)
-    for i=1, #nbh.categories, 1 do
+    local ncategories = nbh:get_ncategories() -- Generates the categorisation if needed
+    for i=1, ncategories, 1 do
         local category = nbh.categories[i]
         local match_cells = true
         for j=1, #category, 1 do
@@ -172,6 +173,17 @@ end
 -- @return a table of labels, one for each neighbourhood category.
 function neighbourhood.category_label(nbh)
     return nbh._category_label
+end
+
+--- Returns the number of categories for a neighbourhood
+-- @param `nbh` the `neighbourhood` in question
+-- @return the number of categories for neighbourhood `nbh`
+function neighbourhood.get_ncategories(nbh)
+    -- Generate categories if needed
+    if nbh.categories == nil then
+        nbh.categories = generate_categories(nbh)
+    end
+    return #nbh.categories
 end
 
 -- Neighbouring cells of a source.
