@@ -39,11 +39,13 @@ local function generate_categories(neighbour_cells)
     for i=1, #neighbour_cells, 1 do
         local target_cell = neighbour_cells[i]
         for j=1, #categories, 1 do
-            local new_category = {cell.clone(target_cell)}
-            for k=1, #categories[j], 1 do
-                table.insert(new_category, categories[j][k])
+            local new_category = {}
+            new_category[1] = cell.clone(target_cell)
+            local category_size = #categories[j]
+            for k=1, category_size, 1 do
+                new_category[#new_category+1] = categories[j][k]
             end
-            table.insert(categories, new_category)
+            categories[#categories+1] = new_category
         end
     end
     -- Sort by number of elements and return
