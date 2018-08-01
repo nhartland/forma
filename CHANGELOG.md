@@ -50,6 +50,10 @@ Since 0.2
 - Slightly streamlined corridors example
 - Changed coordinate handling of pattern.new with prototype to match behaviour
   from pattern:\_tostring
-
+- Much faster subpattern.floodfill
+- Much faster construction of neighbourhoods: categories are now computed on
+  demand rather than always
+- Slightly faster subpattern.random
+  
 # Bugfix
 - Corrected assert error message in pattern subtraction
