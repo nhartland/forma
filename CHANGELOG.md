@@ -56,6 +56,7 @@ Since 0.2
   demand rather than always
 - Slightly faster subpattern.random
 - Improved `pattern` documentation
+- Change pattern surface/enlarge/reflect to using cell_coordinates rather than cells
   
 # Bugfix
 - Corrected assert error message in pattern subtraction
