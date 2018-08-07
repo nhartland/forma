@@ -7,7 +7,7 @@ readme = 'README.md'
 not_luadoc = true
 
 examples = {'examples',
-             exclude = {'examples/readme.lua', 'examples/gallery.lua', 'examples/README.md'}}
+             exclude = {'examples/README.md'}}
 
 file = {
         './forma/cell.lua',
