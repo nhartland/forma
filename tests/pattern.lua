@@ -277,9 +277,7 @@ function testPattern:testReflect()
     local test_irreg = pattern.new({{1,0},
                                     {0,1}}):hreflect()
     local test_irreg_reflect = pattern.new({{1,0,0,1},
-                                            {0,1,1,0},
-                                            {0,0,0,0},
-                                            {0,0,0,0}})
+                                            {0,1,1,0}})
     lu.assertEquals(test_irreg, test_irreg_reflect)
 end
 

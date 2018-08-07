@@ -43,6 +43,7 @@ Since 0.2
 # Features
 - Shuffled version of cell_coordinates iterator
 - Pattern rotation operator
+- Generalised pattern prototype constructor to allow NxM matrices 
 
 # Misc
 - Several more tests
@@ -54,6 +55,7 @@ Since 0.2
 - Much faster construction of neighbourhoods: categories are now computed on
   demand rather than always
 - Slightly faster subpattern.random
+- Improved `pattern` documentation
   
 # Bugfix
 - Corrected assert error message in pattern subtraction

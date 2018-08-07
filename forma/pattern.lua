@@ -1,18 +1,22 @@
 --- A class containing a set or *pattern* of cells.
 --
--- The **pattern** class is the central class of this module, representing a
--- set of `cell`s. This set can be initialised as empty, or according to
--- geometric `primitives`. Once initialised, a pattern can only be modified by
+-- The **pattern** class is the central class of `forma`, representing a set of
+-- points or *cells*. This set can be initialised as empty, or according to a
+-- 'prototype' consisting of a NxM table matrix of 1's or 0's. Several helper
+-- methods for the initialisation of a `pattern` are provided in the
+-- `primitives` module.  Once initialised, a pattern can only be modified by
 -- the `insert` method, used to add active cells. All other pattern
 -- manipulations return a new, modified pattern rather than modifying patterns
 -- in-place.
 --
--- Several pattern manipulators are provided here. For example as a `shift` of
--- an entire pattern, manipulators that `enlarge` a pattern by a scale factor
--- or performing reflections in the x or y axes. Particuarly useful are
--- manipulators which generate new patterns as the `edge` (outer hull) or
--- `surface` (inner-hull) of other patterns. These manipulators can be used
--- with different definitions of a cell's `neighbourhood`.
+-- Several pattern manipulators are provided here. For example a `shift`
+-- manipulator which shifts the coordinates of an entire pattern, manipulators
+-- that `enlarge` a pattern by a scale factor and modifiers than can `rotate`
+-- or reflect patterns in the x (`hreflect`) or y (`vreflect`) axes.
+-- Particuarly useful are manipulators which generate new patterns such as the
+-- `edge` (outer hull) or `surface` (inner-hull) of other patterns. These
+-- manipulators can be used with custom definitions of a cell's
+-- `neighbourhood`.
 --
 -- Pattern coordinates should be reliable in [-65536, 65536]. This is
 -- adjustable through the `MAX_COORDINATE` constant.
@@ -29,6 +33,11 @@
 --
 -- -- 'Method' style with chaining used for :insert
 -- local p2 = pattern.new():insert(1,1) -- Idential as to p1
+--
+-- -- 'Prototype' style
+-- local p3 = pattern.new({{1,1,1},
+--                         {1,0,1},
+--                         {1,1,1}})
 --
 -- -- Fetch a random cell and the medoid (centre-of-mass) cell from a pattern
 -- local random_cell = p1:rcell()
@@ -89,15 +98,18 @@ end
 --@section basic
 
 --- Pattern constructor.
--- Points are stored in the pattern in a standard integer keyed table, and
--- also as elements in a spatial hash map.
--- @param prototype (optional) an N*N 2D table of ones and zeros.
--- Returns a new pattern. If no prototype is used, then an empty pattern
--- is returned. If set with the prototype table {{1,0},{0,1}} will initialise
--- the pattern:
---  10
---  01
--- @return new pattern
+--  This method returns a new pattern, according to a prototype. If no
+--  prototype is used, then an empty pattern is returned. For example, if
+--  called with the prototype `{{1,0},{0,1}}` this method will return the
+--  pattern:
+--  `
+--    10
+--    01
+--  `
+-- Active cells are stored in the pattern in a standard integer keyed table, and
+-- also as elements in a spatial hash map for fast look-up of active cells.
+-- @param prototype (optional) an N*M 2D table of ones and zeros
+-- @return a new pattern according to the prototype
 function pattern.new(prototype)
     local np = {}
 
@@ -116,14 +128,18 @@ function pattern.new(prototype)
     if prototype ~= nil then
         assert(type(prototype) == 'table',
         'pattern.new requires either no arguments or a N*N matrix as a prototype')
-        local N = #prototype
-        for i=1,N,1 do
+        local N, M = #prototype, nil
+        for i=1, N, 1 do
             local row = prototype[i]
             assert(type(row) == 'table',
             'pattern.new requires either no arguments or a N*N matrix as a prototype')
-            assert(#row == N,
-            'pattern.new requires a N*N matrix when using a prototype, you requested '..N..'*'.. #row)
-            for j=1,N,1 do
+            if i == 1 then
+                M = #row
+            else
+                assert(#row == M,
+                'pattern.new requires a N*M matrix as prototype when called with an argument')
+            end
+            for j=1, M, 1 do
                 local icell = row[j]
                 if icell == 1 then
                     np:insert(j-1,i-1) -- Patterns start from zero
@@ -139,7 +155,7 @@ end
 
 --- Copy an existing pattern.
 -- @param ip input pattern for cloning
--- @return A copy of the pattern ip
+-- @return a copy of the pattern ip
 function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local newpat = pattern.new()
@@ -225,6 +241,10 @@ end
 --- Iterator over active cells in the pattern.
 -- @param ip source pattern for active cell iterator
 -- @return an iterator returning a `cell` for every active cell in the pattern
+-- @usage
+-- for icell in ipattern:cells() do
+--     print(icell.x, icell.y)
+-- end
 function pattern.cells(ip)
     assert(getmetatable(ip) == pattern, "pattern.cells requires a pattern as the first argument")
     local icell, ncells = 0, ip:size()
@@ -244,6 +264,10 @@ end
 -- `pattern.cells` as no tables are created here.
 -- @param ip source pattern for active cell iterator
 -- @return an iterator returning active cell (x,y) coordinates
+-- @usage
+-- for ix, iy in ipattern:cell_coordinates() do
+--     print(ix, iy)
+-- end
 function pattern.cell_coordinates(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_coordinates requires a pattern as the first argument")
     local icell, ncells = 0, ip:size()
@@ -259,7 +283,8 @@ end
 
 --- Shuffled iterator over active cells in the pattern.
 -- Simmilar to `pattern.cells` but provides an iterator that returns cells in a
--- randomised order, according to a provided random number generator.
+-- randomised order, according to a provided random number generator. See
+-- `pattern.cells` for usage.
 -- @param ip source pattern for active cell iterator
 -- @param rng (optional) A random number generating table, following the signature of math.random
 -- @return an iterator returning a `cell` for every active cell in the pattern, in a randomised order
@@ -286,7 +311,8 @@ end
 
 --- Shuffled iterator over active cell coordinates in the pattern.
 -- Simmilar to `pattern.cell_coordinates` but returns cell (x,y) coordinates in
--- a randomised order according to a provided random number generator.
+-- a randomised order according to a provided random number generator. See
+-- `pattern.cell_coordinates` for usage.
 -- @param ip source pattern for active cell
 -- iterator
 -- @param rng (optional) A random number generating table, following the signature of math.random
@@ -566,12 +592,15 @@ function pattern.hreflect(ip)
     return np
 end
 
---- Generate a pattern consisting of edge cells to a provided pattern.
--- Note that this will *not* necessarily generate a hull, it just returns the
--- inactive neighbours of the provided pattern.
+--- Generate a pattern consisting of all cells on the edge of a provided pattern.
+-- This returns a new pattern consisting of the inactive neighbours of an input
+-- pattern, for a given definition of neighbourhood. Therefore the `edge`
+-- method is useful for either enlarging patterns along their surface, or
+-- determining a *border* of a pattern that does not overlap with the pattern
+-- itself.
 -- @param ip pattern for which the edges should be calculated
 -- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
--- @return A pattern representing the edge of ip
+-- @return A pattern representing the edge (outer hull) of ip
 function pattern.edge(ip, nbh)
     local ep = pattern.new()
     nbh = nbh or neighbourhood.moore()
@@ -591,13 +620,16 @@ function pattern.edge(ip, nbh)
 end
 
 --- Generate a pattern consisting of cells on the surface of a provided pattern.
--- This is simmilar to pattern.edge, but will return cells that are /internal/
--- to the provided pattern.
+-- This returns a new pattern consisting of all active cells in an input pattern
+-- that *neighbour* inactive cells. It is therefore very simmilar to `pattern.edge` but
+-- returns a pattern which completely overlaps with the input pattern. This is therefore
+-- useful when *shrinking* a pattern by removing a cell from its surface, or determining
+-- a *border* of a pattern which consists of cells that are present in the original pattern.
 -- @param ip pattern for which the surface should be calculated
--- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
--- @return A pattern representing the surface of ip
+-- @param nbh defines which neighbourhood to scan in to determine the surface (default 8/moore)
+-- @return A pattern representing the surface (inner hull) of ip
 function pattern.surface(ip, nbh)
-    assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
+    assert(getmetatable(ip) == pattern, "pattern.surface requires a pattern as the first argument")
     local sp = pattern.new()
     nbh = nbh or neighbourhood.moore()
     for v in ip:cells() do
