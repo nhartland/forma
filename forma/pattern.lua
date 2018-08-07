@@ -571,9 +571,9 @@ end
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
     local np = pattern.clone(ip)
-    for v in ip:cells() do
-        local new_y = 2*ip.max.y - v.y + 1
-        np:insert(v.x, new_y)
+    for vx, vy in ip:cell_coordinates() do
+        local new_y = 2*ip.max.y - vy + 1
+        np:insert(vx, new_y)
     end
     return np
 end
@@ -585,9 +585,9 @@ end
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
     local np = pattern.clone(ip)
-    for v in ip:cells() do
-        local new_x = 2*ip.max.x - v.x + 1
-        np:insert(new_x, v.y)
+    for vx, vy in ip:cell_coordinates() do
+        local new_x = 2*ip.max.x - vx + 1
+        np:insert(new_x, vy)
     end
     return np
 end
@@ -606,12 +606,14 @@ function pattern.edge(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.edge requires a neighbourhood as an argument")
-    for v in ip:cells() do
+    for ix, iy in ip:cell_coordinates() do
         for j=1, #nbh, 1 do
-            local vpr = v + nbh[j]
-            if ip:has_cell(vpr.x, vpr.y) == false then
-                if ep:has_cell(vpr.x, vpr.y) == false then
-                    ep:insert(vpr.x, vpr.y)
+            local jnbh = nbh[j]
+            local vx = ix + jnbh.x
+            local vy = iy + jnbh.y
+            if ip:has_cell(vx, vy) == false then
+                if ep:has_cell(vx, vy) == false then
+                    ep:insert(vx, vy)
                 end
             end
         end
@@ -629,14 +631,17 @@ end
 -- @param nbh defines which neighbourhood to scan in to determine the surface (default 8/moore)
 -- @return A pattern representing the surface (inner hull) of ip
 function pattern.surface(ip, nbh)
-    assert(getmetatable(ip) == pattern, "pattern.surface requires a pattern as the first argument")
     local sp = pattern.new()
     nbh = nbh or neighbourhood.moore()
-    for v in ip:cells() do
+    assert(getmetatable(ip) == pattern, "pattern.surface requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.surface requires a neighbourhood as an argument")
+    for ix, iy in ip:cell_coordinates() do
         for j=1, #nbh, 1 do
-            local vpr = v + nbh[j]
-            if ip:has_cell(vpr.x, vpr.y) == false then
-                sp:insert(v.x, v.y)
+            local jnbh = nbh[j]
+            local vx = ix + jnbh.x
+            local vy = iy + jnbh.y
+            if ip:has_cell(vx, vy) == false then
+                sp:insert(ix, iy)
                 break
             end
         end
