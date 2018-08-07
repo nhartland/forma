@@ -64,7 +64,6 @@
   <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
   <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
   <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
-  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
   <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
   <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
 </ul>
@@ -78,19 +77,23 @@
 <p>
 
 
-<p> The <strong>pattern</strong> class is the central class of this module, representing a
- set of <a href="../modules/forma.cell.html">cell</a>s. This set can be initialised as empty, or according to
- geometric <a href="../modules/forma.primitives.html">primitives</a>. Once initialised, a pattern can only be modified by
+<p> The <strong>pattern</strong> class is the central class of <code>forma</code>, representing a set of
+ points or <em>cells</em>. This set can be initialised as empty, or according to a
+ 'prototype' consisting of a NxM table matrix of 1's or 0's. Several helper
+ methods for the initialisation of a <a href="../modules/forma.pattern.html">pattern</a> are provided in the
+ <a href="../modules/forma.primitives.html">primitives</a> module.  Once initialised, a pattern can only be modified by
  the <a href="../modules/forma.pattern.html#insert">insert</a> method, used to add active cells. All other pattern
  manipulations return a new, modified pattern rather than modifying patterns
  in-place.</p>
 
-<p> Several pattern manipulators are provided here. For example as a <a href="../modules/forma.pattern.html#shift">shift</a> of
- an entire pattern, manipulators that <a href="../modules/forma.pattern.html#enlarge">enlarge</a> a pattern by a scale factor
- or performing reflections in the x or y axes. Particuarly useful are
- manipulators which generate new patterns as the <a href="../modules/forma.pattern.html#edge">edge</a> (outer hull) or
- <a href="../modules/forma.pattern.html#surface">surface</a> (inner-hull) of other patterns. These manipulators can be used
- with different definitions of a cell's <a href="../modules/forma.neighbourhood.html">neighbourhood</a>.</p>
+<p> Several pattern manipulators are provided here. For example a <a href="../modules/forma.pattern.html#shift">shift</a>
+ manipulator which shifts the coordinates of an entire pattern, manipulators
+ that <a href="../modules/forma.pattern.html#enlarge">enlarge</a> a pattern by a scale factor and modifiers than can <a href="../modules/forma.pattern.html#rotate">rotate</a>
+ or reflect patterns in the x (<a href="../modules/forma.pattern.html#hreflect">hreflect</a>) or y (<a href="../modules/forma.pattern.html#vreflect">vreflect</a>) axes.
+ Particuarly useful are manipulators which generate new patterns such as the
+ <a href="../modules/forma.pattern.html#edge">edge</a> (outer hull) or <a href="../modules/forma.pattern.html#surface">surface</a> (inner-hull) of other patterns. These
+ manipulators can be used with custom definitions of a cell's
+ <a href="../modules/forma.neighbourhood.html">neighbourhood</a>.</p>
 
 <p> Pattern coordinates should be reliable in [-65536, 65536]. This is
  adjustable through the <code>MAX_COORDINATE</code> constant.</p>
@@ -116,6 +119,11 @@ pattern.insert(p1, 1,1)
 
 -- &apos;Method&apos; style with chaining used for :insert
 local p2 = pattern.new():insert(1,1) -- Idential as to p1
+
+-- &apos;Prototype&apos; style
+local p3 = pattern.new({{1,1,1},
+                        {1,0,1},
+                        {1,1,1}})
 
 -- Fetch a random cell and the medoid (centre-of-mass) cell from a pattern
 local random_cell = p1:rcell()
@@ -165,15 +173,19 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#cells">cells (ip)</a></td>
-	<td class="summary">Return an iterator over active cells in the pattern.</td>
+	<td class="summary">Iterator over active cells in the pattern.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#cell_coordinates">cell_coordinates (ip)</a></td>
-	<td class="summary">Return an iterator over active cell coordinates in the pattern.</td>
+	<td class="summary">Iterator over active cell coordinates in the pattern.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#shuffled_cells">shuffled_cells (ip, rng)</a></td>
-	<td class="summary">Return an iterator over active cells in the pattern in a random order.</td>
+	<td class="summary">Shuffled iterator over active cells in the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#shuffled_coordinates">shuffled_coordinates (ip, rng)</a></td>
+	<td class="summary">Shuffled iterator over active cell coordinates in the pattern.</td>
 	</tr>
 </table>
 <h2><a href="#Metamethods">Metamethods </a></h2>
@@ -225,6 +237,10 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
 	<td class="summary">Generate an enlarged version of a pattern.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#rotate">rotate (ip)</a></td>
+	<td class="summary">Rotate a pattern by 90° clockwise about the origin</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#vreflect">vreflect (ip)</a></td>
 	<td class="summary">Generate a copy of a pattern, mirroring it vertically.</td>
 	</tr>
@@ -234,7 +250,7 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#edge">edge (ip, nbh)</a></td>
-	<td class="summary">Generate a pattern consisting of edge cells to a provided pattern.</td>
+	<td class="summary">Generate a pattern consisting of all cells on the edge of a provided pattern.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#surface">surface (ip, nbh)</a></td>
@@ -288,26 +304,30 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     </dt>
     <dd>
     Pattern constructor.
- Points are stored in the pattern in a standard integer keyed table, and
- also as elements in a spatial hash map.
- Returns a new pattern. If no prototype is used, then an empty pattern
- is returned. If set with the prototype table {{1,0},{0,1}} will initialise
- the pattern:
-  10
-  01
+  This method returns a new pattern, according to a prototype. If no
+  prototype is used, then an empty pattern is returned. For example, if
+  called with the prototype <code>{{1,0},{0,1}}</code> this method will return the
+  pattern:
+  <code></p>
+<pre><code>10
+01
+</code></pre>
+<p>  </code>
+ Active cells are stored in the pattern in a standard integer keyed table, and
+ also as elements in a spatial hash map for fast look-up of active cells.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">prototype</span>
-         (optional) an N*N 2D table of ones and zeros.
+         (optional) an N*M 2D table of ones and zeros
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        new pattern
+        a new pattern according to the prototype
     </ol>
 
 
@@ -332,7 +352,7 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <h3>Returns:</h3>
     <ol>
 
-        A copy of the pattern ip
+        a copy of the pattern ip
     </ol>
 
 
@@ -483,7 +503,7 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <strong>cells (ip)</strong>
     </dt>
     <dd>
-    Return an iterator over active cells in the pattern.
+    Iterator over active cells in the pattern.
 
 
     <h3>Parameters:</h3>
@@ -496,11 +516,17 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <h3>Returns:</h3>
     <ol>
 
-        an iterator providing a <a href="../modules/forma.cell.html">cell</a> table for every active cell in the pattern
+        an iterator returning a <a href="../modules/forma.cell.html">cell</a> for every active cell in the pattern
     </ol>
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">for</span> icell <span class="keyword">in</span> ipattern:cells() <span class="keyword">do</span>
+    <span class="global">print</span>(icell.x, icell.y)
+<span class="keyword">end</span></pre>
+    </ul>
 
 </dd>
     <dt>
@@ -508,10 +534,10 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <strong>cell_coordinates (ip)</strong>
     </dt>
     <dd>
-    Return an iterator over active cell coordinates in the pattern.
- Simmilar to <a href="../modules/forma.pattern.html#cells">pattern.cells</a> but provides an iterator that runs
- over (x,y) coordinates instead of <a href="../modules/forma.cell.html">cell</a> instances. Unlike in
- <a href="../modules/forma.pattern.html#cells">pattern.cells</a> no tables are created here.
+    Iterator over active cell coordinates in the pattern.
+ Simmilar to <a href="../modules/forma.pattern.html#cells">pattern.cells</a> but provides an iterator that runs over (x,y)
+ coordinates instead of <a href="../modules/forma.cell.html">cell</a> instances. Normally faster than
+ <a href="../modules/forma.pattern.html#cells">pattern.cells</a> as no tables are created here.
 
 
     <h3>Parameters:</h3>
@@ -524,11 +550,17 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <h3>Returns:</h3>
     <ol>
 
-        an iterator over cell (x,y) coordinates
+        an iterator returning active cell (x,y) coordinates
     </ol>
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">for</span> ix, iy <span class="keyword">in</span> ipattern:cell_coordinates() <span class="keyword">do</span>
+    <span class="global">print</span>(ix, iy)
+<span class="keyword">end</span></pre>
+    </ul>
 
 </dd>
     <dt>
@@ -536,8 +568,10 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <strong>shuffled_cells (ip, rng)</strong>
     </dt>
     <dd>
-    Return an iterator over active cells in the pattern in a random order.
- Simmilar to <a href="../modules/forma.pattern.html#cells">pattern.cells</a> but provides an iterator that returns cells in a randomised order.
+    Shuffled iterator over active cells in the pattern.
+ Simmilar to <a href="../modules/forma.pattern.html#cells">pattern.cells</a> but provides an iterator that returns cells in a
+ randomised order, according to a provided random number generator. See
+ <a href="../modules/forma.pattern.html#cells">pattern.cells</a> for usage.
 
 
     <h3>Parameters:</h3>
@@ -553,7 +587,39 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <h3>Returns:</h3>
     <ol>
 
-        an iterator providing a <a href="../modules/forma.cell.html">cell</a> table for every active cell in the pattern, in a randomised order
+        an iterator returning a <a href="../modules/forma.cell.html">cell</a> for every active cell in the pattern, in a randomised order
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "shuffled_coordinates"></a>
+    <strong>shuffled_coordinates (ip, rng)</strong>
+    </dt>
+    <dd>
+    Shuffled iterator over active cell coordinates in the pattern.
+ Simmilar to <a href="../modules/forma.pattern.html#cell_coordinates">pattern.cell_coordinates</a> but returns cell (x,y) coordinates in
+ a randomised order according to a provided random number generator. See
+ <a href="../modules/forma.pattern.html#cell_coordinates">pattern.cell_coordinates</a> for usage.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         source pattern for active cell
+ iterator
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) A random number generating table, following the signature of math.random
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        an iterator returning active cell (x,y) coordinates, randomly shuffled
     </ol>
 
 
@@ -868,6 +934,31 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
 
 </dd>
     <dt>
+    <a name = "rotate"></a>
+    <strong>rotate (ip)</strong>
+    </dt>
+    <dd>
+    Rotate a pattern by 90° clockwise about the origin
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to be rotated
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        copy of <code>ip</code> which has been rotated by 90°
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "vreflect"></a>
     <strong>vreflect (ip)</strong>
     </dt>
@@ -923,9 +1014,12 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <strong>edge (ip, nbh)</strong>
     </dt>
     <dd>
-    Generate a pattern consisting of edge cells to a provided pattern.
- Note that this will <em>not</em> necessarily generate a hull, it just returns the
- inactive neighbours of the provided pattern.
+    Generate a pattern consisting of all cells on the edge of a provided pattern.
+ This returns a new pattern consisting of the inactive neighbours of an input
+ pattern, for a given definition of neighbourhood. Therefore the <a href="../modules/forma.pattern.html#edge">edge</a>
+ method is useful for either enlarging patterns along their surface, or
+ determining a <em>border</em> of a pattern that does not overlap with the pattern
+ itself.
 
 
     <h3>Parameters:</h3>
@@ -941,7 +1035,7 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     <h3>Returns:</h3>
     <ol>
 
-        A pattern representing the edge of ip
+        A pattern representing the edge (outer hull) of ip
     </ol>
 
 
@@ -954,8 +1048,11 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
     </dt>
     <dd>
     Generate a pattern consisting of cells on the surface of a provided pattern.
- This is simmilar to pattern.edge, but will return cells that are /internal/
- to the provided pattern.
+ This returns a new pattern consisting of all active cells in an input pattern
+ that <em>neighbour</em> inactive cells. It is therefore very simmilar to <a href="../modules/forma.pattern.html#edge">pattern.edge</a> but
+ returns a pattern which completely overlaps with the input pattern. This is therefore
+ useful when <em>shrinking</em> a pattern by removing a cell from its surface, or determining
+ a <em>border</em> of a pattern which consists of cells that are present in the original pattern.
 
 
     <h3>Parameters:</h3>
@@ -964,14 +1061,14 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
          pattern for which the surface should be calculated
         </li>
         <li><span class="parameter">nbh</span>
-         defines which neighbourhood to scan in to determine edges (default 8/moore)
+         defines which neighbourhood to scan in to determine the surface (default 8/moore)
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        A pattern representing the surface of ip
+        A pattern representing the surface (inner hull) of ip
     </ol>
 
 
@@ -1155,7 +1252,7 @@ outer_hull = pattern.edge(p1, neighbourhood.moore())
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-07-14 16:06:25 </i>
+<i style="float:right;">Last updated 2018-08-07 17:45:56 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
