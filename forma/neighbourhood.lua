@@ -149,8 +149,7 @@ end
 -- @param nbh the forma.neighbourhood to categorise the cell in
 -- @param ip the input pattern
 -- @param icell the cell in `ip` of interest
--- @return the index of 'icats' that 'cell' belongs to
--- This assumes that the categories table is sorted - should fix this
+-- @return the category index of `nbh` that 'cell' belongs to
 function neighbourhood.categorise(nbh, ip, icell)
     local ncategories = nbh:get_ncategories() -- Generates the categorisation if needed
     for i=1, ncategories, 1 do
