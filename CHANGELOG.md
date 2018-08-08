@@ -41,22 +41,23 @@ Since 0.2
 ---------
 
 # Features
-- Shuffled version of cell_coordinates iterator
 - Pattern rotation operator
+- Shuffled version of cell_coordinates iterator
 - Generalised pattern prototype constructor to allow NxM matrices 
 
 # Misc
-- Several more tests
+- Greatly expanded test coverage
 - Slightly faster convergence check for automata.iterate
 - Slightly streamlined corridors example
 - Changed coordinate handling of pattern.new with prototype to match behaviour
   from pattern:\_tostring
 - Much faster subpattern.floodfill
 - Much faster construction of neighbourhoods: categories are now computed on
-  demand rather than always
+  demand rather than upon initialisation
 - Slightly faster subpattern.random
 - Improved `pattern` documentation
-- Change pattern surface/enlarge/reflect to using cell_coordinates rather than cells
+- Change pattern surface/enlarge/reflect to use `cell_coordinates` rather than `cells`
   
 # Bugfix
+- Fixed lazy initialisation through 'require ("forma")'
 - Corrected assert error message in pattern subtraction
