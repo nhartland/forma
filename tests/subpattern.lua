@@ -147,6 +147,24 @@ function testSubPatterns:testBinarySpacePartition()
     lu.assertFalse(self:check_for_overlap(partitions))
 end
 
+-- Categorisation subpatterns --------------------------------------------------------
+function testSubPatterns:testCategories()
+    -- Compute a random sample of the square 10x10 pattern with 40 samples
+    local sample = subpattern.random(self.square, 40)
+    -- Loop through a couple of example neighbourhoods
+    local measures = {neighbourhood.moore(), neighbourhood.von_neumann()}
+    for _, measure in ipairs(measures) do
+        local c_segments = subpattern.neighbourhood_categories(sample, measure)
+        -- Ensure each category pattern only contains correctly categorised points
+        for cat, seg in ipairs(c_segments) do
+            for icell in seg:cells() do
+                local test_cat = measure:categorise(sample, icell)
+                lu.assertEquals(cat, test_cat)
+            end
+        end
+    end
+end
+
 -- Voronoi tesselation ---------------------------------------------------------------
 function testSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
 
