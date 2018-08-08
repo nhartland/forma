@@ -144,7 +144,7 @@ end
 -- configuration. For each cell in a forma.pattern, there are a finite number
 -- of possible configurations of neighbouring cells. Specifically, each cell
 -- has 2^n possible neighbourhood configurations where n is the number of cells
--- in the neighbourhood. This module categorised cells according to which type
+-- in the neighbourhood. This method categorises cells according to which type
 -- of neighbourhood they are in.
 -- @param nbh the forma.neighbourhood to categorise the cell in
 -- @param ip the input pattern
@@ -167,7 +167,6 @@ function neighbourhood.categorise(nbh, ip, icell)
     assert(false, "neighbourhood.categorise cannot find a valid category")
 end
 
-
 --- Returns the category labelling (if it exists) for a neighbourhood.
 -- @param nbh the neighbourhood to fetch the category labelling for.
 -- @return a table of labels, one for each neighbourhood category.
@@ -186,25 +185,5 @@ function neighbourhood.get_ncategories(nbh)
     return #nbh.categories
 end
 
--- Neighbouring cells of a source.
--- Returns a closure for use in pathing e.g a-star.
--- @param nbh a list of vectors (e.g forma.neighbourhood)
--- @return a function which takes a cell and returns it's neighbours
---function neighbourhood.closure(nbh)
---	assert(type(nbh) == "table")
---	for i=1,#nbh,1 do assert(getmetatable(nbh[i]) == cell) end
---	return function(a)
---		assert(getmetatable(a) == cell)
---		local t = {}
---		for i=1,#nbh,1 do
---			assert(getmetatable(a) == cell)
---			table.insert(t, a+nbh[i])
---		end
---		return t
---	end
---end
-
-
 return neighbourhood
-
 
