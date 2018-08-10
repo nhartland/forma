@@ -4,8 +4,10 @@ description = 'A 2D grid shape generation package'
 kind_names={topic='Readme'}
 format = 'markdown' 
 readme = 'README.md'
-examples = 'examples'
 not_luadoc = true
+
+examples = {'examples',
+             exclude = {'examples/README.md', 'examples/gallery.lua'}}
 
 file = {
         './forma/cell.lua',

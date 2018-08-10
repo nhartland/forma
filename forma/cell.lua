@@ -32,7 +32,7 @@ function cell.new(x,y)
     assert(x == floor(x), "cell.new requires two integer inputs")
     assert(y == floor(y), "cell.new requires two integer inputs")
     local newcell = { x = x, y = y }
-    return setmetatable(newcell, cell)
+    return (setmetatable(newcell, cell))
 end
 
 --- Perform a copy of a cell.
@@ -43,7 +43,7 @@ end
 -- @return copy of `icell`
 function cell.clone(icell)
     -- Rely on cell.new to catch non-cell inputs
-    return cell.new(icell.x, icell.y)
+    return (cell.new(icell.x, icell.y))
 end
 
 --- Add two cell positions
@@ -56,7 +56,7 @@ end
 -- @param b second cell
 -- @return c = a + b
 function cell.__add(a, b)
-    return cell.new(a.x + b.x, a.y + b.y)
+    return (cell.new(a.x + b.x, a.y + b.y))
 end
 
 --- Subtract two cell positions
@@ -69,7 +69,7 @@ end
 -- @param b second cell
 -- @return c = a - b
 function cell.__sub(a, b)
-    return cell.new(a.x - b.x, a.y - b.y)
+    return (cell.new(a.x - b.x, a.y - b.y))
 end
 
 --- Test for equality of two cell vectors.
@@ -79,7 +79,7 @@ end
 -- @param b second cell
 -- @return a == b
 function cell.__eq(a, b)
-    return a.x == b.x and a.y == b.y
+    return (a.x == b.x and a.y == b.y)
 end
 
 --- Render a cell as a string.
@@ -100,7 +100,7 @@ end
 -- @param b second cell
 -- @return L1(a,b) = |a.x-b.x| + |a.y-b.y|
 function cell.manhattan(a,b)
-    return abs(a.x - b.x) + abs(a.y - b.y)
+    return (abs(a.x - b.x) + abs(a.y - b.y))
 end
 
 --- Chebyshev distance between cells.
@@ -111,7 +111,7 @@ end
 -- @param b second cell
 -- @return L_inf(a,b) = max(|a.x-b.x|, |a.y-b.y|)
 function cell.chebyshev(a,b)
-    return max(abs(a.x-b.x), abs(a.y-b.y))
+    return (max(abs(a.x-b.x), abs(a.y-b.y)))
 end
 
 --- Euclidean distance between cells.
@@ -136,7 +136,7 @@ end
 function cell.euclidean2(a,b)
     local dx = a.x - b.x
     local dy = a.y - b.y
-    return dx*dx+dy*dy
+    return (dx*dx+dy*dy)
 end
 
 return cell

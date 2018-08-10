@@ -35,10 +35,12 @@ end
 -- Test eq, add, sub operators
 function testPattern:testOperators()
     lu.assertEquals(self.pattern_1, self.pattern_1)
-    lu.assertEquals(self.pattern_1 +self.pattern_2,
+    lu.assertEquals(self.pattern_1 + self.pattern_2,
                     self.pattern_2)
-    lu.assertEquals(self.pattern_2 -self.pattern_2,
+    lu.assertEquals(self.pattern_2 - self.pattern_2,
                     self.pattern_1)
+    lu.assertEquals(self.pattern_2 - self.pattern_1,
+                    self.pattern_2)
 end
 
 function testPattern:testConstructor()
@@ -57,6 +59,33 @@ function testPattern:testClone()
     lu.assertNotEquals(pattern_5_clone, self.pattern_4)
 end
 
+function testPattern:testToString()
+    -- Test pattern tostring method
+    local pattern_5_string = tostring(self.pattern_5)
+    lu.assertIsString(pattern_5_string)
+end
+
+function testPattern:testSum()
+    -- Test pattern.sum() helper function
+    local tp1 = pattern.new({{1,1,1,1,1},
+                             {1,0,0,0,1},
+                             {1,0,0,0,1},
+                             {1,0,0,0,1},
+                             {1,1,1,1,1}})
+    local tp2 = pattern.new({{0,0,0,0,0},
+                             {0,1,1,1,0},
+                             {0,1,1,1,0},
+                             {0,1,1,1,0},
+                             {0,0,0,0,0}})
+    local tp12 = primitives.square(5)
+    local sum  = pattern.sum(tp1, tp2)
+    lu.assertEquals(tp1+tp2, tp12)
+    lu.assertEquals(tp1+tp2, sum)
+    lu.assertEquals(tp12, sum)
+    lu.assertNotEquals(tp1, sum)
+    lu.assertNotEquals(tp2, sum)
+end
+
 -- Test insert methods
 function testPattern:testInsert()
     -- Test both insert methods
@@ -69,6 +98,38 @@ function testPattern:testInsert()
     lu.assertEquals(insert_test.max.y,1)
     lu.assertEquals(insert_test.min.x,-1)
     lu.assertEquals(insert_test.min.y,-1)
+end
+
+-- Test the standard iterator methods
+function testPattern:testIterators()
+    local sqpat = primitives.square(20)
+    -- These should return alive cells in the same order
+    local cells = sqpat:cells()
+    local coords = sqpat:cell_coordinates()
+    for i=1, sqpat:size(), 1 do
+        local ncell  = cells()
+        local nx, ny = coords()
+        -- Same order in cells and coordinates
+        lu.assertEquals(ncell.x, nx)
+        lu.assertEquals(ncell.y, ny)
+        -- Is a valid cell
+        lu.assertTrue(sqpat:has_cell(nx, ny))
+    end
+    -- Test that the iterators terminate
+    lu.assertEquals(cells(), nil)
+    lu.assertEquals(coords(), nil)
+end
+
+-- Test the shuffled iterator methods
+-- It's a bit tricky to test, given the randomness
+function testPattern:testShuffledIterators()
+    local sqpat = primitives.square(20)
+    for icell in sqpat:shuffled_cells() do
+        lu.assertTrue(sqpat:has_cell(icell.x, icell.y))
+    end
+    for x, y in sqpat:shuffled_coordinates() do
+        lu.assertTrue(sqpat:has_cell(x, y))
+    end
 end
 
 function testPattern:testCentroid()
@@ -129,6 +190,32 @@ function testPattern:testMedoid()
     lu.assertNotEquals(medoid5, medoid6)
 end
 
+function testPattern:testEdge()
+    -- Test pattern for edge determination
+    local test = pattern.new({{0,0,0},
+                              {0,1,0},
+                              {0,0,0}})
+    -- Moore neighbourhood edge
+    local moore_edge = pattern.new({{1,1,1},
+                                    {1,0,1},
+                                    {1,1,1}})
+    -- Von Neumann neighbourhood edge
+    local vn_edge    = pattern.new({{0,1,0},
+                                    {1,0,1},
+                                    {0,1,0}})
+    -- Diagonal neighbourhood edge
+    local d_edge     = pattern.new({{1,0,1},
+                                    {0,0,0},
+                                    {1,0,1}})
+
+    -- Moore neighbourhood edge: default case
+    lu.assertEquals(test:edge(), moore_edge)
+    -- Von Neumann edge test
+    lu.assertEquals(test:edge(neighbourhood.von_neumann()), vn_edge)
+    -- Diagonal edge test
+    lu.assertEquals(test:edge(neighbourhood.diagonal()), d_edge)
+end
+
 function testPattern:testSurface()
     -- Surface of a single point should just return that point back
     local surface_pattern_3 = self.pattern_3:surface()
@@ -155,9 +242,61 @@ function testPattern:testSurface()
     lu.assertEquals(vn_surface, vn_check)
 end
 
+function testPattern:testNormalise()
+    -- Test pattern normalisation
+    -- the normalise method should set the origin of any pattern to (0,0)
+    local test_pattern_1 = primitives.square(5)
+    local test_pattern_2 = test_pattern_1:shift(100,100)
+    local test_pattern_3 = test_pattern_2:normalise()
+    lu.assertNotEquals(test_pattern_1, test_pattern_2)
+    lu.assertNotEquals(test_pattern_2, test_pattern_3)
+    lu.assertEquals(test_pattern_1, test_pattern_3)
+    -- Test that doesn't depend on :shift
+    local test_pattern_4 = pattern.new():insert(5,5)
+    local test_pattern_5 = test_pattern_4:normalise()
+    lu.assertTrue (test_pattern_4:has_cell(5,5))
+    lu.assertFalse(test_pattern_5:has_cell(5,5))
+    lu.assertTrue (test_pattern_5:has_cell(0,0))
+end
+
 function testPattern:testEnlarge()
     local enlarged_pattern_1 = self.pattern_1:enlarge(2)
     local enlarged_pattern_2 = self.pattern_2:enlarge(2)
     lu.assertEquals(enlarged_pattern_1:size(),0)
     lu.assertEquals(enlarged_pattern_2:size(),100)
+end
+
+function testPattern:testReflect()
+    -- Test that a square pattern rotated both vertically and horizontally
+    -- is a square pattern of twice the side length
+    local test_square_4 = primitives.square(4)
+    local test_square_8 = primitives.square(8)
+    local test_reflect = test_square_4:vreflect():hreflect()
+    lu.assertEquals(test_square_8, test_reflect)
+    -- Test for reflections on a more irregular pattern
+    local test_irreg = pattern.new({{1,0},
+                                    {0,1}}):hreflect()
+    local test_irreg_reflect = pattern.new({{1,0,0,1},
+                                            {0,1,1,0}})
+    lu.assertEquals(test_irreg, test_irreg_reflect)
+end
+
+function testPattern:testRotate()
+    -- Test that radially symmetric pattern is unchanged after rotation
+    local rotate_pattern_2 = self.pattern_2:rotate():normalise()
+    lu.assertEquals(rotate_pattern_2, self.pattern_2)
+    -- Test non-radially symmetric pattern
+    -- This expectation might be a bit counter-intuitive, but remember
+    -- that the coordinate system is 'terminal-like' i.e
+    --        ------> +x
+    --        |
+    --        |
+    --        |
+    --       +y
+    local test = pattern.new({{1,0},{1,1}}):rotate():normalise()
+    local expectation = pattern.new({{0,1},{1,1}})
+    lu.assertEquals(test, expectation)
+    -- Test 2pi rotation
+    local test2 = test:rotate():rotate():rotate():rotate()
+    lu.assertEquals(test, test2)
 end

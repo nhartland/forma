@@ -39,11 +39,13 @@ local function generate_categories(neighbour_cells)
     for i=1, #neighbour_cells, 1 do
         local target_cell = neighbour_cells[i]
         for j=1, #categories, 1 do
-            local new_category = {cell.clone(target_cell)}
-            for k=1, #categories[j], 1 do
-                table.insert(new_category, categories[j][k])
+            local new_category = {}
+            new_category[1] = cell.clone(target_cell)
+            local category_size = #categories[j]
+            for k=1, category_size, 1 do
+                new_category[#new_category+1] = categories[j][k]
             end
-            table.insert(categories, new_category)
+            categories[#categories+1] = new_category
         end
     end
     -- Sort by number of elements and return
@@ -132,7 +134,7 @@ function neighbourhood.new(neighbour_cells)
     for _,v in ipairs(neighbour_cells) do
         table.insert(nbh, cell.clone(v))
     end
-    nbh.categories = generate_categories(nbh)
+    nbh.categories = nil -- Generated on demand
     nbh = setmetatable(nbh, neighbourhood)
     return nbh
 end
@@ -142,15 +144,15 @@ end
 -- configuration. For each cell in a forma.pattern, there are a finite number
 -- of possible configurations of neighbouring cells. Specifically, each cell
 -- has 2^n possible neighbourhood configurations where n is the number of cells
--- in the neighbourhood. This module categorised cells according to which type
+-- in the neighbourhood. This method categorises cells according to which type
 -- of neighbourhood they are in.
 -- @param nbh the forma.neighbourhood to categorise the cell in
 -- @param ip the input pattern
 -- @param icell the cell in `ip` of interest
--- @return the index of 'icats' that 'cell' belongs to
--- This assumes that the categories table is sorted - should fix this
+-- @return the category index of `nbh` that 'cell' belongs to
 function neighbourhood.categorise(nbh, ip, icell)
-    for i=1, #nbh.categories, 1 do
+    local ncategories = nbh:get_ncategories() -- Generates the categorisation if needed
+    for i=1, ncategories, 1 do
         local category = nbh.categories[i]
         local match_cells = true
         for j=1, #category, 1 do
@@ -164,7 +166,6 @@ function neighbourhood.categorise(nbh, ip, icell)
     assert(false, "neighbourhood.categorise cannot find a valid category")
 end
 
-
 --- Returns the category labelling (if it exists) for a neighbourhood.
 -- @param nbh the neighbourhood to fetch the category labelling for.
 -- @return a table of labels, one for each neighbourhood category.
@@ -172,25 +173,16 @@ function neighbourhood.category_label(nbh)
     return nbh._category_label
 end
 
--- Neighbouring cells of a source.
--- Returns a closure for use in pathing e.g a-star.
--- @param nbh a list of vectors (e.g forma.neighbourhood)
--- @return a function which takes a cell and returns it's neighbours
---function neighbourhood.closure(nbh)
---	assert(type(nbh) == "table")
---	for i=1,#nbh,1 do assert(getmetatable(nbh[i]) == cell) end
---	return function(a)
---		assert(getmetatable(a) == cell)
---		local t = {}
---		for i=1,#nbh,1 do
---			assert(getmetatable(a) == cell)
---			table.insert(t, a+nbh[i])
---		end
---		return t
---	end
---end
-
+--- Returns the number of categories for a neighbourhood
+-- @param `nbh` the `neighbourhood` in question
+-- @return the number of categories for neighbourhood `nbh`
+function neighbourhood.get_ncategories(nbh)
+    -- Generate categories if needed
+    if nbh.categories == nil then
+        nbh.categories = generate_categories(nbh)
+    end
+    return #nbh.categories
+end
 
 return neighbourhood
-
 

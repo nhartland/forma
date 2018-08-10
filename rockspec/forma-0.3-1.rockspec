@@ -1,8 +1,8 @@
 package = "forma"
-version = "0.2b-1"
+version = "0.3-1"
 source = {
    url = "git://github.com/nhartland/forma",
-   tag = "v0.2b",
+   tag = "v0.3",
 }
 
 description = {

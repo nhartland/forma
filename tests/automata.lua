@@ -80,3 +80,17 @@ function testAutomata:testOscillators()
         lu.assertEquals(newoscillator, oscillator)
     end
 end
+
+-- Test the asynchronous CA update
+function testAutomata:testAsynchronous()
+    -- Verify all synchronous oscillators differ only by one cell
+    for _, oscillator in ipairs(self.oscillators) do
+        local newoscillator, converged = automata.async_iterate(oscillator, self.sixbysix, {self.life_rule})
+        lu.assertFalse(converged)
+        lu.assertEquals(math.abs(newoscillator:size() - oscillator:size()), 1)
+    end
+    -- Verify block CA remains a still-life in asynchronous update
+    local _, converged = automata.async_iterate(self.block, self.sixbysix, {self.life_rule})
+    lu.assertTrue(converged)
+end
+

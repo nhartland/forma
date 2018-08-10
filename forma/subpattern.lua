@@ -54,10 +54,10 @@ function subpattern.random(ip, ncells, rng)
     assert(ncells <= ip:size(),          "subpattern.random requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
     local p = pattern.new()
-    local next_cell = ip:shuffled_cells(rng)
-    while p:size() < ncells do
-        local newcell = next_cell()
-        p:insert(newcell.x, newcell.y)
+    local next_coords = ip:shuffled_coordinates(rng)
+    for _=1, ncells, 1 do
+        local x, y = next_coords()
+        p:insert(x, y)
     end
     return p
 end
@@ -140,24 +140,30 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
     return sample
 end
 
---- Returns the contiguous sub-pattern of ip that surrounts cell pt
+-- Helper function for subpattern.floodfill
+local function floodfill(x, y, nbh, domain, retpat)
+    if domain:has_cell(x, y) and retpat:has_cell(x, y) == false then
+        retpat:insert(x, y)
+        for i=1, #nbh, 1 do
+            local nx = nbh[i].x + x
+            local ny = nbh[i].y + y
+            floodfill(nx, ny, nbh, domain, retpat)
+        end
+    end
+    return
+end
+
+--- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
 -- @param ip pattern upon which the flood fill is to be performed
--- @param ipt specifies where the flood fill should begin
+-- @param ipt a `cell` specifying the origin of the flood fill
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return a forma.pattern consisting of the contiguous segment about cell
 function subpattern.floodfill(ip, ipt, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.floodfill requires a pattern as the first argument")
     assert(ipt, "subpattern.floodfill requires a cell as the second argument")
-    nbh = nbh or neighbourhood.moore()
+    if nbh == nil then nbh = neighbourhood.moore() end
     local retpat = pattern.new()
-    local function ff(pt)
-        if ip:has_cell(pt.x, pt.y) and retpat:has_cell(pt.x, pt.y) == false then
-            retpat:insert(pt.x, pt.y)
-            for i=1, #nbh, 1 do ff(pt + nbh[i]) end
-        end
-        return
-    end
-    ff(ipt)
+    floodfill(ipt.x, ipt.y, nbh, ip, retpat)
     return retpat
 end
 
@@ -354,7 +360,7 @@ function subpattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(nbh) == neighbourhood,
     "subpattern.neighbourhood_categories requires a neighbourhood as a second argument")
     local category_patterns = {}
-    for i=1, #nbh.categories, 1 do
+    for i=1, nbh:get_ncategories(), 1 do
         category_patterns[i] = pattern.new()
     end
     for icell in ip:cells()  do
@@ -411,7 +417,7 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
     assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
     assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
-    assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain: " .. seeds:size() .. " vs " .. domain:size())
+    assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain")
     local current_seeds = seeds:clone()
     for ite=1, max_ite, 1 do
         local tesselation = subpattern.voronoi(current_seeds, domain, measure)
