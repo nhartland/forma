@@ -60,3 +60,10 @@
 - Slightly faster convergence check for `automata.iterate`
 - Harmonised coordinate handling between pattern prototype and tostring
   
+
+Since 0.3
+---------
+
+# Misc
+ - Check that CA rulesets don't have neighbourhoods that are too large for 
+   the rule signature format (>10 neighbours)

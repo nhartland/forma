@@ -68,6 +68,8 @@ end
 -- @param rule_string string specifying the ruleset (i.e B23/S1).
 -- @return A verified rule for use with the CA methods.
 function automata.rule(neighbourhood, rule_string)
+    assert(#neighbourhood < 11,
+           "forma.automata.rule: Rule string format does not support neighbourhoods with more than 10 elements")
     assert(type(neighbourhood) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
     assert(type(rule_string) == 'string', "forma.automata.rule: parse_rules trying to parse a " .. type(rule_string))
     local Bpos, Spos = string.find(rule_string, 'B'), string.find(rule_string, 'S')
