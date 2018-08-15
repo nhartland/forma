@@ -1,24 +1,26 @@
 --- Pattern manipulation with Cellular Automata.
 --
--- Cellular Automata are defined here by two parameters. Firstly a
--- `neighbourhood` that the rule acts on. Secondly a `rule` specifying the
--- conditions under which cells are *Born* (B) or *Survive* (S). These rules
--- are initialised with a string rule in the "Golly" format. i.e a rule which
--- activates cells with one neighbour and deactivates cells with two would have
--- the rule string "B1/S2". The neighbourhood is specified by an instance of
--- the `neighbourhood` submodule as usual.
+-- Cellular Automata are defined here by a ruleset (a table of individual
+-- CA rules). Each rule consists of two parts. Firstly a `neighbourhood` that
+-- the rule acts on. Secondly a rule `signature` specifying the conditions
+-- under which cells are *Born* (B) or *Survive* (S). These rule signatures are
+-- initialised with a string in the "Golly" format. i.e a rule which activates
+-- cells with one neighbour and deactivates cells with two would have the rule
+-- string "B1/S2". The neighbourhood is specified by an instance of the
+-- `forma.neighbourhood` class as usual.
 --
--- Once a rule is specified, there are two provided implementations of a CA.
+-- Once a ruleset is specified, there are two provided implementations of a CA.
 -- Firstly the standard *synchronous* CA is implemented in `automata.iterate`
 -- whereby all cells are updated simultaneously. Secondly an *asynchronous*
 -- update is provided in `automata.async_iterate` in which each iteration
 -- updates only one cell at random.
 --
--- For both methods, multiple rules can be applied simultaneously through the
--- ruleset by supplying a table containting more than one `rule`. Rule
--- conflicts are resolved in favour of cell deactivation, i.e if there are two
--- nested rulesets, with a cell passing one and failing the other either
--- survival or birth rules, the cell will be deactivated in the next iteration.
+-- When a ruleset consists of only one rule, the CA is unambiguous and is
+-- applied in the conventional manner. When multiple rules are provided, rule
+-- conflicts are resolved in favour of cell deactivation. For example, if there
+-- are two rules in the set, cell activation requires that the candidate cell
+-- passes the 'birth' criterion of both rules. Cell deactivation requires only
+-- that one 'survive' criterion fails.
 --
 -- All CA updates here are only possible on a *finite* domain of cells. That
 -- domain must be specified as a `pattern` in the iteration call.
