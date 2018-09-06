@@ -64,6 +64,9 @@
 Since 0.3
 ---------
 
+# Features
+- Perlin noise sampling
+
 # Misc
  - Check that CA rulesets don't have neighbourhoods that are too large for 
    the rule signature format (>10 neighbours)

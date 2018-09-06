@@ -27,6 +27,7 @@ suited (but not limited) to the generation of roguelike environments.
     - Combination of multiple rule sets
 - **Pattern sampling** algorithms including
     - Random (white noise) sampling
+    - Perlin noise sampling
     - Poisson-disc sampling
     - Mitchell's best-candidate sampling
 - **Algorithms for subpattern finding** including
@@ -82,10 +83,17 @@ subpattern.print_patterns(domain, segments)
 is written in pure Lua, no compilation is required. Including the project is as
 simple as including the `forma` directory in your project or Lua path.
 
-The easiest way to do this is via LuaRocks:
+The easiest way to do this is via LuaRocks. To install the latest stable version
+use:
 
 ```Shell
     luarocks install forma
+```
+
+Alternatively you can try the dev branch with:
+
+```Shell
+    luarocks install --server=http://luarocks.org/dev golflike
 ```
 
 ## Documentation
