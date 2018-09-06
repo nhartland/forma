@@ -80,6 +80,22 @@ function testSubPatterns:testEnclosed()
     lu.assertEquals(#subpattern.enclosed(test_circle),1)
 end
 
+--  Perlin noise ----------------------------------------------------------------
+function testSubPatterns:testPerlin()
+    -- Test subpattern generation by thresholding perlin noise.
+    local test_domain = primitives.square(80, 20)
+    local frequency, depth = 0.2, 1
+    local thresholds = {0, 0.5, 0.7, 1}
+    local noise  = subpattern.perlin(test_domain, frequency, depth, thresholds)
+    lu.assertEquals(test_domain, noise[1]) -- Lowest threshold is zero, should be identical to domain
+    lu.assertEquals(noise[4]:size(), 0)    -- Lowest threshold is one, should be an empty pattern
+
+    -- Patterns should be progressively smaller as we move up the thresholds
+    for ith=2, #thresholds, 1 do
+        lu.assertTrue(noise[ith]:size() <= noise[ith-1]:size())
+    end
+end
+
 --  Random sampling ------------------------------------------------------------------
 function testSubPatterns:testRandom()
     lu.assertEquals(getmetatable(self.seeds),  pattern)
