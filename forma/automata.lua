@@ -136,7 +136,7 @@ end
 -- @usage
 --  -- Domain and initial state (500 seed points) for the CA
 --  local domain = primitives.square(100)
---  local ca_pat = subpattern.random(sq, 500)
+--  local ca_pat = subpattern.random(domain, 500)
 --  -- Repeat iteration until convergence is reached
 --  local converged = false
 --  repeat
@@ -166,9 +166,9 @@ end
 -- Performs a CA update on one cell (chosen randomly) in the specified domain.
 -- This corresponds to a 'random independent scheme' update.
 -- @usage
---  -- Domain and initial state (500 seed points) for the CA
---  local domain = primitives.square(100)
---  local ca_pat = subpattern.random(sq, 500)
+--  -- Domain and initial state (10 seed points) for the CA
+--  local domain = primitives.square(10)
+--  local ca_pat = subpattern.random(domain, 10)
 --  local rng    = math.random
 --  -- Repeat iteration until convergence is reached
 --  local converged = false

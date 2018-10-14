@@ -242,6 +242,7 @@ end
 -- @param ip source pattern for active cell iterator
 -- @return an iterator returning a `cell` for every active cell in the pattern
 -- @usage
+-- local ipattern = primitives.square(10)
 -- for icell in ipattern:cells() do
 --     print(icell.x, icell.y)
 -- end
@@ -265,6 +266,7 @@ end
 -- @param ip source pattern for active cell iterator
 -- @return an iterator returning active cell (x,y) coordinates
 -- @usage
+-- local ipattern = primitives.square(10)
 -- for ix, iy in ipattern:cell_coordinates() do
 --     print(ix, iy)
 -- end

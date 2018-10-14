@@ -94,7 +94,7 @@ end
 
 --- Manhattan distance between cells.
 -- @usage
--- local distance = cell.manhattan(acell, bcell)
+-- local distance = cell.manhattan(cell.new(1,2), cell.new(3,4))
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
@@ -105,7 +105,7 @@ end
 
 --- Chebyshev distance between cells.
 -- @usage
--- local distance = cell.chebyshev(acell, bcell)
+-- local distance = cell.chebyshev(cell.new(1,2), cell.new(3,4))
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
@@ -116,7 +116,7 @@ end
 
 --- Euclidean distance between cells.
 -- @usage
--- local distance = cell.euclidean(acell, bcell)
+-- local distance = cell.euclidean(cell.new(1,2), cell.new(3,4))
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
@@ -128,7 +128,7 @@ end
 --- Squared Euclidean distance between cells.
 -- A little faster than `cell.euclidean` as it avoids the sqrt.
 -- @usage
--- local distance = cell.euclidean2(acell, bcell)
+-- local distance = cell.euclidean2(cell.new(1,2), cell.new(3,4))
 -- @within Distance measures
 -- @param a first cell
 -- @param b second cell
