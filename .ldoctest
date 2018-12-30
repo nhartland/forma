@@ -1,0 +1,12 @@
+-- Environment for `forma` ldoctests
+return {
+    math = math,
+    assert = assert,
+    print = function() end,
+    cell          = require('forma.cell'),
+    pattern       = require('forma.pattern'),
+    automata      = require('forma.automata'),
+    primitives    = require('forma.primitives'),
+    subpattern    = require('forma.subpattern'),
+    neighbourhood = require('forma.neighbourhood'),
+    }
