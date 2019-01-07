@@ -70,7 +70,7 @@ end
 
 -- Find all 4-contiguous segments of the CA pattern
 -- Uses the von-neumann neighbourhood to determine 'connectedness'
--- but any custom neighbourhood can be used)
+-- but any custom neighbourhood can be used.
 local segments = subpattern.segments(ca, neighbourhood.von_neumann())
 
 -- Print a representation to io.output
