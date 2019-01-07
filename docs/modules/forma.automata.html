@@ -59,6 +59,7 @@
   <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
   <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
   <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
+  <li><a href="../examples/perlin.lua.html">perlin.lua</a></li>
   <li><a href="../examples/readme.lua.html">readme.lua</a></li>
   <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
   <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
@@ -73,25 +74,27 @@
 <p>
 
 
-<p> Cellular Automata are defined here by two parameters. Firstly a
- <a href="../modules/forma.neighbourhood.html">neighbourhood</a> that the rule acts on. Secondly a <a href="../modules/forma.automata.html#rule">rule</a> specifying the
- conditions under which cells are <em>Born</em> (B) or <em>Survive</em> (S). These rules
- are initialised with a string rule in the "Golly" format. i.e a rule which
- activates cells with one neighbour and deactivates cells with two would have
- the rule string "B1/S2". The neighbourhood is specified by an instance of
- the <a href="../modules/forma.neighbourhood.html">neighbourhood</a> submodule as usual.</p>
+<p> Cellular Automata are defined here by a ruleset (a table of individual
+ CA rules). Each rule consists of two parts. Firstly a <a href="../modules/forma.neighbourhood.html">neighbourhood</a> that
+ the rule acts on. Secondly a rule <code>signature</code> specifying the conditions
+ under which cells are <em>Born</em> (B) or <em>Survive</em> (S). These rule signatures are
+ initialised with a string in the "Golly" format. i.e a rule which activates
+ cells with one neighbour and deactivates cells with two would have the rule
+ string "B1/S2". The neighbourhood is specified by an instance of the
+ <a href="../modules/forma.neighbourhood.html#">forma.neighbourhood</a> class as usual.</p>
 
-<p> Once a rule is specified, there are two provided implementations of a CA.
+<p> Once a ruleset is specified, there are two provided implementations of a CA.
  Firstly the standard <em>synchronous</em> CA is implemented in <a href="../modules/forma.automata.html#iterate">automata.iterate</a>
  whereby all cells are updated simultaneously. Secondly an <em>asynchronous</em>
  update is provided in <a href="../modules/forma.automata.html#async_iterate">automata.async_iterate</a> in which each iteration
  updates only one cell at random.</p>
 
-<p> For both methods, multiple rules can be applied simultaneously through the
- ruleset by supplying a table containting more than one <a href="../modules/forma.automata.html#rule">rule</a>. Rule
- conflicts are resolved in favour of cell deactivation, i.e if there are two
- nested rulesets, with a cell passing one and failing the other either
- survival or birth rules, the cell will be deactivated in the next iteration.</p>
+<p> When a ruleset consists of only one rule, the CA is unambiguous and is
+ applied in the conventional manner. When multiple rules are provided, rule
+ conflicts are resolved in favour of cell deactivation. For example, if there
+ are two rules in the set, cell activation requires that the candidate cell
+ passes the 'birth' criterion of both rules. Cell deactivation requires only
+ that one 'survive' criterion fails.</p>
 
 <p> All CA updates here are only possible on a <em>finite</em> domain of cells. That
  domain must be specified as a <a href="../modules/forma.pattern.html">pattern</a> in the iteration call.</p>
@@ -211,7 +214,7 @@
     <ul>
         <pre class="example"><span class="comment">-- Domain and initial state (500 seed points) for the CA
 </span><span class="keyword">local</span> domain = primitives.square(<span class="number">100</span>)
-<span class="keyword">local</span> ca_pat = subpattern.random(sq, <span class="number">500</span>)
+<span class="keyword">local</span> ca_pat = subpattern.random(domain, <span class="number">500</span>)
 <span class="comment">-- Repeat iteration until convergence is reached
 </span><span class="keyword">local</span> converged = <span class="keyword">false</span>
 <span class="keyword">repeat</span>
@@ -258,9 +261,9 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="comment">-- Domain and initial state (500 seed points) for the CA
-</span><span class="keyword">local</span> domain = primitives.square(<span class="number">100</span>)
-<span class="keyword">local</span> ca_pat = subpattern.random(sq, <span class="number">500</span>)
+        <pre class="example"><span class="comment">-- Domain and initial state (10 seed points) for the CA
+</span><span class="keyword">local</span> domain = primitives.square(<span class="number">10</span>)
+<span class="keyword">local</span> ca_pat = subpattern.random(domain, <span class="number">10</span>)
 <span class="keyword">local</span> rng    = <span class="global">math</span>.random
 <span class="comment">-- Repeat iteration until convergence is reached
 </span><span class="keyword">local</span> converged = <span class="keyword">false</span>
@@ -277,7 +280,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2018-08-08 18:12:10 </i>
+<i style="float:right;">Last updated 2019-01-07 21:10:29 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

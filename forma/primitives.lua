@@ -17,6 +17,7 @@
 -- @module forma.primitives
 local primitives = {}
 
+local cell    = require('forma.cell')
 local pattern = require('forma.pattern')
 
 ----------------------------------------------------------------------------
@@ -50,6 +51,8 @@ end
 -- @param finish a forma.cell denoting the end of the line
 -- @return a pattern consisting of a line between `start` and `finish`
 function primitives.line(start, finish)
+    assert(getmetatable(start)  == cell, "primitives.line requires a cell as the first argument")
+    assert(getmetatable(finish) == cell, "primitives.line requires a cell as the second argument")
     local deltax = finish.x - start.x
     local sx = deltax / math.abs(deltax)
     deltax = math.abs(deltax)*2.
@@ -85,6 +88,53 @@ function primitives.line(start, finish)
         end
     end
     return line
+end
+
+--- Draw a quadratic bezier curve.
+-- Uses an algorithm from rosettacode.org.
+-- This function returns both a pattern consisting of the drawn bezier curve,
+-- and a list of points along the curve. This may be important in case the
+-- curve back-tracks over existing cells, which cannot be represented in a
+-- forma `pattern`. The full pattern consists of `N` of these points, joined
+-- by bresenham line segments.
+-- @param start   a forma.cell denoting the start of the curve
+-- @param control a forma.cell denoting the control point of the curve
+-- @param finish  a forma.cell denoting the end of the curve
+-- @param N (optional) number of line-segments to construct the curve with
+-- @return a pattern consisting of a bezier curve between `start` and `finish`, controlled by `control`
+-- @return an ordered list of cells consisting of points along the curve.
+function primitives.quad_bezier(start, control, finish, N)
+    if N == nil then N = 20 end
+    assert(getmetatable(start)   == cell, "primitives.quad_bezier requires a cell as the first argument")
+    assert(getmetatable(control) == cell, "primitives.quad_bezier requires a cell as the second argument")
+    assert(getmetatable(finish)  == cell, "primitives.quad_bezier requires a cell as the third argument")
+    assert(type(N) == 'number' and N > 0,
+        "primitives.quad_bezier requires an integer with value at least 1 as fourth argument")
+    local x1, y1 = start.x, start.y
+    local x2, y2 = control.x, control.y
+    local x3, y3 = finish.x, finish.y
+    local line_points = {cell.new(x1, y1)}
+    for i=1, N, 1 do
+        local t = i / N;
+        local a = math.pow((1.0 - t), 2.0)
+        local b = 2.0 * t * (1.0 - t);
+        local c = math.pow(t, 2.0);
+        local x = math.floor(a * x1 + b * x2 + c * x3 + 0.5)
+        local y = math.floor(a * y1 + b * y2 + c * y3 + 0.5)
+        local new_point = cell.new(x,y)
+        local last_point = line_points[#line_points]
+        -- Remove duplicate points
+        if new_point ~= last_point then
+            table.insert(line_points, new_point)
+        end
+    end
+    -- Build the curve from the points
+    local bezier = pattern.new()
+    for i=1, #line_points - 1, 1 do
+        local line = primitives.line(line_points[i], line_points[i+1])
+        bezier = bezier + line
+    end
+    return bezier, line_points
 end
 
 --- Generate a circle pattern.

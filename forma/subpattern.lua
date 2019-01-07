@@ -19,6 +19,16 @@ local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
 
+-- Fisher-Yates shuffle
+-- Returns a shuffled version of the input table
+local function shuffle(table, rng)
+    if rng == nil then rng = math.random end
+    for i=#table,1,-1 do
+        local j = rng(#table)
+        table[i], table[j] = table[j], table[i]
+    end
+end
+
 --- Sub-patterns
 -- @section subpatterns
 
@@ -138,6 +148,97 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
         sample:insert(min_sample.x, min_sample.y)
     end
     return sample
+end
+
+-- Internal perlin noise function
+-- Adapted from https://github.com/max1220/lua-perlin [MIT License]
+-- Takes as arguments p: permutation vector, (x, y) coordinates, frequency and
+-- sampling depth. Returns a noise value [0,1].
+local function perlin_noise(p, x, y, freq, depth)
+    local function permute(_x, _y) return p[(p[_y % 256] + _x) % 256]; end
+    local function lin_inter(_x, _y, s) return _x + s * (_y-_x) end
+    local function smooth_inter(_x, _y, s) return lin_inter(_x, _y, s * s * (3-2*s)) end
+
+    local function noise2d(_x, _y)
+        local x_int = math.floor(_x);
+        local y_int = math.floor(_y);
+        local x_frac = _x - x_int;
+        local y_frac = _y - y_int;
+        local s = permute(x_int, y_int);
+        local t = permute(x_int+1, y_int);
+        local u = permute(x_int, y_int+1);
+        local v = permute(x_int+1, y_int+1);
+        local low = smooth_inter(s, t, x_frac);
+        local high = smooth_inter(u, v, x_frac);
+        return smooth_inter(low, high, y_frac);
+    end
+
+    local xa = x*freq;
+    local ya = y*freq;
+    local amp = 1.0;
+    local fin = 0;
+    local div = 0.0;
+
+    for _=1,depth, 1 do
+        div = div + 256 * amp;
+        fin = fin + noise2d(xa, ya) * amp;
+        amp = amp / 2;
+        xa = xa * 2;
+        ya = ya * 2;
+    end
+
+    return fin/div;
+end
+
+--- Perlin noise sampling.
+-- Samples an input pattern by thresholding a Perlin-noise pattern in the
+-- domain.  This function takes an initial sampling frequency, and computes
+-- perlin noise over the input pattern by taking the product of `depth`
+-- successively halved frequencies. A table of subpatterns are then returned,
+-- consisting of the perlin noise function thresholded at requested levels.
+-- @param ip pattern upon which the thresholded noise sampling is to be performed.
+-- @param freq (float) frequency of desired perlin noise
+-- @param depth (int), sampling depth.
+-- @param thresholds table of sampling thresholds (between 0 and 1).
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return a table of `patterns`, one per threshold entry.
+function subpattern.perlin(ip, freq, depth, thresholds, rng)
+    if rng == nil then rng = math.random end
+    assert(getmetatable(ip) == pattern,
+           "subpattern.perlin requires a pattern as the first argument")
+    assert(type(freq) == "number",
+           "subpattern.perlin requires a numerical frequency value.")
+    assert(math.floor(depth) == depth,
+           "subpattern.perlin requires an integer sampling depth.")
+    assert(type(thresholds) == "table",
+           "subpattern.perlin requires a table of requested thresholds.")
+
+    for _, th in ipairs(thresholds) do
+        assert(th >= 0 and th <= 1,
+               "subpattern.perlin requires thresholds between 0 and 1.")
+    end
+        --
+    -- Generate permutation vector
+    local p = {}
+    for i=0, 255, 1 do p[i] = i end
+    shuffle(p, rng)
+
+    -- Generate sample patterns
+    local samples = {}
+    for i=1, #thresholds, 1 do
+        samples[i] = pattern.new()
+    end
+
+    -- Fill sample patterns
+    for ix, iy in ip:cell_coordinates() do
+        local nv = perlin_noise(p, ix, iy, freq, depth)
+        for ith, th in ipairs(thresholds) do
+            if nv >= th then
+                samples[ith]:insert(ix, iy)
+            end
+        end
+    end
+    return samples
 end
 
 -- Helper function for subpattern.floodfill

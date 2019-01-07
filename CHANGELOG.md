@@ -60,3 +60,16 @@
 - Slightly faster convergence check for `automata.iterate`
 - Harmonised coordinate handling between pattern prototype and tostring
   
+
+0.4
+---------
+
+# Features
+- Perlin noise sampling
+- Quadratic Bezier curve drawing.
+
+# Misc
+ - Check that CA rule sets don't have neighbourhoods that are too large for 
+   the rule signature format (>10 neighbours)
+ - Fixed some typos in usage examples
+ - Setup forma documentation example checking with `ldoctest`

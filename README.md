@@ -21,12 +21,13 @@ suited (but not limited) to the generation of roguelike environments.
 
 - **A spatial-hashing pattern** class for fast lookup of active cells.
 - **Pattern manipulators** such as the addition, subtraction, rotation and reflection of patterns.
-- **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares.
+- **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares and Bezier curves.
 - A very flexible **cellular automata** implementation with
     - Synchronous and asynchronous updates
     - Combination of multiple rule sets
 - **Pattern sampling** algorithms including
     - Random (white noise) sampling
+    - Perlin noise sampling
     - Poisson-disc sampling
     - Mitchell's best-candidate sampling
 - **Algorithms for subpattern finding** including
@@ -69,7 +70,7 @@ end
 
 -- Find all 4-contiguous segments of the CA pattern
 -- Uses the von-neumann neighbourhood to determine 'connectedness'
--- but any custom neighbourhood can be used)
+-- but any custom neighbourhood can be used.
 local segments = subpattern.segments(ca, neighbourhood.von_neumann())
 
 -- Print a representation to io.output
@@ -82,10 +83,17 @@ subpattern.print_patterns(domain, segments)
 is written in pure Lua, no compilation is required. Including the project is as
 simple as including the `forma` directory in your project or Lua path.
 
-The easiest way to do this is via LuaRocks:
+The easiest way to do this is via LuaRocks. To install the latest stable version
+use:
 
 ```Shell
     luarocks install forma
+```
+
+Alternatively you can try the dev branch with:
+
+```Shell
+    luarocks install --server=http://luarocks.org/dev golflike
 ```
 
 ## Documentation

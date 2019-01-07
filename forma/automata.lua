@@ -1,24 +1,26 @@
 --- Pattern manipulation with Cellular Automata.
 --
--- Cellular Automata are defined here by two parameters. Firstly a
--- `neighbourhood` that the rule acts on. Secondly a `rule` specifying the
--- conditions under which cells are *Born* (B) or *Survive* (S). These rules
--- are initialised with a string rule in the "Golly" format. i.e a rule which
--- activates cells with one neighbour and deactivates cells with two would have
--- the rule string "B1/S2". The neighbourhood is specified by an instance of
--- the `neighbourhood` submodule as usual.
+-- Cellular Automata are defined here by a ruleset (a table of individual
+-- CA rules). Each rule consists of two parts. Firstly a `neighbourhood` that
+-- the rule acts on. Secondly a rule `signature` specifying the conditions
+-- under which cells are *Born* (B) or *Survive* (S). These rule signatures are
+-- initialised with a string in the "Golly" format. i.e a rule which activates
+-- cells with one neighbour and deactivates cells with two would have the rule
+-- string "B1/S2". The neighbourhood is specified by an instance of the
+-- `forma.neighbourhood` class as usual.
 --
--- Once a rule is specified, there are two provided implementations of a CA.
+-- Once a ruleset is specified, there are two provided implementations of a CA.
 -- Firstly the standard *synchronous* CA is implemented in `automata.iterate`
 -- whereby all cells are updated simultaneously. Secondly an *asynchronous*
 -- update is provided in `automata.async_iterate` in which each iteration
 -- updates only one cell at random.
 --
--- For both methods, multiple rules can be applied simultaneously through the
--- ruleset by supplying a table containting more than one `rule`. Rule
--- conflicts are resolved in favour of cell deactivation, i.e if there are two
--- nested rulesets, with a cell passing one and failing the other either
--- survival or birth rules, the cell will be deactivated in the next iteration.
+-- When a ruleset consists of only one rule, the CA is unambiguous and is
+-- applied in the conventional manner. When multiple rules are provided, rule
+-- conflicts are resolved in favour of cell deactivation. For example, if there
+-- are two rules in the set, cell activation requires that the candidate cell
+-- passes the 'birth' criterion of both rules. Cell deactivation requires only
+-- that one 'survive' criterion fails.
 --
 -- All CA updates here are only possible on a *finite* domain of cells. That
 -- domain must be specified as a `pattern` in the iteration call.
@@ -68,6 +70,8 @@ end
 -- @param rule_string string specifying the ruleset (i.e B23/S1).
 -- @return A verified rule for use with the CA methods.
 function automata.rule(neighbourhood, rule_string)
+    assert(#neighbourhood < 11,
+           "forma.automata.rule: Rule string format does not support neighbourhoods with more than 10 elements")
     assert(type(neighbourhood) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
     assert(type(rule_string) == 'string', "forma.automata.rule: parse_rules trying to parse a " .. type(rule_string))
     local Bpos, Spos = string.find(rule_string, 'B'), string.find(rule_string, 'S')
@@ -132,7 +136,7 @@ end
 -- @usage
 --  -- Domain and initial state (500 seed points) for the CA
 --  local domain = primitives.square(100)
---  local ca_pat = subpattern.random(sq, 500)
+--  local ca_pat = subpattern.random(domain, 500)
 --  -- Repeat iteration until convergence is reached
 --  local converged = false
 --  repeat
@@ -162,9 +166,9 @@ end
 -- Performs a CA update on one cell (chosen randomly) in the specified domain.
 -- This corresponds to a 'random independent scheme' update.
 -- @usage
---  -- Domain and initial state (500 seed points) for the CA
---  local domain = primitives.square(100)
---  local ca_pat = subpattern.random(sq, 500)
+--  -- Domain and initial state (10 seed points) for the CA
+--  local domain = primitives.square(10)
+--  local ca_pat = subpattern.random(domain, 10)
 --  local rng    = math.random
 --  -- Repeat iteration until convergence is reached
 --  local converged = false

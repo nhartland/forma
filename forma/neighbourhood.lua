@@ -16,7 +16,8 @@
 --  local vn    = neighbourhood.von_neumann()
 --
 --  -- Define a new neighbourhood from a table of forma.cells
---  local new_neighbourhood = neighbourhood.new({cell_list})
+--  local cell_list = {cell.new(-1,1), cell.new(1,-1)}
+--  local new_neighbourhood = neighbourhood.new(cell_list)
 --
 -- @module forma.neighbourhood
 local neighbourhood = {}
