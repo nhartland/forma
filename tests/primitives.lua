@@ -45,3 +45,20 @@ function testPrimitives:testLine()
         lu.assertEquals(floodfill, line)
     end
 end
+-- Test Bezier raster ------------------------------------------------
+function testPrimitives:testBezier()
+    -- Draw a bunch of lines, check their properties
+    for N=1, 100, 1 do
+        local start   = cell.new(math.random(-100, 100), math.random(-100, 100))
+        local control = cell.new(math.random(-100, 100), math.random(-100, 100))
+        local finish  = cell.new(math.random(-100, 100), math.random(-100, 100))
+        local line = primitives.quad_bezier( start, control, finish, N )
+
+        -- Must have start and finish cells
+        lu.assertTrue(line:has_cell(start.x,  start.y))
+        lu.assertTrue(line:has_cell(finish.x, finish.y))
+        -- Must consist of one contiguous area
+        local floodfill = subpattern.floodfill(line, start)
+        lu.assertEquals(floodfill, line)
+    end
+end
