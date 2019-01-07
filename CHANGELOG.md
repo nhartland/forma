@@ -61,7 +61,7 @@
 - Harmonised coordinate handling between pattern prototype and tostring
   
 
-Since 0.3
+0.4
 ---------
 
 # Features
