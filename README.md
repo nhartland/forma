@@ -93,7 +93,7 @@ use:
 Alternatively you can try the dev branch with:
 
 ```Shell
-    luarocks install --server=http://luarocks.org/dev golflike
+    luarocks install --server=http://luarocks.org/dev forma
 ```
 
 ## Documentation
