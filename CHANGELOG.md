@@ -73,3 +73,11 @@
    the rule signature format (>10 neighbours)
  - Fixed some typos in usage examples
  - Setup forma documentation example checking with `ldoctest`
+
+0.5 (WIP)
+---------
+
+# Features
+
+# Misc
+Ordering the example neighbourhood vector lists clockwise.

@@ -60,17 +60,18 @@ end
 --- The Moore neighbourhood.
 -- [Wikipedia entry](https://en.wikipedia.org/wiki/Moore_neighborhood).
 --
--- Contains all cells with Chebyshev distance 1
--- from origin. Used in Conway's Game of Life.
+-- Contains all cells with Chebyshev distance 1 from origin. Used in Conway's
+-- Game of Life. Ordered clockwise assuming an upwards y-axis and rightwards
+-- x-axis
 function neighbourhood.moore()
     local nbh = {}
-    table.insert(nbh, cell.new(1,0))
     table.insert(nbh, cell.new(0,1))
-    table.insert(nbh, cell.new(-1,0))
-    table.insert(nbh, cell.new(0,-1))
     table.insert(nbh, cell.new(1,1))
+    table.insert(nbh, cell.new(1,0))
     table.insert(nbh, cell.new(1,-1))
+    table.insert(nbh, cell.new(0,-1))
     table.insert(nbh, cell.new(-1,-1))
+    table.insert(nbh, cell.new(-1,0))
     table.insert(nbh, cell.new(-1,1))
     nbh = neighbourhood.new(nbh)
     nbh.category_label = nil
@@ -80,23 +81,25 @@ end
 --- The von Neumann neighbourhood.
 -- [Wikipedia entry](https://en.wikipedia.org/wiki/von_Neumann_neighborhood).
 --
--- Contains all cells with Manhattan distance 1 from origin.
+-- Contains all cells with Manhattan distance 1 from origin. Ordered clockwise
+-- assuming an upwards y-axis and rightwards x-axis
 function neighbourhood.von_neumann()
     local nbh = {}
-    table.insert(nbh, cell.new(1,0))
     table.insert(nbh, cell.new(0,1))
-    table.insert(nbh, cell.new(-1,0))
+    table.insert(nbh, cell.new(1,0))
     table.insert(nbh, cell.new(0,-1))
+    table.insert(nbh, cell.new(-1,0))
     nbh = neighbourhood.new(nbh)
     -- utf8 characters for the 16 possible von neumann categories
-    nbh._category_label = {'┼','├','┴','┤','┬','─','┘','└','│','┌','┐','╷','╴','╶','╵','.'}
+    nbh._category_label = {'┼','┬','┤','┴','├','│','┘','┐','─','┌','└','╶','╵','╷','╴','.'}
     return nbh
 end
 
 --- The diagonal neighbourhood.
 --
 -- Contains all cells diagonally bordering the origin. i.e the Moore
--- neighbourhood with the von Neumann subtracted.
+-- neighbourhood with the von Neumann subtracted. Ordered clockwise assuming an
+-- upwards y-axis and rightwards x-axis
 function neighbourhood.diagonal()
     local nbh = {}
     table.insert(nbh, cell.new(1,1))
@@ -110,8 +113,8 @@ end
 
 --- The twice diagonal neighbourhood.
 --
--- Contains all cells two cells away from the origin
--- along the diagonal axes.
+-- Contains all cells two cells away from the origin along the diagonal axes.
+-- Ordered clockwise assuming an upwards y-axis and rightwards x-axis
 function neighbourhood.diagonal_2()
     local nbh = {}
     table.insert(nbh, cell.new(2,2))
