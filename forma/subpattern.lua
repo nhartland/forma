@@ -357,8 +357,9 @@ end
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return A table of forma.patterns consisting of contiguous sub-patterns of ip.
 function subpattern.segments(ip, nbh)
-    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
     nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "subpattern.segments requires a neighbourhood as the second argument")
     local wp = pattern.clone(ip)
     local segs = {}
     while pattern.size(wp) > 0 do
@@ -376,9 +377,10 @@ end
 -- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
 -- @return A table of forma.patterns comprising the enclosed areas of ip.
 function subpattern.enclosed(ip, nbh)
+    nbh = nbh or neighbourhood.von_neumann()
     assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
     assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
-    nbh = nbh or neighbourhood.von_neumann()
+    assert(getmetatable(nbh) == neighbourhood, "subpattern.enclosed requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1,1)
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
     local segments = subpattern.segments(interior, nbh)
@@ -561,6 +563,7 @@ end
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
 function subpattern.print_patterns(domain, segments, chars)
+    assert(getmetatable(domain)  == pattern, "subpattern.print_patterns requires a pattern as a first argument")
     assert(domain:size() > 0, "subpattern.print_patterns: domain must have at least one cell")
     assert(type(segments) == "table", "subpattern.print_patterns: second argument must be a *table* of patterns")
     -- If no dictionary is supplied generate a new one (starting from '0')
