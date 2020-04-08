@@ -77,7 +77,6 @@
 0.5 (WIP)
 ---------
 
-# Features
-
 # Misc
-Ordering the example neighbourhood vector lists clockwise.
+ - Ordering the example neighbourhood vector lists clockwise.
+ - Improved error messages on some subpattern methods.
