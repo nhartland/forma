@@ -1,0 +1,21 @@
+name: Documentation
+on:
+  push:
+    branches: [ master ]
+jobs:
+  generate_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: leafo/gh-actions-lua@v5
+      - uses: leafo/gh-actions-luarocks@v2
+      - name: Install ldoc
+        run: luarocks install ldoc
+      - name: Generate documentation 
+        run: ldoc --output contents --dir docs .
+      - name: Publish GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v1.4.0
+        with:
+          build_dir: docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

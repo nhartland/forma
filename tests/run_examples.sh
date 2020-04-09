@@ -1,8 +1,8 @@
 for example in ./examples/*.lua; do
-    lua "$example" > /dev/null
-    if [ $? -ne 0 ]; then
+    if ! lua "$example" > /dev/null
+    then
         echo "$example fails"
-        exit $?
+        exit 1
     else
         echo "$example passes"
     fi
