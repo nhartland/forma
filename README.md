@@ -32,6 +32,7 @@ suited (but not limited) to the generation of roguelike environments.
     - Mitchell's best-candidate sampling
 - **Algorithms for subpattern finding** including
     - Flood-fill contiguous segment finding
+    - Convex hull finding
     - Pattern edge and surface finding
     - Binary space partitioning
     - Voronoi tessellation / Lloyd's algorithm
