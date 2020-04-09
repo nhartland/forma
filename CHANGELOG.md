@@ -77,6 +77,10 @@
 0.5 (WIP)
 ---------
 
+# Features
+- Convex hull computation
+
 # Misc
  - Ordering the example neighbourhood vector lists clockwise.
  - Improved error messages on some subpattern methods.
+ - Slightly improved example gallery generation
