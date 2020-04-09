@@ -1,0 +1,23 @@
+name: tests
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  # Run the tests
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lua-version: ['5.1', '5.2', '5.3', 'luajit']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: leafo/gh-actions-lua@v5
+        with:
+          luaVersion: ${{ matrix.lua-version }}
+      - uses: leafo/gh-actions-luarocks@v2
+      - name: install rocks
+        run: luarocks install luaunit luacov
+      - name: run tests
+        run: sh run_tests.sh
