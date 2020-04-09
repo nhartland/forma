@@ -1,4 +1,4 @@
--- Voronoi tesselation
+-- Voronoi tessellation
 local cell       = require('forma.cell')
 local primitives = require('forma.primitives')
 local subpattern = require('forma.subpattern')

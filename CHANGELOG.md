@@ -73,3 +73,14 @@
    the rule signature format (>10 neighbours)
  - Fixed some typos in usage examples
  - Setup forma documentation example checking with `ldoctest`
+
+0.5 (WIP)
+---------
+
+# Features
+- Convex hull computation
+
+# Misc
+ - Ordering the example neighbourhood vector lists clockwise.
+ - Improved error messages on some subpattern methods.
+ - Slightly improved example gallery generation

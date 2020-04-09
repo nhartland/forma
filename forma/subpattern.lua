@@ -357,8 +357,9 @@ end
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return A table of forma.patterns consisting of contiguous sub-patterns of ip.
 function subpattern.segments(ip, nbh)
-    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
     nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "subpattern.segments requires a neighbourhood as the second argument")
     local wp = pattern.clone(ip)
     local segs = {}
     while pattern.size(wp) > 0 do
@@ -376,9 +377,10 @@ end
 -- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
 -- @return A table of forma.patterns comprising the enclosed areas of ip.
 function subpattern.enclosed(ip, nbh)
+    nbh = nbh or neighbourhood.von_neumann()
     assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
     assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
-    nbh = nbh or neighbourhood.von_neumann()
+    assert(getmetatable(nbh) == neighbourhood, "subpattern.enclosed requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1,1)
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
     local segments = subpattern.segments(interior, nbh)
@@ -551,6 +553,72 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
     assert(false, "This should not be reachable")
 end
 
+--- Compute the points lying on the convex hull of a pattern.
+-- This computes the points lying on a pattern's convex hull with Andrew's
+-- monotone chain convex hull algorithm. Adapted from sixFinger's
+-- implementation at
+-- https://gist.github.com/sixFingers/ee5c1dce72206edc5a42b3246a52ce2e
+-- @param ip input pattern for generating the convex hull
+-- @return A `pattern` consisting of the points of `ip` lying on the convex hull.
+-- @return A clockwise-ordered table of cells on the convex hull
+function subpattern.convex_hull_points(ip)
+    assert(getmetatable(ip)  == pattern,
+           "subpattern.convex_hull_points requires a pattern as a first argument")
+    assert(ip:size() > 0,
+           "subpattern.convex_hull_points: input pattern must have at least one cell")
+    -- Build list of points
+    local points = ip:cell_list()
+    local p = #points
+    local function cross(p, q, r)
+        return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
+    end
+    table.sort(points, function(a, b)
+        return a.x == b.x and a.y > b.y or a.x > b.x
+    end)
+    local lower = {}
+    for i = 1, p do
+        while (#lower >= 2 and cross(lower[#lower - 1], lower[#lower], points[i]) <= 0) do
+            table.remove(lower)
+        end
+        table.insert(lower, points[i])
+    end
+    local upper = {}
+    for i = p, 1, -1 do
+        while (#upper >= 2 and cross(upper[#upper - 1], upper[#upper], points[i]) <= 0) do
+            table.remove(upper)
+        end
+        table.insert(upper, points[i])
+    end
+    table.remove(upper)
+    table.remove(lower)
+    for i=1,#lower do
+        table.insert(upper, lower[i])
+    end
+    -- Build pattern of points on the convex hull
+    local convex_pattern = pattern.new()
+    for i=1, #upper do
+       convex_pattern:insert(upper[i].x, upper[i].y)
+    end
+    return convex_pattern, upper
+end
+
+--- Compute the convex hull of a pattern.
+-- This computes the points on a pattern's convex hull with
+-- subpattern.convex_hull_points and connects the points with line rasters.
+-- @param ip input pattern for generating the convex hull
+-- @return A `pattern` consisting of the convex hull of `ip`
+function subpattern.convex_hull(ip)
+    assert(getmetatable(ip)  == pattern, "subpattern.convex_hull requires a pattern as a first argument")
+    assert(ip:size() > 0, "subpattern.convex_hull: input pattern must have at least one cell")
+    local _, hull_points = subpattern.convex_hull_points(ip)
+    local chull = pattern.new()
+    for i=1, #hull_points-1, 1 do
+       chull = chull + primitives.line(hull_points[i], hull_points[i+1])
+    end
+    chull = chull + primitives.line(hull_points[#hull_points], hull_points[1])
+    return chull
+end
+
 --- Utilities
 -- @section subpattern_utils
 
@@ -561,6 +629,7 @@ end
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
 function subpattern.print_patterns(domain, segments, chars)
+    assert(getmetatable(domain)  == pattern, "subpattern.print_patterns requires a pattern as a first argument")
     assert(domain:size() > 0, "subpattern.print_patterns: domain must have at least one cell")
     assert(type(segments) == "table", "subpattern.print_patterns: second argument must be a *table* of patterns")
     -- If no dictionary is supplied generate a new one (starting from '0')

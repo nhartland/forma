@@ -181,6 +181,43 @@ function testSubPatterns:testCategories()
     end
 end
 
+--  Convex hull ---------------------------------------------------------------------
+-- Tests the function returning all points on the convex hull
+function testSubPatterns:testConvexHullPoints()
+    -- Pattern for running convex hull algorithm over
+    local test_pattern = pattern.new({{1,0,0,0,1},
+                                      {0,0,1,0,0},
+                                      {0,1,1,1,0},
+                                      {0,0,1,0,0},
+                                      {1,0,0,0,1}})
+    -- Actual points lying on the convex hull
+    local true_pattern = pattern.new({{1,0,0,0,1},
+                                      {0,0,0,0,0},
+                                      {0,0,0,0,0},
+                                      {0,0,0,0,0},
+                                      {1,0,0,0,1}})
+    local convex_hull  = subpattern.convex_hull_points(test_pattern)
+    local overlap = pattern.intersection(convex_hull, true_pattern)
+    lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
+end
+-- Test the function computing the convex hull
+function testSubPatterns:testConvexHull()
+    -- Pattern for running convex hull algorithm over
+    local test_pattern = pattern.new({{1,0,0,0,1},
+                                      {0,0,1,0,0},
+                                      {0,1,1,1,0},
+                                      {0,0,1,0,0},
+                                      {1,0,0,0,1}})
+    -- Actual convex hull pattern
+    local true_pattern = pattern.new({{1,1,1,1,1},
+                                      {1,0,0,0,1},
+                                      {1,0,0,0,1},
+                                      {1,0,0,0,1},
+                                      {1,1,1,1,1}})
+    local convex_hull  = subpattern.convex_hull(test_pattern)
+    local overlap = pattern.intersection(convex_hull, true_pattern)
+    lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
+end
 -- Voronoi tesselation ---------------------------------------------------------------
 function testSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
 
