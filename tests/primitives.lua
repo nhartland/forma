@@ -20,7 +20,7 @@ function testPrimitives:testCircle()
     end
 end
 -- Test square raster ------------------------------------------------
-function testPrimitives:testCircle()
+function testPrimitives:testSquare()
     for i=1,10,1 do
         -- Check that there are the correct number of points
         local square_raster = primitives.square(i)

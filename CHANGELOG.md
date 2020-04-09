@@ -76,9 +76,10 @@ Initial release
 - Convex hull computation
 
 ## Bugfix
- - Require a radius of at least 1 for primitives.circle
+ - Including the circle raster unit test.
 
 ## Misc
+ - Require a radius of at least 1 for primitives.circle
  - Ordering the example neighbourhood vector lists clockwise.
  - Improved error messages on some subpattern methods.
  - Slightly improved example gallery generation
