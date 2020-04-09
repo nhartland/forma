@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/nhartland/forma.svg?branch=master)](https://travis-ci.org/nhartland/forma)
+![Build Status](https://github.com/nhartland/forma/workflows/tests/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/nhartland/forma/badge.svg?branch=master)](https://coveralls.io/github/nhartland/forma?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 

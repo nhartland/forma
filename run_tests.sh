@@ -4,18 +4,16 @@
 #       luaunit
 #       luacov
 
-LUA=${LUA:=luajit}
-
 # Run luaunit tests
-$LUA tests/run.lua -o TAP
-if [ $? -ne 0 ]; then
-    exit $?
+if ! lua tests/run.lua -o TAP
+then
+    exit 1
 fi
 
 echo "Running examples"
 for example in ./examples/*.lua; do
-    $LUA "$example" > /dev/null
-    if [ $? -ne 0 ]; then
+    if !  lua "$example" > /dev/null
+    then
         echo "$example fails"
         exit 1
     else

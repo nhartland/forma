@@ -6,7 +6,7 @@ on:
     branches: [ master ]
 jobs:
   # Run the tests
-  tests:
+  testing:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,7 +17,31 @@ jobs:
         with:
           luaVersion: ${{ matrix.lua-version }}
       - uses: leafo/gh-actions-luarocks@v2
-      - name: install rocks
-        run: luarocks install luaunit luacov
-      - name: run tests
-        run: sh run_tests.sh
+      - name: Install rocks
+        run: luarocks install luaunit
+      - name: Run tests
+        run: |
+          sh ./tests/run_examples.sh
+          lua tests/run.lua
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: leafo/gh-actions-lua@v5
+        with:
+          luaVersion: "luajit"
+      - uses: leafo/gh-actions-luarocks@v2
+      - name: Install rocks
+        run: |
+          luarocks install luacov
+          luarocks install luaunit
+          luarocks install luacov-reporter-lcov
+      - name: Run tests
+        run: |
+          lua -lluacov tests/run.lua
+          luacov -c .luacov -v luacov.report.out -r lcov  
+      - name: Upload to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./luacov.report.out
