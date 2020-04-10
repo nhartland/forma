@@ -70,7 +70,7 @@ Initial release
  - Fixed some typos in usage examples
  - Setup forma documentation example checking with `ldoctest`
 
-# 0.5 (WIP)
+# 0.5
 
 ## Features
  - Convex hull computation
