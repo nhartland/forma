@@ -1,5 +1,6 @@
 package = "forma"
 version = "scm-1"
+rockspec_format = "3.0"
 source = {
    url = "git://github.com/nhartland/forma",
    branch = "dev",
@@ -35,6 +36,14 @@ build = {
       ["forma.subpattern"]    = "forma/subpattern.lua",
    },
    copy_directories = {
-      "examples"
+      "test"
    }
+}
+test = {
+    type = "command",
+    script = "tests/run.lua",
+    flags = {"-v"}
+}
+test_dependencies = {
+   "luaunit >=3.3"
 }
