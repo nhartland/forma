@@ -80,6 +80,7 @@ Initial release
 
 ## Misc
  - Require a radius of at least 1 for primitives.circle
- - Ordering the example neighbourhood vector lists clockwise.
- - Improved error messages on some subpattern methods.
+ - Ordering the example neighbourhood vector lists clockwise
+ - Improved error messages on some subpattern methods
  - Slightly improved example gallery generation
+ - Changed to using LuaRocks as test runner
