@@ -318,6 +318,9 @@ local function test_generic_packing_function(fn)
     -- Should return nil
     local pp = fn(test_point, test_pattern)
     lu.assertEquals(pp, nil)
+    -- Should return nil
+    local pp = fn(primitives.square(5), primitives.square(1))
+    lu.assertEquals(pp, nil)
 end
 
 function testPattern:testPacktile()
