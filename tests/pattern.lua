@@ -340,3 +340,19 @@ function testPattern:testPacktileCentre()
     lu.assertEquals(pp.x, 1)
     lu.assertEquals(pp.y, 1)
 end
+
+function testPattern:testEditDistance()
+    -- Self-distances
+    lu.assertEquals(self.pattern_1:edit_distance(self.pattern_1), 0)
+    lu.assertEquals(self.pattern_2:edit_distance(self.pattern_2), 0)
+    lu.assertEquals(self.pattern_3:edit_distance(self.pattern_3), 0)
+    -- Non-overlapping
+    local p1 = pattern.new({{1,0},
+                            {0,1}})
+    local p2 = pattern.new({{0,1},
+                            {1,0}})
+    lu.assertEquals(p1:edit_distance(p2), 4)
+    -- Overlapping
+    local edit_distance_23 = self.pattern_2:edit_distance(self.pattern_3)
+    lu.assertEquals(edit_distance_23, 5*5 - 1) -- one common point
+end
