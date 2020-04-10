@@ -300,3 +300,43 @@ function testPattern:testRotate()
     local test2 = test:rotate():rotate():rotate():rotate()
     lu.assertEquals(test, test2)
 end
+
+-- Common tests for packtile and packtile_centre
+local function test_generic_packing_function(fn)
+    -- Should be able to pack 25 single cells into a 5x5 square
+    local test_point = primitives.square(1)
+    local test_pattern = primitives.square(5)
+    for i=1,25 do
+        -- Location where the test point can fit into the test pattern
+        local pp = fn(test_point, test_pattern)
+        lu.assertTrue( test_pattern:has_cell(pp.x, pp.y))
+        -- Remove point from test pattern
+        test_pattern = test_pattern - test_point:shift(pp.x, pp.y)
+    end
+    -- Pattern should now be empty
+    lu.assertEquals( test_pattern:size(), 0)
+    -- Should return nil
+    local pp = fn(test_point, test_pattern)
+    lu.assertEquals(pp, nil)
+    -- Should return nil
+    local pp = fn(primitives.square(5), primitives.square(1))
+    lu.assertEquals(pp, nil)
+end
+
+function testPattern:testPacktile()
+    -- Run generic testing function
+    test_generic_packing_function(pattern.packtile)
+end
+
+function testPattern:testPacktileCentre()
+    -- Run generic testing function
+    test_generic_packing_function(pattern.packtile_centre)
+    -- Test centre-packing
+    local test_point = primitives.square(1)
+    local test_pattern = pattern.new({{0,1,0,},
+                                      {1,1,1,},
+                                      {0,1,0,}})
+    local pp = test_point:packtile_centre(test_pattern)
+    lu.assertEquals(pp.x, 1)
+    lu.assertEquals(pp.y, 1)
+end
