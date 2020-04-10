@@ -73,13 +73,14 @@ Initial release
 # 0.5 (WIP)
 
 ## Features
-- Convex hull computation
+ - Convex hull computation
+ - Edit distance between patterns
 
 ## Bugfix
  - Including the circle raster unit test.
+ - Require a radius of at least 1 for primitives.circle
 
 ## Misc
- - Require a radius of at least 1 for primitives.circle
  - Ordering the example neighbourhood vector lists clockwise
  - Improved error messages on some subpattern methods
  - Slightly improved example gallery generation

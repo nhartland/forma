@@ -234,6 +234,17 @@ function pattern.size_sort(pa, pb)
     return pa:size() > pb:size()
 end
 
+--- Return the total number of differing cells between two patterns.
+-- @param a first pattern for edit distance calculation
+-- @param b second pattern for edit distance calculation
+function pattern.edit_distance(a, b)
+    assert(getmetatable(a) == pattern, "pattern.edit_distance requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern.edit_distance requires a pattern as the second argument")
+    local common = pattern.intersection(a,b)
+    local edit_distance = (a - common):size() + (b-common):size()
+    return edit_distance
+end
+
 -----------------------
 --- Iterators.
 -- @section Iterators
