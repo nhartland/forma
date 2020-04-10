@@ -36,7 +36,7 @@ build = {
       ["forma.subpattern"]    = "forma/subpattern.lua",
    },
    copy_directories = {
-      "test"
+      "tests"
    }
 }
 test = {
