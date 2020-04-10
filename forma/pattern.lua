@@ -234,6 +234,17 @@ function pattern.size_sort(pa, pb)
     return pa:size() > pb:size()
 end
 
+--- Return the total number of differing cells between two patterns.
+-- @param a first pattern for edit distance calculation
+-- @param b second pattern for edit distance calculation
+function pattern.edit_distance(a, b)
+    assert(getmetatable(a) == pattern, "pattern.edit_distance requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern.edit_distance requires a pattern as the second argument")
+    local common = pattern.intersection(a,b)
+    local edit_distance = (a - common):size() + (b-common):size()
+    return edit_distance
+end
+
 -----------------------
 --- Iterators.
 -- @section Iterators
@@ -743,6 +754,10 @@ end
 -- @param b the domain which we are searching for packing solutions
 -- @return a cell in `b` where `a` can be placed, nil if no solution found.
 function pattern.packtile_centre(a,b)
+    assert(getmetatable(a) == pattern, "pattern.packtile_centre requires a pattern as a first argument")
+    assert(getmetatable(b) == pattern, "pattern.packtile_centre requires a pattern as a second argument")
+    assert(a:size() > 0 , "pattern.packtile_centre requires a non-empty pattern as a first argument")
+    if b:size() == 0 then return nil end
     -- cell to fix coordinate systems
     local hinge = a:medoid()
     local com   = b:centroid()

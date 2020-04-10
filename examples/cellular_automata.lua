@@ -19,5 +19,5 @@ while converged == false and ite < 1000 do
     ite = ite+1
 end
 
-ca.onchar, ca.offchar = "#", " "
-print(ca)
+-- Print to stdout
+subpattern.print_patterns(sq, {ca}, {'#'})

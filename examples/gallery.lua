@@ -53,7 +53,7 @@ for _,v in ipairs(args) do
         end
         print("```")
         print("### Output")
-        print("![foo](img/"..name..".png )")
+        print("![Example Image](img/"..name..".png )")
     end
 end
 

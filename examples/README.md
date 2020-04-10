@@ -1,6 +1,7 @@
 # *forma* example gallery
 * [Binary space partitioning](#binary-space-partitioning)
-* [Voronoi tesselation](#voronoi-tesselation)
+* [Convex hull finder](#convex-hull-finder)
+* [Voronoi tessellation](#voronoi-tessellation)
 * [Perlin noise sampling](#perlin-noise-sampling)
 * [Maximum rectangle finding](#maximum-rectangle-finding)
 * [Circle primitives](#circle-primitives)
@@ -26,8 +27,26 @@ subpattern.print_patterns(square,bsp)
 
 ```
 ### Output
-![foo](img/binary_space_partition.png )
-## Voronoi tesselation
+![Example Image](img/./binary_space_partition.png )
+## Convex hull finder
+This generates a messy random pattern, and finds its convex hull.
+
+```lua
+
+local subpattern = require('forma.subpattern')
+local primitives = require('forma.primitives')
+
+-- Generate a domain and a random set of points
+local domain = primitives.square(80, 20)
+local points = subpattern.random(domain, 30)
+
+-- Find the convex hull
+local c_hull = subpattern.convex_hull(points)
+subpattern.print_patterns(domain,{c_hull, points}, {'x', 'o'})
+```
+### Output
+![Example Image](img/./convex_hull.png )
+## Voronoi tessellation
 
 ```lua
 local cell       = require('forma.cell')
@@ -45,7 +64,7 @@ local segments = subpattern.voronoi(rn, sq, measure)
 subpattern.print_patterns(sq, segments)
 ```
 ### Output
-![foo](img/voronoi.png )
+![Example Image](img/./voronoi.png )
 ## Perlin noise sampling
 Here we sample a square domain pattern according to perlin noise,
 generating three new patterns consisting of the noise thresholded at
@@ -65,7 +84,7 @@ local noise  = subpattern.perlin(domain, frequency, depth, thresholds)
 subpattern.print_patterns(domain, noise, {'.', '+', 'o'})
 ```
 ### Output
-![foo](img/perlin.png )
+![Example Image](img/./perlin.png )
 ## Maximum rectangle finding
 This generates a messy random pattern, and finds the largest contiguous
 rectangle of active cells within it.
@@ -84,7 +103,7 @@ local mxrect = subpattern.maxrectangle(domain - blocks)
 subpattern.print_patterns(domain,{blocks, mxrect}, {'o','#'})
 ```
 ### Output
-![foo](img/maxrectangle.png )
+![Example Image](img/./maxrectangle.png )
 ## Circle primitives
 
 ```lua
@@ -111,7 +130,7 @@ subpattern.print_patterns(domain, {shapes}, {'o'})
 
 ```
 ### Output
-![foo](img/bubbles.png )
+![Example Image](img/./bubbles.png )
 ## Cellular automata
 Demonstration of classic cellular-automata cave generation (4-5 rule).
 
@@ -135,11 +154,11 @@ while converged == false and ite < 1000 do
     ite = ite+1
 end
 
-ca.onchar, ca.offchar = "#", " "
-print(ca)
+-- Print to stdout
+subpattern.print_patterns(sq, {ca}, {'#'})
 ```
 ### Output
-![foo](img/cellular_automata.png )
+![Example Image](img/./cellular_automata.png )
 ## Sampling methods
 Demonstrations of various methods for sampling from a pattern.
 1. `pattern.random` generates white noise, it's fast and irreguarly distributed.
@@ -166,7 +185,7 @@ local random  = subpattern.poisson_disc(domain, measure, 4)
 subpattern.print_patterns(domain, {random}, {'#'})
 ```
 ### Output
-![foo](img/sampling.png )
+![Example Image](img/./sampling.png )
 ## Rasterising isolines
 Here we generate a pattern randomly filled with points, and take as a scalar
 field `N(cell) = F_2(cell) - F_1(cell)`, where `F_n` is the Chebyshev distance
@@ -203,7 +222,7 @@ subpattern.print_patterns(sq, {noise:surface()}, {'#'})
 
 ```
 ### Output
-![foo](img/isolines.png )
+![Example Image](img/./isolines.png )
 ## Combining cellular automata rules
 Here the way multiple CA rules can be combined into a single ruleset is
 demonstrated. A asynchronous cellular automata with a complicated ruleset
@@ -236,7 +255,7 @@ local segments = subpattern.neighbourhood_categories(ca, nbh)
 subpattern.print_patterns(domain, segments, nbh:category_label())
 ```
 ### Output
-![foo](img/corridors.png )
+![Example Image](img/./corridors.png )
 ## Readme example
 This generates the example used in the readme. Runs a 4-5 rule CA for 'cave
 generation and then computes the contiguous sub-patterns and prints them.
@@ -283,7 +302,7 @@ subpattern.print_patterns(domain, segments)
 
 ```
 ### Output
-![foo](img/readme.png )
+![Example Image](img/./readme.png )
 ## Asynchronous cellular automata
 Here the use of an asynchronous cellular automata is demonstrated, making
 use also of symmetrisation methods to generate a final, symmetric pattern.
@@ -324,4 +343,4 @@ local segments = subpattern.neighbourhood_categories(symmetrised_pattern, vn)
 subpattern.print_patterns(symmetrised_pattern, segments, vn:category_label())
 ```
 ### Output
-![foo](img/async_automata.png )
+![Example Image](img/./async_automata.png )

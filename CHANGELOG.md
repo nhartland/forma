@@ -1,11 +1,9 @@
-0.1
----
-- Initial release
+# 0.1
+Initial release
 
-0.2
----
+# 0.2
 
-# Features
+## Features
 - Implemented a 'mask' subpattern that masks out cells according to a provided
   function
 - Added Voronoi relaxation via Lloyd's algorithm
@@ -16,12 +14,12 @@
 - Added a Poisson-disc sampling subpattern
 - Added Mitchell's Best-Candidate sampling (approximate Poisson-Disc)
 
-# Bugfix
+## Bugfix
 - Fixed bug with subpattern.enclosed which would generate more than one enclosed
   point for a primitive.circle
 - Fixed default initialisation of RNG in `automata.async_iterate`
 
-# Misc
+## Misc
 - Improved circle raster (no longer repeats points)
 - Integrated all tests into a single test script, and added luacov coverage
 - Converted subpattern.random to take as an argument a fixed integer number of
@@ -37,19 +35,18 @@
 - Added isoline drawing example
 - Renamed `pretty_print` to `print_patterns`
 
-0.3
----
+# 0.3
 
-# Features
+## Features
 - Pattern rotation operator
 - Shuffled version of `cell_coordinates` iterator
 - Generalised pattern prototype constructor to allow `NxM` matrices 
 
-# Bugfix
+## Bugfix
 - Fixed lazy initialisation through 'require ("forma")'
 - Corrected assert error message in pattern subtraction
 
-# Misc
+## Misc
 - Improved pattern documentation
 - Greatly expanded test coverage
 - Slightly streamlined corridors example
@@ -61,22 +58,30 @@
 - Harmonised coordinate handling between pattern prototype and tostring
   
 
-0.4
----------
+# 0.4
 
-# Features
+## Features
 - Perlin noise sampling
 - Quadratic Bezier curve drawing.
 
-# Misc
+## Misc
  - Check that CA rule sets don't have neighbourhoods that are too large for 
    the rule signature format (>10 neighbours)
  - Fixed some typos in usage examples
  - Setup forma documentation example checking with `ldoctest`
 
-0.5 (WIP)
----------
+# 0.5 (WIP)
 
-# Misc
- - Ordering the example neighbourhood vector lists clockwise.
- - Improved error messages on some subpattern methods.
+## Features
+ - Convex hull computation
+ - Edit distance between patterns
+
+## Bugfix
+ - Including the circle raster unit test.
+ - Require a radius of at least 1 for primitives.circle
+
+## Misc
+ - Ordering the example neighbourhood vector lists clockwise
+ - Improved error messages on some subpattern methods
+ - Slightly improved example gallery generation
+ - Changed to using LuaRocks as test runner

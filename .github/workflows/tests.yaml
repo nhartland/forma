@@ -1,7 +1,5 @@
 name: Testing
 on:
-  push:
-    branches: [ master, dev ]
   pull_request:
     branches: [ master, dev ]
 jobs:
@@ -17,12 +15,8 @@ jobs:
         with:
           luaVersion: ${{ matrix.lua-version }}
       - uses: leafo/gh-actions-luarocks@v2
-      - name: Install rocks
-        run: luarocks install luaunit
       - name: Run tests
-        run: |
-          sh ./tests/run_examples.sh
-          lua tests/run.lua
+        run: luarocks test
   coverage:
     runs-on: ubuntu-latest
     steps:

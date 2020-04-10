@@ -143,7 +143,7 @@ end
 -- @return circular forma.pattern of radius `r` and origin `(0,0)`
 function primitives.circle(r)
     assert(type(r) == 'number', 'primitives.circle requires a number for the radius')
-    assert(r >= 0, 'primitives.circle requires a positive number for the radius')
+    assert(r > 0, 'primitives.circle requires a positive number for the radius')
 
     local x, y = -r,0
     local acc = 2-2*r

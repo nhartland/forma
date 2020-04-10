@@ -1,9 +1,9 @@
 package = "forma"
-version = "scm-1"
+version = "0.5-1"
 rockspec_format = "3.0"
 source = {
    url = "git://github.com/nhartland/forma",
-   branch = "dev",
+   tag = "v0.5",
 }
 
 description = {
