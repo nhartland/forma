@@ -313,7 +313,11 @@ local function test_generic_packing_function(fn)
         -- Remove point from test pattern
         test_pattern = test_pattern - test_point:shift(pp.x, pp.y)
     end
+    -- Pattern should now be empty
     lu.assertEquals( test_pattern:size(), 0)
+    -- Should return nil
+    local pp = fn(test_point, test_pattern)
+    lu.assertEquals(pp, nil)
 end
 
 function testPattern:testPacktile()
