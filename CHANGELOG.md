@@ -85,3 +85,13 @@ Initial release
  - Improved error messages on some subpattern methods
  - Slightly improved example gallery generation
  - Changed to using LuaRocks as test runner
+
+# 0.6 (WIP)
+
+## Features
+
+## Bugfix
+
+## Misc
+ - Adjust `pattern.sum` so that it can also take a single table of patterns as
+   an argument (pattern.sum({a,b,c}) instead of just pattern.sum(a,b,c)).

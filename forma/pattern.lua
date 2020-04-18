@@ -692,10 +692,16 @@ function pattern.intersection(...)
 end
 
 --- Generate a pattern consisting of the sum of existing patterns
--- @param ... patterns for summation
+-- @param ... patterns for summation, can be either a table ({a,b}) or a list of arguments (a,b)
 -- @return A pattern consisting of the sum of the input patterns
 function pattern.sum(...)
     local patterns = {...}
+    -- Handle a single, table argument of patterns ({a,b,c}) rather than (a,b,c)
+    if #patterns == 1 then
+        if type(patterns[1]) == 'table' then
+            patterns = patterns[1]
+        end
+    end
     assert(#patterns > 1, "pattern.sum requires at least two patterns as arguments")
     local total = pattern.clone(patterns[1])
     for i=2, #patterns, 1 do
