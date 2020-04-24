@@ -95,3 +95,5 @@ Initial release
 ## Misc
  - Adjust `pattern.sum` so that it can also take a single table of patterns as
    an argument (pattern.sum({a,b,c}) instead of just pattern.sum(a,b,c)).
+ - Relaxed the assertions on the nature of distance measures in mitchell
+   sampling / poisson disc sampling.
