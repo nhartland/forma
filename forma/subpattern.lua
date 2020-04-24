@@ -85,8 +85,7 @@ end
 -- @return a Poisson-disc sample of `domain`
 function subpattern.poisson_disc(ip, distance, radius, rng)
     assert(getmetatable(ip) == pattern,  "subpattern.poisson_disc requires a pattern as the first argument")
-    assert(distance(cell.new(5,5), cell.new(5,5)) == 0,
-           "subpattern.poisson_disc requires a distance measure as the second argument")
+    assert(type(distance)   == 'function', "subpattern.poisson_disc requires a distance measure as an argument")
     assert(type(radius) == "number", "subpattern.poisson_disc requires a number as the target radius")
     if rng == nil then rng = math.random end
     local sample = pattern.new()
@@ -118,8 +117,7 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
            "subpattern.mitchell_sample requires a pattern as the first argument")
     assert(ip:size() >= n,
            "subpattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
-    assert(distance(cell.new(5,5), cell.new(5,5)) == 0,
-           "subpattern.mitchell_sample requires a distance measure as the second argument")
+    assert(type(distance)   == 'function', "subpattern.mitchell_sample requires a distance measure as an argument")
     assert(type(n) == "number", "subpattern.mitchell_sample requires a target number of samples")
     assert(type(k) == "number", "subpattern.mitchell_sample requires a target number of candidate tries")
     if rng == nil then rng = math.random end

@@ -25,17 +25,9 @@ dependencies = {
    "lua >= 5.1"
 }
 build = {
-   type = "builtin",
-   modules = {
-      forma = "forma/init.lua",
-      ["forma.automata"]      = "forma/automata.lua",
-      ["forma.cell"]          = "forma/cell.lua",
-      ["forma.neighbourhood"] = "forma/neighbourhood.lua",
-      ["forma.pattern"]       = "forma/pattern.lua",
-      ["forma.primitives"]    = "forma/primitives.lua",
-      ["forma.subpattern"]    = "forma/subpattern.lua",
-   },
+   type = "none",
    copy_directories = {
+      "forma",
       "tests"
    }
 }

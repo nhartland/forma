@@ -79,11 +79,13 @@ function testPattern:testSum()
                              {0,0,0,0,0}})
     local tp12 = primitives.square(5)
     local sum  = pattern.sum(tp1, tp2)
+    local sum_v2  = pattern.sum({tp1, tp2})
     lu.assertEquals(tp1+tp2, tp12)
     lu.assertEquals(tp1+tp2, sum)
     lu.assertEquals(tp12, sum)
     lu.assertNotEquals(tp1, sum)
     lu.assertNotEquals(tp2, sum)
+    lu.assertEquals(sum, sum_v2)
 end
 
 -- Test insert methods
