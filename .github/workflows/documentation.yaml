@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: leafo/gh-actions-lua@v5
-      - uses: leafo/gh-actions-luarocks@v2
+      - uses: leafo/gh-actions-lua@v9
+      - uses: leafo/gh-actions-luarocks@v4
       - name: Install ldoc
         run: luarocks install ldoc
       - name: Generate documentation 
