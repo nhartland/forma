@@ -12,7 +12,7 @@ function testRaycasting:testRay()
     -- Test here is simmilar to line primitives
     -- Draw a bunch of lines, check their properties
     local domain = primitives.square(100)
-    for _=1, 10, 1 do
+    for _=1, 100, 1 do
         local success = raycasting.cast( domain:rcell(), domain:rcell(), domain )
         -- Must succeed
         lu.assertTrue(success)

@@ -20,7 +20,7 @@ local pattern       = require('forma.pattern')
 function ray.cast(v0, v1, domain)
     -- Start or end cell was already blocked
     if domain:has_cell(v0.x, v0.y) == false or domain:has_cell(v1.x, v1.y) == false then
-        return false, pattern.new()
+        return false
     end
     -- Initialise line walk
     local dv = v1 - v0
@@ -30,8 +30,11 @@ function ray.cast(v0, v1, domain)
     local nx = v0:clone()
     local denom = cell.euclidean(v1, v0)
     while (nx.x ~= v1.x or nx.y ~= v1.y) do
-        if (domain:has_cell(nx.x, nx.y) == false) then return false end
-        if(math.abs(dv.y * (nx.x - v0.x + sx) - dv.x * (nx.y - v0.y)) / denom < 0.5) then
+        -- Ray is blocked
+        if domain:has_cell(nx.x, nx.y) == false then
+            return false
+        -- Ray is not blocked, calculate next step
+        elseif(math.abs(dv.y * (nx.x - v0.x + sx) - dv.x * (nx.y - v0.y)) / denom < 0.5) then
             nx.x = nx.x + sx
         elseif(math.abs(dv.y * (nx.x - v0.x) - dv.x * (nx.y - v0.y + sy)) / denom < 0.5) then
             nx.y = nx.y + sy
@@ -84,7 +87,7 @@ end
 -- @param the maximum length of the ray
 -- @return the pattern illuminated by the ray casting
 function ray.cast_360(v, domain, ray_length)
-    local lit_pattern = pattern.new()
+    local lit_pattern = pattern.new():insert(v.x, v.y)
     for ioct=1,8,1 do
         local np = ray.cast_octant(v, domain, ioct, ray_length)
         lit_pattern = lit_pattern + np
