@@ -30,7 +30,7 @@ jobs:
       - name: Install rocks
         run: |
           luarocks install luacov
-          luarocks install luaunit==3.3
+          luarocks install luaunit 3.3
           luarocks install luacov-reporter-lcov
       - name: Run tests
         run: |
