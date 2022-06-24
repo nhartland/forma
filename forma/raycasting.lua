@@ -11,32 +11,26 @@ local cell          = require('forma.cell')
 local pattern       = require('forma.pattern')
 
 --- Casts a ray from a start to an end cell.
--- Returns {true/false} if the cast is successful/blocked, along with a pattern
--- of the ray trajectory. Simmilar to primitives.line, but taking a traversible
--- domain into account.
+-- Returns {true/false} if the cast is successful/blocked.
 -- Adapted from: http://www.roguebasin.com/index.php?title=LOS_using_strict_definition
 -- @param v0 starting cell of ray
 -- @param v1 end cell of ray
 -- @param the domain in which we are casting
--- @return (true/false (if the ray was unblocked/blocked), the ray pattern)
+-- @return true or false depending on whether the ray was successfully cast
 function ray.cast(v0, v1, domain)
-
-    -- Start cell was already blocked
-    if domain:has_cell(v0.x, v0.y) == false then
+    -- Start or end cell was already blocked
+    if domain:has_cell(v0.x, v0.y) == false or domain:has_cell(v1.x, v1.y) == false then
         return false, pattern.new()
     end
-
-    -- Initial pattern
-    local lit_pattern = pattern.new():insert(v0.x, v0.y)
-
+    -- Initialise line walk
     local dv = v1 - v0
     local sx = (v0.x < v1.x) and 1 or -1
     local sy = (v0.y < v1.y) and 1 or -1
-
+    -- Rasterise step by step
     local nx = v0:clone()
     local denom = cell.euclidean(v1, v0)
     while (nx.x ~= v1.x or nx.y ~= v1.y) do
-        if (domain:has_cell(nx.x, nx.y) == false) then return false, lit_pattern end
+        if (domain:has_cell(nx.x, nx.y) == false) then return false end
         if(math.abs(dv.y * (nx.x - v0.x + sx) - dv.x * (nx.y - v0.y)) / denom < 0.5) then
             nx.x = nx.x + sx
         elseif(math.abs(dv.y * (nx.x - v0.x) - dv.x * (nx.y - v0.y + sy)) / denom < 0.5) then
@@ -46,10 +40,8 @@ function ray.cast(v0, v1, domain)
             nx.y = nx.y + sy
         end
     end
-    if domain:has_cell(nx.x, nx.y) then
-        lit_pattern:insert(nx.x, nx.y)
-    end
-    return true, lit_pattern
+    -- Successfully traced a ray
+    return true
 end
 
 --- Casts rays from a start cell across an octant.
@@ -75,8 +67,11 @@ function ray.cast_octant(v0, domain, oct, ray_length)
             local tcol,trow = transformOctant(row,col)
             local v1 = v0:clone() + cell.new(tcol, -trow)
             if cell.euclidean2(v0, v1) < ray_length*ray_length then
-                _, np = ray.cast(v0,v1,domain)
-                lit_pattern = lit_pattern + np
+                ray_status = ray.cast(v0,v1,domain)
+                -- Successful ray casting, add to the illuminated pattern
+                if ray_status == true then
+                    lit_pattern:insert(v1.x, v1.y)
+                end
             end
         end
     end
