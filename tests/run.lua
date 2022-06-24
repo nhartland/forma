@@ -5,6 +5,7 @@ require('tests.primitives')
 require('tests.neighbourhood')
 require('tests.subpattern')
 require('tests.automata')
+require('tests.raycasting')
 
 math.randomseed(0)
 
