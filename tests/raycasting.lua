@@ -15,8 +15,9 @@ function testRaycasting:testRay()
     for _=1, 100, 1 do
         local start  = domain:rcell()
         local finish = domain:rcell()
-        local ray = raycasting.cast( start, finish, domain )
-
+        local success, ray = raycasting.cast( start, finish, domain )
+        -- Must succeed
+        lu.assertTrue(success)
         -- Must have start and finish cells
         lu.assertTrue(ray:has_cell(start.x,  start.y))
         lu.assertTrue(ray:has_cell(finish.x, finish.y))
