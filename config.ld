@@ -16,4 +16,5 @@ file = {
         './forma/subpattern.lua',
         './forma/automata.lua',
         './forma/neighbourhood.lua'
+        './forma/raycasting.lua'
     }

@@ -8,4 +8,5 @@ primitives    = require('forma.primitives')
 subpattern    = require('forma.subpattern')
 automata      = require('forma.automata')
 neighbourhood = require('forma.neighbourhood')
+raycasting    = require('forma.raycasting')
 
