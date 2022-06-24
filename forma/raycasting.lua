@@ -18,6 +18,9 @@ local pattern       = require('forma.pattern')
 -- @param the domain in which we are casting
 -- @return true or false depending on whether the ray was successfully cast
 function ray.cast(v0, v1, domain)
+    assert(getmetatable(v0) == cell,        "ray.cast requires a cell as the first argument")
+    assert(getmetatable(v1) == cell,        "ray.cast requires a cell as the second argument")
+    assert(getmetatable(domain) == pattern, "ray.cast requires a pattern as the third argument")
     -- Start or end cell was already blocked
     if domain:has_cell(v0.x, v0.y) == false or domain:has_cell(v1.x, v1.y) == false then
         return false
@@ -54,6 +57,10 @@ end
 -- @param radius the maximum length of the ray
 -- @return the pattern illuminated by the ray casting
 function ray.cast_octant(v0, domain, oct, ray_length)
+    assert(getmetatable(v0) == cell,        "ray.cast_octant requires a cell as the first argument")
+    assert(getmetatable(domain) == pattern, "ray.cast_octant requires a pattern as the second argument")
+    assert(type(oct) == 'number',           "ray.cast_octant requires a number as the third argument")
+    assert(type(ray_length) == 'number',    "ray.cast_octant requires a number as the fourth argument")
     local function transformOctant(r, c)
         if oct == 1 then return r, -c end
         if oct == 2 then return r,  c end
@@ -87,6 +94,9 @@ end
 -- @param the maximum length of the ray
 -- @return the pattern illuminated by the ray casting
 function ray.cast_360(v, domain, ray_length)
+    assert(getmetatable(v) == cell,         "ray.cast_360 requires a cell as the first argument")
+    assert(getmetatable(domain) == pattern, "ray.cast_360 requires a pattern as the second argument")
+    assert(type(ray_length) == 'number',    "ray.cast_360 requires a number as the third argument")
     local lit_pattern = pattern.new():insert(v.x, v.y)
     for ioct=1,8,1 do
         local np = ray.cast_octant(v, domain, ioct, ray_length)
