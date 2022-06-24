@@ -89,11 +89,16 @@ Initial release
 # 0.6 (WIP)
 
 ## Features
+ - A raycasting tool for determining 'visible' areas of a pattern
+   from a source cell.
 
 ## Bugfix
+ - Fixed GitHub actions workflows by bumping `gh-action-lua` and
+   `gh-action-luarocks` versions.
+ - Fixed luaunit at v3.3 
 
 ## Misc
  - Adjust `pattern.sum` so that it can also take a single table of patterns as
    an argument (pattern.sum({a,b,c}) instead of just pattern.sum(a,b,c)).
- - Relaxed the assertions on the nature of distance measures in mitchell
-   sampling / poisson disc sampling.
+ - Relaxed the assertions on the nature of distance measures in Mitchell
+   sampling / Poisson disc sampling.
