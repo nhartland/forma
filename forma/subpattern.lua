@@ -249,7 +249,6 @@ local function floodfill(x, y, nbh, domain, retpat)
             floodfill(nx, ny, nbh, domain, retpat)
         end
     end
-    return
 end
 
 --- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
@@ -563,7 +562,6 @@ function subpattern.convex_hull_points(ip)
         "subpattern.convex_hull_points: input pattern must have at least one cell")
     -- Build list of points
     local points = ip:cell_list()
-    local p = #points
     local function cross(p, q, r)
         return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
     end
@@ -571,14 +569,14 @@ function subpattern.convex_hull_points(ip)
         return a.x == b.x and a.y > b.y or a.x > b.x
     end)
     local lower = {}
-    for i = 1, p do
+    for i = 1, #points do
         while (#lower >= 2 and cross(lower[#lower - 1], lower[#lower], points[i]) <= 0) do
             table.remove(lower)
         end
         table.insert(lower, points[i])
     end
     local upper = {}
-    for i = p, 1, -1 do
+    for i = #points, 1, -1 do
         while (#upper >= 2 and cross(upper[#upper - 1], upper[#upper], points[i]) <= 0) do
             table.remove(upper)
         end

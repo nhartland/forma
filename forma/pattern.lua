@@ -406,6 +406,32 @@ function pattern.__sub(a, b)
     return c
 end
 
+--- Pattern intersection using the * operator
+-- Returns the set of cells active in both patterns a and b.
+-- @param a first pattern
+-- @param b second pattern
+-- @return a new pattern which is the intersection of a and b
+function pattern.__mul(a, b)
+    assert(getmetatable(a) == pattern, "pattern multiplication requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern multiplication requires a pattern as the second argument")
+    return pattern.intersection(a, b)
+end
+
+--- Symmetric difference (XOR) of two patterns using ^ operator.
+-- Cells present in A or B but not both.
+-- @param a first pattern
+-- @param b second pattern
+-- @return new pattern which is the symmetric difference of a and b
+function pattern.__pow(a, b)
+    assert(getmetatable(a) == pattern, "pattern exponent (XOR) requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern exponent (XOR) requires a pattern as the second argument")
+
+    -- XOR = (A union B) minus (A intersection B)
+    local unionAB   = a + b
+    local intersect = pattern.intersection(a, b)
+    return unionAB - intersect
+end
+
 --- Pattern equality test.
 -- @param a first pattern for equality check
 -- @param b second pattern for equality check
@@ -604,6 +630,62 @@ function pattern.hreflect(ip)
     return np
 end
 
+--- Erode a pattern according to a given neighborhood.
+-- Each cell remains active only if all of its neighbors in `nbh`
+-- are also active.
+-- @param ip input pattern to be eroded
+-- @param nbh a neighbourhood (list of relative offsets),
+--        e.g. neighbourhood.moore() or neighbourhood.von_neumann()
+-- @return a new pattern which is the erosion of ip
+function pattern.erode(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.erode requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.erode requires a neighbourhood as the second argument")
+    local result = pattern.new()
+    for x, y in ip:cell_coordinates() do
+        local keep = true
+        for j = 1, #nbh, 1 do
+            local offset = nbh[j]
+            local nx = x + offset.x
+            local ny = y + offset.y
+            if not ip:has_cell(nx, ny) then
+                keep = false
+                break
+            end
+        end
+        if keep then
+            result:insert(x, y)
+        end
+    end
+    return result
+end
+
+--- Dilate a pattern according to a given neighborhood.
+-- Each active cell in `ip` contributes its neighbors (as defined by `nbh`)
+-- to the resulting pattern. The resulting pattern consists of the union of the
+-- initial pattern and its exterior hull.
+-- @param ip input pattern to be dilated
+-- @param nbh a neighbourhood (list of relative offsets),
+--        e.g. neighbourhood.moore() or neighbourhood.von_neumann()
+-- @return a new pattern which is the dilation of `ip`
+function pattern.dilate(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.dilate requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.dilate requires a neighbourhood as the second argument")
+    local np = pattern.clone(ip)
+    for x, y in ip:cell_coordinates() do
+        for j = 1, #nbh, 1 do
+            local offset = nbh[j]
+            local nx = x + offset.x
+            local ny = y + offset.y
+            if not np:has_cell(nx, ny) then
+                np:insert(nx, ny)
+            end
+        end
+    end
+    return np
+end
+
 --- Generate a pattern consisting of all cells on the edge of a provided pattern.
 -- This returns a new pattern consisting of the inactive neighbours of an input
 -- pattern, for a given definition of neighbourhood. Therefore the `edge`
@@ -631,6 +713,26 @@ function pattern.edge(ip, nbh)
         end
     end
     return ep
+end
+
+--- Morphological opening of a pattern: erosion -> dilation.
+-- This removes small artifacts and "opens" narrow connections.
+-- @param ip input pattern
+-- @param nbh neighbourhood used for erosion/dilation
+-- @return new pattern after opening
+function pattern.opening(ip, nbh)
+    local eroded = pattern.erode(ip, nbh)
+    return pattern.dilate(eroded, nbh)
+end
+
+--- Morphological closing of a pattern: dilation -> erosion.
+-- This fills in small holes and "closes" gaps in the pattern.
+-- @param ip input pattern
+-- @param nbh neighbourhood used for dilation/erosion
+-- @return new pattern after closing
+function pattern.closing(ip, nbh)
+    local dilated = pattern.dilate(ip, nbh)
+    return pattern.erode(dilated, nbh)
 end
 
 --- Generate a pattern consisting of cells on the surface of a provided pattern.
@@ -688,6 +790,20 @@ function pattern.intersection(...)
         end
     end
     return inter
+end
+
+--- Symmetric difference of two patterns: cells in A or B, but not both.
+-- @param a first pattern
+-- @param b second pattern
+-- @return new pattern which is the symmetric difference of a and b
+function pattern.xor(a, b)
+    assert(getmetatable(a) == pattern, "pattern.xor requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern.xor requires a pattern as the second argument")
+
+    local unionAB = a + b
+    local interAB = pattern.intersection(a, b)
+    local xorAB   = unionAB - interAB
+    return xorAB
 end
 
 --- Generate a pattern consisting of the sum of existing patterns

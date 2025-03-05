@@ -77,7 +77,7 @@ function ray.cast_octant(v0, domain, oct, ray_length)
             local tcol, trow = transformOctant(row, col)
             local v1 = v0:clone() + cell.new(tcol, -trow)
             if cell.euclidean2(v0, v1) < ray_length * ray_length then
-                ray_status = ray.cast(v0, v1, domain)
+                local ray_status = ray.cast(v0, v1, domain)
                 -- Successful ray casting, add to the illuminated pattern
                 if ray_status == true then
                     lit_pattern:insert(v1.x, v1.y)

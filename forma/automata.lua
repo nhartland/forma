@@ -50,7 +50,7 @@ local function parse_rule(nbh, rulesub)
         local nv = tonumber(string.sub(rulesub, i, i))
         assert(nv ~= nil, "forma.automata attempting to parse nil rulesub: " .. rulesub .. " " .. string.sub(rulesub, i,
             i))
-        assert(nv >= 0, nv <= #nbh, "Requested rule " .. rulesub .. " cannot be accomodated into neighbourhood")
+        assert((nv >= 0) and (nv <= #nbh), "Requested rule " .. rulesub .. " cannot be accomodated into neighbourhood")
         assert(ruletable[nv] == nil, "Requested rule " .. rulesub .. " includes duplicate values")
         ruletable[nv] = true
     end

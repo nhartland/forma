@@ -45,3 +45,10 @@ function testNeighbourhood:testDiagonal2()
      self:commonTest(diagonal_2, 4, self.pattern_3)
 end
 
+function testNeighbourhood:testKnight()
+    -- Knight neighborhood should have 8 offsets, hence 2^8 = 256 categories.
+    -- We need a 5x5 pattern (or bigger) so that the medoid (2,2)
+    -- can have all 8 knight moves inside the pattern.
+    local knight = neighbourhood.knight()
+    self:commonTest(knight, 8, self.pattern_3)
+end

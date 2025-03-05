@@ -91,6 +91,11 @@ Initial release
 ## Features
  - A raycasting tool for determining 'visible' areas of a pattern
    from a source cell.
+ - A knight neighbourhood for knight-piece moves.
+ - Pattern methods `dilate` and `erode` for morphological operations.
+ - Pattern morphological operations `opening` and `closing`.
+ - A pattern XOR method and a^b operator.
+ - A pattern metamethod for intersection (a*b)
 
 ## Bugfix
  - Fixed GitHub actions workflows by bumping `gh-action-lua` and

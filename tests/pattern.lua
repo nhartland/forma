@@ -108,7 +108,7 @@ function testPattern:testIterators()
     -- These should return alive cells in the same order
     local cells = sqpat:cells()
     local coords = sqpat:cell_coordinates()
-    for i=1, sqpat:size(), 1 do
+    for _=1, sqpat:size(), 1 do
         local ncell  = cells()
         local nx, ny = coords()
         -- Same order in cells and coordinates
@@ -308,7 +308,7 @@ local function test_generic_packing_function(fn)
     -- Should be able to pack 25 single cells into a 5x5 square
     local test_point = primitives.square(1)
     local test_pattern = primitives.square(5)
-    for i=1,25 do
+    for _=1,25 do
         -- Location where the test point can fit into the test pattern
         local pp = fn(test_point, test_pattern)
         lu.assertTrue( test_pattern:has_cell(pp.x, pp.y))
@@ -318,11 +318,11 @@ local function test_generic_packing_function(fn)
     -- Pattern should now be empty
     lu.assertEquals( test_pattern:size(), 0)
     -- Should return nil
-    local pp = fn(test_point, test_pattern)
-    lu.assertEquals(pp, nil)
+    local pp1 = fn(test_point, test_pattern)
+    lu.assertEquals(pp1, nil)
     -- Should return nil
-    local pp = fn(primitives.square(5), primitives.square(1))
-    lu.assertEquals(pp, nil)
+    local pp2 = fn(primitives.square(5), primitives.square(1))
+    lu.assertEquals(pp2, nil)
 end
 
 function testPattern:testPacktile()
@@ -358,3 +358,146 @@ function testPattern:testEditDistance()
     local edit_distance_23 = self.pattern_2:edit_distance(self.pattern_3)
     lu.assertEquals(edit_distance_23, 5*5 - 1) -- one common point
 end
+
+function testPattern:testDilation()
+    -- Single-cell pattern
+    local single = pattern.new({{1}})  -- 1 at (0,0)
+    -- Dilation with a Moore neighborhood (8 directions, plus center).
+    -- Make sure your code or your 'nbh' includes (0,0) if you want the original cell to remain.
+    local dil = single:dilate(neighbourhood.moore())
+    -- A single cell with Moore dilation => center plus 8 neighbors => total 9 cells.
+    lu.assertEquals(dil:size(), 9)
+    -- Spot check that the center still exists
+    lu.assertTrue(dil:has_cell(0, 0))
+end
+
+function testPattern:testErosion()
+    -- 3x3 block. By default, pattern.new interprets
+    -- the top row of the table as y=0, then next as y=1, etc.
+    -- So the pattern has these active coords (x,y):
+    -- (0,0),(1,0),(2,0),
+    -- (0,1),(1,1),(2,1),
+    -- (0,2),(1,2),(2,2)
+    local block3 = pattern.new({
+        {1,1,1},
+        {1,1,1},
+        {1,1,1},
+    })
+    -- Erode with the Moore neighborhood (including center).
+    local eroded = block3:erode(neighbourhood.moore())
+    -- A 3x3 block eroded (Moore, center included) leaves only the middle cell => total size=1.
+    lu.assertEquals(eroded:size(), 1)
+    -- Check that the middle cell is present at (1,1)
+    lu.assertTrue(eroded:has_cell(1,1))
+end
+
+function testPattern:testXor()
+    -- We'll test the function-based XOR (pattern.xor(a, b)).
+    -- For example, define two single-cell patterns side-by-side:
+    local a = pattern.new({{1,0}}) -- active cell at (0,0)
+    local b = pattern.new({{0,1}}) -- active cell at (1,0)
+    local x = pattern.xor(a, b)
+    -- XOR of a,b should have 2 cells: (0,0) and (1,0)
+    lu.assertEquals(x:size(), 2)
+    lu.assertTrue(x:has_cell(0,0))
+    lu.assertTrue(x:has_cell(1,0))
+    -- Self XOR should be empty
+    lu.assertEquals(pattern.xor(a, a):size(), 0)
+end
+
+function testPattern:testIntersectionOperator()
+    -- We'll assume you bound `__mul` to pattern.intersection, so a*b does set intersection.
+    local a = pattern.new({
+        {1,1},  -- cells at (0,0) and (1,0)
+        {1,1},  -- cells at (0,1) and (1,1)
+    })
+    local b = pattern.new({
+        {0,1},  -- cell at (1,0)
+        {1,1},  -- cells at (0,1) and (1,1)
+    })
+    -- Intersection => (1,0), (0,1), (1,1)
+    local i = a * b  -- uses __mul
+    lu.assertEquals(i:size(), 3)
+    lu.assertTrue(i:has_cell(1,0))
+    lu.assertTrue(i:has_cell(0,1))
+    lu.assertTrue(i:has_cell(1,1))
+    lu.assertFalse(i:has_cell(0,0))
+end
+
+function testPattern:testXorOperator()
+    -- We'll assume you bound `__pow` to pattern XOR, so a^b does symmetric difference.
+    local a = pattern.new({
+        {1,1},  -- (0,0), (1,0)
+        {1,1},  -- (0,1), (1,1)
+    })
+    local b = pattern.new({
+        {0,1},  -- (1,0)
+        {1,1},  -- (0,1), (1,1)
+    })
+    -- Intersection is 3 cells. Union is 4 cells. XOR => union - intersection => 1 cell: (0,0).
+    local x = a ^ b  -- uses __pow
+    lu.assertEquals(x:size(), 1)
+    lu.assertTrue(x:has_cell(0,0))
+end
+
+function testPattern:testOpening()
+    -- This pattern is a 3x3 block plus a single "finger" cell on the top row.
+    -- The table rows go from top to bottom in your code, so:
+    --   row 0 => y=0
+    --   row 1 => y=1
+    --   row 2 => y=2
+    --   row 3 => y=3
+    --
+    -- Active coordinates:
+    --   (0,0),(1,0),(2,0),
+    --   (0,1),(1,1),(2,1),
+    --   (0,2),(1,2),(2,2),
+    --   (0,3) <-- single extra cell above the block
+    local p = pattern.new({
+        {1,1,1},
+        {1,1,1},
+        {1,1,1},
+        {1,0,0},  -- single protrusion at (0,3)
+    })
+
+    -- After an erosion->dilation with a Moore neighborhood (including (0,0) as center),
+    -- the 3x3 block remains, but the lone protrusion cell at (0,3) is removed.
+    -- The final shape is just the 3x3 block at y=0..2, x=0..2:
+    --
+    --   (0,0),(1,0),(2,0),
+    --   (0,1),(1,1),(2,1),
+    --   (0,2),(1,2),(2,2)
+    local p_open = pattern.new({
+        {1,1,1},
+        {1,1,1},
+        {1,1,1},
+    })
+
+    local opened = p:opening(neighbourhood.moore())
+    lu.assertEquals(opened, p_open)
+end
+
+function testPattern:testClosing()
+    -- A 3x3 block with a single hole in the middle (1,1):
+    --    (0,0),(1,0),(2,0),
+    --    (0,1),      (2,1),
+    --    (0,2),(1,2),(2,2)
+    local c = pattern.new({
+        {1,1,1},
+        {1,0,1},
+        {1,1,1},
+    })
+
+    -- With closing (dilation->erosion) and a Moore neighborhood,
+    -- that hole at (1,1) gets filled during dilation, leaving a solid 3x3 block,
+    -- and after erosion we remain with the same 3x3 block fully filled:
+    local c_closed = pattern.new({
+        {1,1,1},
+        {1,1,1},
+        {1,1,1},
+    })
+
+    local closed = c:closing(neighbourhood.moore())
+    lu.assertEquals(closed, c_closed)
+end
+

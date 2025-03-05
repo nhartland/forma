@@ -126,6 +126,21 @@ function neighbourhood.diagonal_2()
     return nbh
 end
 
+--- The knight neighbourhood
+--
+-- Contains all cells that are a knight piece chess move away from the origin.
+function neighbourhood.knight()
+    local nbh = {
+        cell.new( 2,  1), cell.new( 2, -1),
+        cell.new(-2,  1), cell.new(-2, -1),
+        cell.new( 1,  2), cell.new( 1, -2),
+        cell.new(-1,  2), cell.new(-1, -2),
+    }
+    nbh = neighbourhood.new(nbh)
+    nbh._category_label = nil -- TODO
+    return nbh
+end
+
 --- Functions
 -- @section functions
 
