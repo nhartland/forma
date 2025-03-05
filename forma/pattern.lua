@@ -50,33 +50,33 @@
 -- outer_hull = pattern.edge(p1, neighbourhood.moore())
 --
 -- @module forma.pattern
-local pattern = {}
+local pattern         = {}
 
-local min   = math.min
-local max   = math.max
-local floor = math.floor
+local min             = math.min
+local max             = math.max
+local floor           = math.floor
 
-local cell          = require('forma.cell')
-local neighbourhood = require('forma.neighbourhood')
+local cell            = require('forma.cell')
+local neighbourhood   = require('forma.neighbourhood')
 
 -- Pattern indexing
 -- For enabling syntax sugar pattern:method
-pattern.__index = pattern
+pattern.__index       = pattern
 
 -- Pattern coordinates (either x or y) must be within ± MAX_COORDINATE
 local MAX_COORDINATE  = 65536
-local COORDINATE_SPAN = 2*MAX_COORDINATE + 1
+local COORDINATE_SPAN = 2 * MAX_COORDINATE + 1
 
 --- Generate the cellmap key from coordinates
 local function coordinates_to_key(x, y)
-    return (x+MAX_COORDINATE)*COORDINATE_SPAN + (y+MAX_COORDINATE)
+    return (x + MAX_COORDINATE) * COORDINATE_SPAN + (y + MAX_COORDINATE)
 end
 
 --- Generate the coordinates from the key
 local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
-    return xp- MAX_COORDINATE, yp - MAX_COORDINATE
+    return xp - MAX_COORDINATE, yp - MAX_COORDINATE
 end
 
 -- Copies an input table in a randomly shuffled order
@@ -111,10 +111,10 @@ end
 -- @param prototype (optional) an N*M 2D table of ones and zeros
 -- @return a new pattern according to the prototype
 function pattern.new(prototype)
-    local np = {}
+    local np   = {}
 
-    np.max = cell.new(-math.huge,-math.huge)
-    np.min = cell.new( math.huge, math.huge)
+    np.max     = cell.new(-math.huge, -math.huge)
+    np.min     = cell.new(math.huge, math.huge)
 
     -- Characters to be used with tostring metamethod
     np.offchar = '0'
@@ -123,28 +123,28 @@ function pattern.new(prototype)
     np.cellkey = {} -- Table consisting of a list of coordinate keys
     np.cellmap = {} -- Spatial hash of coordinate key to bool (active/inactive cell)
 
-    np = setmetatable(np, pattern)
+    np         = setmetatable(np, pattern)
 
     if prototype ~= nil then
         assert(type(prototype) == 'table',
-        'pattern.new requires either no arguments or a N*N matrix as a prototype')
+            'pattern.new requires either no arguments or a N*N matrix as a prototype')
         local N, M = #prototype, nil
-        for i=1, N, 1 do
+        for i = 1, N, 1 do
             local row = prototype[i]
             assert(type(row) == 'table',
-            'pattern.new requires either no arguments or a N*N matrix as a prototype')
+                'pattern.new requires either no arguments or a N*N matrix as a prototype')
             if i == 1 then
                 M = #row
             else
                 assert(#row == M,
-                'pattern.new requires a N*M matrix as prototype when called with an argument')
+                    'pattern.new requires a N*M matrix as prototype when called with an argument')
             end
-            for j=1, M, 1 do
+            for j = 1, M, 1 do
                 local icell = row[j]
                 if icell == 1 then
-                    np:insert(j-1,i-1) -- Patterns start from zero
+                    np:insert(j - 1, i - 1) -- Patterns start from zero
                 else
-                    assert(icell == 0, 'pattern.new: invalid prototype entry (must be 1 or 0): '.. icell)
+                    assert(icell == 0, 'pattern.new: invalid prototype entry (must be 1 or 0): ' .. icell)
                 end
             end
         end
@@ -178,14 +178,14 @@ end
 -- @param x first coordinate of new cell
 -- @param y second coordinate of new cell
 -- @return ip for method cascading
-function pattern.insert( ip, x, y )
+function pattern.insert(ip, x, y)
     assert(floor(x) == x, 'pattern.insert requires an integer for the x coordinate')
     assert(floor(y) == y, 'pattern.insert requires an integer for the y coordinate')
 
     local key = coordinates_to_key(x, y)
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
     ip.cellmap[key] = true
-    ip.cellkey[#ip.cellkey+1] = key
+    ip.cellkey[#ip.cellkey + 1] = key
 
     -- reset pattern extent
     ip.max.x = max(ip.max.x, x)
@@ -213,7 +213,7 @@ function pattern.cell_list(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
     local newlist = {}
     for icell in ip:cells() do
-        newlist[#newlist+1] = icell
+        newlist[#newlist + 1] = icell
     end
     return newlist
 end
@@ -240,8 +240,8 @@ end
 function pattern.edit_distance(a, b)
     assert(getmetatable(a) == pattern, "pattern.edit_distance requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.edit_distance requires a pattern as the second argument")
-    local common = pattern.intersection(a,b)
-    local edit_distance = (a - common):size() + (b-common):size()
+    local common = pattern.intersection(a, b)
+    local edit_distance = (a - common):size() + (b - common):size()
     return edit_distance
 end
 
@@ -265,7 +265,7 @@ function pattern.cells(ip)
         if icell <= ncells then
             local ikey = ip.cellkey[icell]
             local x, y = key_to_coordinates(ikey)
-            return cell.new(x,y)
+            return cell.new(x, y)
         end
     end
 end
@@ -293,7 +293,6 @@ function pattern.cell_coordinates(ip)
     end
 end
 
-
 --- Shuffled iterator over active cells in the pattern.
 -- Simmilar to `pattern.cells` but provides an iterator that returns cells in a
 -- randomised order, according to a provided random number generator. See
@@ -303,7 +302,7 @@ end
 -- @return an iterator returning a `cell` for every active cell in the pattern, in a randomised order
 function pattern.shuffled_cells(ip, rng)
     assert(getmetatable(ip) == pattern,
-           "pattern.shuffled_cells requires a pattern as the first argument")
+        "pattern.shuffled_cells requires a pattern as the first argument")
     if rng == nil then rng = math.random end
     local icell, ncells = 0, ip:size()
 
@@ -317,7 +316,7 @@ function pattern.shuffled_cells(ip, rng)
         if icell <= ncells then
             local ikey = skeys[icell]
             local x, y = key_to_coordinates(ikey)
-            return cell.new(x,y)
+            return cell.new(x, y)
         end
     end
 end
@@ -332,7 +331,7 @@ end
 -- @return an iterator returning active cell (x,y) coordinates, randomly shuffled
 function pattern.shuffled_coordinates(ip, rng)
     assert(getmetatable(ip) == pattern,
-           "pattern.shuffled_coordinates requires a pattern as the first argument")
+        "pattern.shuffled_coordinates requires a pattern as the first argument")
     if rng == nil then rng = math.random end
     local icell, ncells = 0, ip:size()
 
@@ -363,7 +362,7 @@ function pattern.__tostring(ip)
     local string = '- pattern origin: ' .. tostring(ip.min) .. '\n'
     for y = ip.min.y, ip.max.y, 1 do
         for x = ip.min.x, ip.max.x, 1 do
-            local char = ip:has_cell(x,y) and ip.onchar or ip.offchar
+            local char = ip:has_cell(x, y) and ip.onchar or ip.offchar
             string = string .. char
         end
         string = string .. '\n'
@@ -375,12 +374,12 @@ end
 -- @param a first pattern to be added
 -- @param b second pattern to be added
 -- @return New pattern consisting of the superset of patterns a and b
-function pattern.__add(a,b)
+function pattern.__add(a, b)
     assert(getmetatable(a) == pattern, "pattern addition requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
 
     local c = pattern.clone(a)
-    for x,y in b:cell_coordinates() do
+    for x, y in b:cell_coordinates() do
         if c:has_cell(x, y) == false then
             c:insert(x, y)
         end
@@ -393,12 +392,12 @@ end
 -- @param a base pattern
 -- @param b pattern to be subtracted from a
 -- @return New pattern consisting of the subset of cells in a which are not in b
-function pattern.__sub(a,b)
+function pattern.__sub(a, b)
     assert(getmetatable(a) == pattern, "pattern subtraction requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern subtraction requires a pattern as the second argument")
 
     local c = pattern.new()
-    for x,y in a:cell_coordinates() do
+    for x, y in a:cell_coordinates() do
         if b:has_cell(x, y) == false then
             c:insert(x, y)
         end
@@ -411,7 +410,7 @@ end
 -- @param a first pattern for equality check
 -- @param b second pattern for equality check
 -- @return true if patterns are identical, false if not
-function pattern.__eq(a,b)
+function pattern.__eq(a, b)
     assert(getmetatable(a) == pattern, "pattern equality test requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern equality test requires a pattern as the second argument")
     -- Easy and fast checks
@@ -419,7 +418,7 @@ function pattern.__eq(a,b)
     if a.min ~= b.min then return false end
     if a.max ~= b.max then return false end
     -- Slower checks
-    for x,y in a:cell_coordinates() do
+    for x, y in a:cell_coordinates() do
         if b:has_cell(x, y) == false then return false end
     end
     return true
@@ -466,10 +465,10 @@ function pattern.centroid(ip)
 
     -- Clamp to integer coordinates
     local n = ip:size()
-    local intx = floor(sumx/n + 0.5)
-    local inty = floor(sumy/n + 0.5)
+    local intx = floor(sumx / n + 0.5)
+    local inty = floor(sumy / n + 0.5)
 
-    return cell.new( intx, inty )
+    return cell.new(intx, inty)
 end
 
 --- Compute the medoid cell of a pattern.
@@ -490,12 +489,12 @@ function pattern.medoid(ip, measure)
 
     -- Initialise distance table
     local distance = {}
-    for _=1, ncells, 1 do distance[#distance+1] = 0 end
+    for _ = 1, ncells, 1 do distance[#distance + 1] = 0 end
 
     local minimal_distance = math.huge
     local minimal_index = -1
-    for i=1, ncells, 1 do
-        for j=i, ncells, 1 do -- Could be i+1, but simpler to not (saves ncells=1)
+    for i = 1, ncells, 1 do
+        for j = i, ncells, 1 do -- Could be i+1, but simpler to not (saves ncells=1)
             local ij_distance = measure(cell_list[i], cell_list[j])
             distance[i] = distance[i] + ij_distance
             distance[j] = distance[j] + ij_distance
@@ -526,8 +525,8 @@ function pattern.shift(ip, sx, sy)
 
     local sp = pattern.new()
     for tx, ty in ip:cell_coordinates() do
-        local nx = tx+sx
-        local ny = ty+sy
+        local nx = tx + sx
+        local ny = ty + sy
         sp:insert(nx, ny)
     end
 
@@ -556,10 +555,10 @@ function pattern.enlarge(ip, f)
 
     local ep = pattern.new()
     for icell in ip:cells() do
-        local sv = cell.new(f*icell.x, f*icell.y)
-        for i=0, f-1, 1 do
-            for j=0, f-1, 1 do
-                ep:insert(sv.x+i, sv.y+j)
+        local sv = cell.new(f * icell.x, f * icell.y)
+        for i = 0, f - 1, 1 do
+            for j = 0, f - 1, 1 do
+                ep:insert(sv.x + i, sv.y + j)
             end
         end
     end
@@ -585,7 +584,7 @@ function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
     local np = pattern.clone(ip)
     for vx, vy in ip:cell_coordinates() do
-        local new_y = 2*ip.max.y - vy + 1
+        local new_y = 2 * ip.max.y - vy + 1
         np:insert(vx, new_y)
     end
     return np
@@ -599,7 +598,7 @@ function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
     local np = pattern.clone(ip)
     for vx, vy in ip:cell_coordinates() do
-        local new_x = 2*ip.max.x - vx + 1
+        local new_x = 2 * ip.max.x - vx + 1
         np:insert(new_x, vy)
     end
     return np
@@ -620,7 +619,7 @@ function pattern.edge(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.edge requires a neighbourhood as an argument")
     for ix, iy in ip:cell_coordinates() do
-        for j=1, #nbh, 1 do
+        for j = 1, #nbh, 1 do
             local jnbh = nbh[j]
             local vx = ix + jnbh.x
             local vy = iy + jnbh.y
@@ -649,7 +648,7 @@ function pattern.surface(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.surface requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.surface requires a neighbourhood as an argument")
     for ix, iy in ip:cell_coordinates() do
-        for j=1, #nbh, 1 do
+        for j = 1, #nbh, 1 do
             local jnbh = nbh[j]
             local vx = ix + jnbh.x
             local vy = iy + jnbh.y
@@ -666,7 +665,7 @@ end
 -- @param ... patterns for intersection calculation
 -- @return A pattern consisting of the overlapping cells of the input patterns
 function pattern.intersection(...)
-    local patterns = {...}
+    local patterns = { ... }
     assert(#patterns > 1, "pattern.intersection requires at least two patterns as arguments")
     table.sort(patterns, pattern.size_sort)
     -- Use smallest pattern as domain
@@ -674,10 +673,10 @@ function pattern.intersection(...)
     local inter  = pattern.new()
     for x, y in domain:cell_coordinates() do
         local foundCell = true
-        for i=#patterns-1, 1, -1 do
+        for i = #patterns - 1, 1, -1 do
             local tpattern = patterns[i]
             assert(getmetatable(tpattern) == pattern,
-            "pattern.intersection requires a pattern as an argument")
+                "pattern.intersection requires a pattern as an argument")
             if not tpattern:has_cell(x, y) then
                 foundCell = false
                 break
@@ -695,7 +694,7 @@ end
 -- @param ... patterns for summation, can be either a table ({a,b}) or a list of arguments (a,b)
 -- @return A pattern consisting of the sum of the input patterns
 function pattern.sum(...)
-    local patterns = {...}
+    local patterns = { ... }
     -- Handle a single, table argument of patterns ({a,b,c}) rather than (a,b,c)
     if #patterns == 1 then
         if type(patterns[1]) == 'table' then
@@ -704,7 +703,7 @@ function pattern.sum(...)
     end
     assert(#patterns > 1, "pattern.sum requires at least two patterns as arguments")
     local total = pattern.clone(patterns[1])
-    for i=2, #patterns, 1 do
+    for i = 2, #patterns, 1 do
         local v = patterns[i]
         assert(getmetatable(v) == pattern, "pattern.sum requires a pattern as an argument")
         for x, y in v:cell_coordinates() do
@@ -730,10 +729,10 @@ end
 -- @param `a` the pattern to be packed in `b`.
 -- @param `b` the domain which we are searching for packing solutions.
 -- @return a cell in `b` where `a` can be placed, `nil` if impossible.
-function pattern.packtile(a,b)
+function pattern.packtile(a, b)
     assert(getmetatable(a) == pattern, "pattern.packtile requires a pattern as a first argument")
     assert(getmetatable(b) == pattern, "pattern.packtile requires a pattern as a second argument")
-    assert(a:size() > 0 , "pattern.packtile requires a non-empty pattern as a first argument")
+    assert(a:size() > 0, "pattern.packtile requires a non-empty pattern as a first argument")
     -- cell to fix coordinate systems
     local hinge = a:rcell()
     -- Loop over possible positions in b
@@ -759,22 +758,22 @@ end
 -- @param a the pattern to be packed into pattern `b`.
 -- @param b the domain which we are searching for packing solutions
 -- @return a cell in `b` where `a` can be placed, nil if no solution found.
-function pattern.packtile_centre(a,b)
+function pattern.packtile_centre(a, b)
     assert(getmetatable(a) == pattern, "pattern.packtile_centre requires a pattern as a first argument")
     assert(getmetatable(b) == pattern, "pattern.packtile_centre requires a pattern as a second argument")
-    assert(a:size() > 0 , "pattern.packtile_centre requires a non-empty pattern as a first argument")
+    assert(a:size() > 0, "pattern.packtile_centre requires a non-empty pattern as a first argument")
     if b:size() == 0 then return nil end
     -- cell to fix coordinate systems
-    local hinge = a:medoid()
-    local com   = b:centroid()
+    local hinge    = a:medoid()
+    local com      = b:centroid()
     local allcells = b:cell_list()
-    local function distance_to_com(k,j)
-        local adist = (k.x-com.x)*(k.x-com.x) + (k.y-com.y)*(k.y-com.y)
-        local bdist = (j.x-com.x)*(j.x-com.x) + (j.y-com.y)*(j.y-com.y)
+    local function distance_to_com(k, j)
+        local adist = (k.x - com.x) * (k.x - com.x) + (k.y - com.y) * (k.y - com.y)
+        local bdist = (j.x - com.x) * (j.x - com.x) + (j.y - com.y) * (j.y - com.y)
         return adist < bdist
     end
     table.sort(allcells, distance_to_com)
-    for i=1,#allcells,1 do
+    for i = 1, #allcells, 1 do
         local coordshift = allcells[i] - hinge -- Get coordinate transformation
         local tiles = true
         for acell in a:cells() do
@@ -804,10 +803,10 @@ end
 -- @param x test coordinate x
 -- @param y test coordinate y
 -- @return true if the spatial hash is functioning correctly, false if not
-function pattern.test_coordinate_map(x,y)
+function pattern.test_coordinate_map(x, y)
     assert(type(x) == 'number' and type(y) == 'number',
-    "pattern.test_coordinate_map requires two numbers as arguments")
-    local key = coordinates_to_key(x,y)
+        "pattern.test_coordinate_map requires two numbers as arguments")
+    local key = coordinates_to_key(x, y)
     local tx, ty = key_to_coordinates(key)
     return (x == tx) and (y == ty)
 end

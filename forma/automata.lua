@@ -35,7 +35,7 @@
 -- - @{async_automata.lua}
 --
 -- @module forma.automata
-local automata= {}
+local automata = {}
 
 local pattern = require('forma.pattern')
 
@@ -46,10 +46,11 @@ local pattern = require('forma.pattern')
 -- @return A boolean look-up table for the rule
 local function parse_rule(nbh, rulesub)
     local ruletable = {}
-    for i=2,#rulesub,1 do
-        local nv = tonumber(string.sub(rulesub,i,i))
-        assert(nv ~= nil, "forma.automata attempting to parse nil rulesub: " .. rulesub .." " ..string.sub(rulesub,i,i))
-        assert(nv >= 0, nv <= #nbh,  "Requested rule " .. rulesub .. " cannot be accomodated into neighbourhood")
+    for i = 2, #rulesub, 1 do
+        local nv = tonumber(string.sub(rulesub, i, i))
+        assert(nv ~= nil, "forma.automata attempting to parse nil rulesub: " .. rulesub .. " " .. string.sub(rulesub, i,
+            i))
+        assert(nv >= 0, nv <= #nbh, "Requested rule " .. rulesub .. " cannot be accomodated into neighbourhood")
         assert(ruletable[nv] == nil, "Requested rule " .. rulesub .. " includes duplicate values")
         ruletable[nv] = true
     end
@@ -71,13 +72,13 @@ end
 -- @return A verified rule for use with the CA methods.
 function automata.rule(neighbourhood, rule_string)
     assert(#neighbourhood < 11,
-           "forma.automata.rule: Rule string format does not support neighbourhoods with more than 10 elements")
+        "forma.automata.rule: Rule string format does not support neighbourhoods with more than 10 elements")
     assert(type(neighbourhood) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
     assert(type(rule_string) == 'string', "forma.automata.rule: parse_rules trying to parse a " .. type(rule_string))
     local Bpos, Spos = string.find(rule_string, 'B'), string.find(rule_string, 'S')
     assert(Bpos == 1 and Spos ~= nil, "forma.automata.rule: parse_rules cannot understand rule " .. rule_string)
-    local Brule, Srule = string.sub(rule_string, 1, Spos-2), string.sub(rule_string, Spos, #rule_string)
-    local newrule = {neighbourhood = neighbourhood}
+    local Brule, Srule = string.sub(rule_string, 1, Spos - 2), string.sub(rule_string, Spos, #rule_string)
+    local newrule = { neighbourhood = neighbourhood }
     newrule.B = parse_rule(neighbourhood, Brule)
     newrule.S = parse_rule(neighbourhood, Srule)
     return newrule
@@ -92,8 +93,8 @@ end
 -- @return Number of active cells in the neighbourhood of cell (ix, iy)
 local function nCount(pa, nbh, ix, iy)
     local n = 0
-    for i=1,#nbh,1 do
-        local x, y = ix+nbh[i].x, iy+nbh[i].y
+    for i = 1, #nbh, 1 do
+        local x, y = ix + nbh[i].x, iy + nbh[i].y
         if pa:has_cell(x, y) then n = n + 1 end
     end
     return n
@@ -104,13 +105,13 @@ end
 local function check_cell(ruleset, ipattern, ix, iy)
     local alive = ipattern:has_cell(ix, iy)
     if alive == false then -- Check Birth
-        for i=1, #ruleset, 1 do
+        for i = 1, #ruleset, 1 do
             local irule = ruleset[i]
             local count = nCount(ipattern, irule.neighbourhood, ix, iy)
             if irule.B[count] == nil then return false end
         end
     else -- Check Survival
-        for i=1, #ruleset, 1 do
+        for i = 1, #ruleset, 1 do
             local irule = ruleset[i]
             local count = nCount(ipattern, irule.neighbourhood, ix, iy)
             if irule.S[count] == nil then return false end
@@ -121,7 +122,7 @@ end
 
 -- Check that the ruleset has no nil entries
 local function check_ruleset(ruleset)
-    for i=1, #ruleset, 1 do
+    for i = 1, #ruleset, 1 do
         assert(ruleset[i], "forma.automata check_ruleset: nil element found in ruleset")
         assert(ruleset[i].B, "forma.automata check_ruleset: invalid rule found in ruleset")
         assert(ruleset[i].S, "forma.automata check_ruleset: invalid rule found in ruleset")
@@ -149,9 +150,9 @@ end
 -- @return Convergence flag [bool: true if converged, false otherwise].
 function automata.iterate(prevp, domain, ruleset)
     assert(getmetatable(prevp) == pattern,
-    "forma.automata: iterate requires a pattern as a first argument")
+        "forma.automata: iterate requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern,
-    "forma.automata: iterate requires a pattern as a second argument")
+        "forma.automata: iterate requires a pattern as a second argument")
     check_ruleset(ruleset)
     local nextp = pattern.new()
     for x, y in domain:cell_coordinates() do
@@ -183,10 +184,10 @@ end
 -- @return Convergence flag [bool: true if converged, false otherwise].
 function automata.async_iterate(prevp, domain, ruleset, rng)
     if rng == nil then rng = math.random end
-    assert(getmetatable(prevp)  == pattern,
-    "forma.automata: async_iterate requires a pattern as a first argument")
+    assert(getmetatable(prevp) == pattern,
+        "forma.automata: async_iterate requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern,
-    "forma.automata: async_iterate requires a pattern as a second argument")
+        "forma.automata: async_iterate requires a pattern as a second argument")
     check_ruleset(ruleset)
     for x, y in domain:shuffled_coordinates(rng) do
         local check = check_cell(ruleset, prevp, x, y)

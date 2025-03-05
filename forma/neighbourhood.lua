@@ -35,22 +35,22 @@ neighbourhood.__index = neighbourhood
 -- neighbourhoods?
 local function generate_categories(neighbour_cells)
     assert(#neighbour_cells > 0, "categories.generate requires a non-empty neighbourhood")
-    local categories = {cell.new(0,0)}
+    local categories = { cell.new(0, 0) }
 
-    for i=1, #neighbour_cells, 1 do
+    for i = 1, #neighbour_cells, 1 do
         local target_cell = neighbour_cells[i]
-        for j=1, #categories, 1 do
+        for j = 1, #categories, 1 do
             local new_category = {}
             new_category[1] = cell.clone(target_cell)
             local category_size = #categories[j]
-            for k=1, category_size, 1 do
-                new_category[#new_category+1] = categories[j][k]
+            for k = 1, category_size, 1 do
+                new_category[#new_category + 1] = categories[j][k]
             end
-            categories[#categories+1] = new_category
+            categories[#categories + 1] = new_category
         end
     end
     -- Sort by number of elements and return
-    table.sort(categories, function(a,b) return #a > #b end)
+    table.sort(categories, function(a, b) return #a > #b end)
     return categories
 end
 
@@ -65,14 +65,14 @@ end
 -- x-axis
 function neighbourhood.moore()
     local nbh = {}
-    table.insert(nbh, cell.new(0,1))
-    table.insert(nbh, cell.new(1,1))
-    table.insert(nbh, cell.new(1,0))
-    table.insert(nbh, cell.new(1,-1))
-    table.insert(nbh, cell.new(0,-1))
-    table.insert(nbh, cell.new(-1,-1))
-    table.insert(nbh, cell.new(-1,0))
-    table.insert(nbh, cell.new(-1,1))
+    table.insert(nbh, cell.new(0, 1))
+    table.insert(nbh, cell.new(1, 1))
+    table.insert(nbh, cell.new(1, 0))
+    table.insert(nbh, cell.new(1, -1))
+    table.insert(nbh, cell.new(0, -1))
+    table.insert(nbh, cell.new(-1, -1))
+    table.insert(nbh, cell.new(-1, 0))
+    table.insert(nbh, cell.new(-1, 1))
     nbh = neighbourhood.new(nbh)
     nbh.category_label = nil
     return nbh
@@ -85,13 +85,13 @@ end
 -- assuming an upwards y-axis and rightwards x-axis
 function neighbourhood.von_neumann()
     local nbh = {}
-    table.insert(nbh, cell.new(0,1))
-    table.insert(nbh, cell.new(1,0))
-    table.insert(nbh, cell.new(0,-1))
-    table.insert(nbh, cell.new(-1,0))
+    table.insert(nbh, cell.new(0, 1))
+    table.insert(nbh, cell.new(1, 0))
+    table.insert(nbh, cell.new(0, -1))
+    table.insert(nbh, cell.new(-1, 0))
     nbh = neighbourhood.new(nbh)
     -- utf8 characters for the 16 possible von neumann categories
-    nbh._category_label = {'┼','┬','┤','┴','├','│','┘','┐','─','┌','└','╶','╵','╷','╴','.'}
+    nbh._category_label = { '┼', '┬', '┤', '┴', '├', '│', '┘', '┐', '─', '┌', '└', '╶', '╵', '╷', '╴', '.' }
     return nbh
 end
 
@@ -102,10 +102,10 @@ end
 -- upwards y-axis and rightwards x-axis
 function neighbourhood.diagonal()
     local nbh = {}
-    table.insert(nbh, cell.new(1,1))
-    table.insert(nbh, cell.new(1,-1))
-    table.insert(nbh, cell.new(-1,-1))
-    table.insert(nbh, cell.new(-1,1))
+    table.insert(nbh, cell.new(1, 1))
+    table.insert(nbh, cell.new(1, -1))
+    table.insert(nbh, cell.new(-1, -1))
+    table.insert(nbh, cell.new(-1, 1))
     nbh = neighbourhood.new(nbh)
     nbh._category_label = nil -- TODO
     return nbh
@@ -117,10 +117,10 @@ end
 -- Ordered clockwise assuming an upwards y-axis and rightwards x-axis
 function neighbourhood.diagonal_2()
     local nbh = {}
-    table.insert(nbh, cell.new(2,2))
-    table.insert(nbh, cell.new(2,-2))
-    table.insert(nbh, cell.new(-2,-2))
-    table.insert(nbh, cell.new(-2,2))
+    table.insert(nbh, cell.new(2, 2))
+    table.insert(nbh, cell.new(2, -2))
+    table.insert(nbh, cell.new(-2, -2))
+    table.insert(nbh, cell.new(-2, 2))
     nbh = neighbourhood.new(nbh)
     nbh._category_label = nil -- TODO
     return nbh
@@ -135,7 +135,7 @@ end
 function neighbourhood.new(neighbour_cells)
     assert(#neighbour_cells > 0, "neighbourhood.new requires a non-empty list of neighbouring cells")
     local nbh = {}
-    for _,v in ipairs(neighbour_cells) do
+    for _, v in ipairs(neighbour_cells) do
         table.insert(nbh, cell.clone(v))
     end
     nbh.categories = nil -- Generated on demand
@@ -156,10 +156,10 @@ end
 -- @return the category index of `nbh` that 'cell' belongs to
 function neighbourhood.categorise(nbh, ip, icell)
     local ncategories = nbh:get_ncategories() -- Generates the categorisation if needed
-    for i=1, ncategories, 1 do
+    for i = 1, ncategories, 1 do
         local category = nbh.categories[i]
         local match_cells = true
-        for j=1, #category, 1 do
+        for j = 1, #category, 1 do
             local np = icell + category[j]
             if ip:has_cell(np.x, np.y) == false then
                 match_cells = false
@@ -189,4 +189,3 @@ function neighbourhood.get_ncategories(nbh)
 end
 
 return neighbourhood
-

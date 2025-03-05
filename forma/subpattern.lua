@@ -12,7 +12,7 @@
 --
 -- @module forma.subpattern
 
-local subpattern = {}
+local subpattern    = {}
 
 local cell          = require('forma.cell')
 local pattern       = require('forma.pattern')
@@ -23,7 +23,7 @@ local neighbourhood = require('forma.neighbourhood')
 -- Returns a shuffled version of the input table
 local function shuffle(table, rng)
     if rng == nil then rng = math.random end
-    for i=#table,1,-1 do
+    for i = #table, 1, -1 do
         local j = rng(#table)
         table[i], table[j] = table[j], table[i]
     end
@@ -57,15 +57,15 @@ end
 -- @param rng (optional) a random number generator, following the signature of math.random.
 -- @return a pattern of `ncells` cells sampled randomly from `domain`
 function subpattern.random(ip, ncells, rng)
-    assert(getmetatable(ip) == pattern,  "subpattern.random requires a pattern as the first argument")
-    assert(type(ncells) == 'number',     "subpattern.random requires an integer number of cells as the second argument")
+    assert(getmetatable(ip) == pattern, "subpattern.random requires a pattern as the first argument")
+    assert(type(ncells) == 'number', "subpattern.random requires an integer number of cells as the second argument")
     assert(math.floor(ncells) == ncells, "subpattern.random requires an integer number of cells as the second argument")
-    assert(ncells > 0,                   "subpattern.random requires at least one sample to be requested")
-    assert(ncells <= ip:size(),          "subpattern.random requires a domain larger than the number of requested samples")
+    assert(ncells > 0, "subpattern.random requires at least one sample to be requested")
+    assert(ncells <= ip:size(), "subpattern.random requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
     local p = pattern.new()
     local next_coords = ip:shuffled_coordinates(rng)
-    for _=1, ncells, 1 do
+    for _ = 1, ncells, 1 do
         local x, y = next_coords()
         p:insert(x, y)
     end
@@ -84,8 +84,8 @@ end
 -- @param rng (optional) a random number generator, following the signature of math.random.
 -- @return a Poisson-disc sample of `domain`
 function subpattern.poisson_disc(ip, distance, radius, rng)
-    assert(getmetatable(ip) == pattern,  "subpattern.poisson_disc requires a pattern as the first argument")
-    assert(type(distance)   == 'function', "subpattern.poisson_disc requires a distance measure as an argument")
+    assert(getmetatable(ip) == pattern, "subpattern.poisson_disc requires a pattern as the first argument")
+    assert(type(distance) == 'function', "subpattern.poisson_disc requires a distance measure as an argument")
     assert(type(radius) == "number", "subpattern.poisson_disc requires a number as the target radius")
     if rng == nil then rng = math.random end
     local sample = pattern.new()
@@ -114,25 +114,25 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
     -- Bridson's Poisson Disk would be better, but it's hard to implement as it
     -- needs a rasterised form of an isosurface for a general distance matric.
     assert(getmetatable(ip) == pattern,
-           "subpattern.mitchell_sample requires a pattern as the first argument")
+        "subpattern.mitchell_sample requires a pattern as the first argument")
     assert(ip:size() >= n,
-           "subpattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
-    assert(type(distance)   == 'function', "subpattern.mitchell_sample requires a distance measure as an argument")
+        "subpattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
+    assert(type(distance) == 'function', "subpattern.mitchell_sample requires a distance measure as an argument")
     assert(type(n) == "number", "subpattern.mitchell_sample requires a target number of samples")
     assert(type(k) == "number", "subpattern.mitchell_sample requires a target number of candidate tries")
     if rng == nil then rng = math.random end
     local seed = ip:rcell()
     local sample = pattern.new():insert(seed.x, seed.y)
     for _ = 2, n, 1 do
-
         local min_distance = 0
         local min_sample   = nil
 
         -- Generate k samples, keeping the furthest
-        for _=1, k, 1 do
+        for _ = 1, k, 1 do
             local jcell = ip:rcell(rng)
             while sample:has_cell(jcell.x, jcell.y) do
-                jcell = ip:rcell(rng) end
+                jcell = ip:rcell(rng)
+            end
             local jdistance = math.huge
             for vcell in sample:cells() do
                 jdistance = math.min(jdistance, distance(jcell, vcell))
@@ -154,8 +154,8 @@ end
 -- sampling depth. Returns a noise value [0,1].
 local function perlin_noise(p, x, y, freq, depth)
     local function permute(_x, _y) return p[(p[_y % 256] + _x) % 256]; end
-    local function lin_inter(_x, _y, s) return _x + s * (_y-_x) end
-    local function smooth_inter(_x, _y, s) return lin_inter(_x, _y, s * s * (3-2*s)) end
+    local function lin_inter(_x, _y, s) return _x + s * (_y - _x) end
+    local function smooth_inter(_x, _y, s) return lin_inter(_x, _y, s * s * (3 - 2 * s)) end
 
     local function noise2d(_x, _y)
         local x_int = math.floor(_x);
@@ -163,21 +163,21 @@ local function perlin_noise(p, x, y, freq, depth)
         local x_frac = _x - x_int;
         local y_frac = _y - y_int;
         local s = permute(x_int, y_int);
-        local t = permute(x_int+1, y_int);
-        local u = permute(x_int, y_int+1);
-        local v = permute(x_int+1, y_int+1);
+        local t = permute(x_int + 1, y_int);
+        local u = permute(x_int, y_int + 1);
+        local v = permute(x_int + 1, y_int + 1);
         local low = smooth_inter(s, t, x_frac);
         local high = smooth_inter(u, v, x_frac);
         return smooth_inter(low, high, y_frac);
     end
 
-    local xa = x*freq;
-    local ya = y*freq;
+    local xa = x * freq;
+    local ya = y * freq;
     local amp = 1.0;
     local fin = 0;
     local div = 0.0;
 
-    for _=1,depth, 1 do
+    for _ = 1, depth, 1 do
         div = div + 256 * amp;
         fin = fin + noise2d(xa, ya) * amp;
         amp = amp / 2;
@@ -185,7 +185,7 @@ local function perlin_noise(p, x, y, freq, depth)
         ya = ya * 2;
     end
 
-    return fin/div;
+    return fin / div;
 end
 
 --- Perlin noise sampling.
@@ -203,27 +203,27 @@ end
 function subpattern.perlin(ip, freq, depth, thresholds, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(ip) == pattern,
-           "subpattern.perlin requires a pattern as the first argument")
+        "subpattern.perlin requires a pattern as the first argument")
     assert(type(freq) == "number",
-           "subpattern.perlin requires a numerical frequency value.")
+        "subpattern.perlin requires a numerical frequency value.")
     assert(math.floor(depth) == depth,
-           "subpattern.perlin requires an integer sampling depth.")
+        "subpattern.perlin requires an integer sampling depth.")
     assert(type(thresholds) == "table",
-           "subpattern.perlin requires a table of requested thresholds.")
+        "subpattern.perlin requires a table of requested thresholds.")
 
     for _, th in ipairs(thresholds) do
         assert(th >= 0 and th <= 1,
-               "subpattern.perlin requires thresholds between 0 and 1.")
+            "subpattern.perlin requires thresholds between 0 and 1.")
     end
-        --
+    --
     -- Generate permutation vector
     local p = {}
-    for i=0, 255, 1 do p[i] = i end
+    for i = 0, 255, 1 do p[i] = i end
     shuffle(p, rng)
 
     -- Generate sample patterns
     local samples = {}
-    for i=1, #thresholds, 1 do
+    for i = 1, #thresholds, 1 do
         samples[i] = pattern.new()
     end
 
@@ -243,7 +243,7 @@ end
 local function floodfill(x, y, nbh, domain, retpat)
     if domain:has_cell(x, y) and retpat:has_cell(x, y) == false then
         retpat:insert(x, y)
-        for i=1, #nbh, 1 do
+        for i = 1, #nbh, 1 do
             local nx = nbh[i].x + x
             local ny = nbh[i].y + y
             floodfill(nx, ny, nbh, domain, retpat)
@@ -272,17 +272,16 @@ end
 -- @param ip the input pattern
 -- @return the minimum and maxium coordinates of the area
 local function maxrectangle_coordinates(ip)
-
-    local best_ll = cell.new(0,0)
-    local best_ur = cell.new(-1,-1)
+    local best_ll = cell.new(0, 0)
+    local best_ur = cell.new(-1, -1)
     local best_area = 0
 
     local stack_w = {}
     local stack_y = {}
 
-    local function push(y,w)
-        stack_y[#stack_y+1] = y
-        stack_w[#stack_w+1] = w
+    local function push(y, w)
+        stack_y[#stack_y + 1] = y
+        stack_w[#stack_w + 1] = w
     end
 
     local function pop()
@@ -294,11 +293,11 @@ local function maxrectangle_coordinates(ip)
     end
 
     local cache = {}
-    for y = ip.min.y, ip.max.y+1, 1 do cache[y] = 0 end -- One extra element (closes all rectangles)
+    for y = ip.min.y, ip.max.y + 1, 1 do cache[y] = 0 end -- One extra element (closes all rectangles)
 
     local function updateCache(x)
         for y = ip.min.y, ip.max.y, 1 do
-            if ip:has_cell(x,y) then
+            if ip:has_cell(x, y) then
                 cache[y] = cache[y] + 1
             else
                 cache[y] = 0
@@ -306,22 +305,22 @@ local function maxrectangle_coordinates(ip)
         end
     end
 
-    for x=ip.max.x, ip.min.x, -1 do
+    for x = ip.max.x, ip.min.x, -1 do
         updateCache(x)
-        local width = 0 -- Width of widest opened rectangle
-        for y = ip.min.y, ip.max.y+1, 1 do
-            if cache[y]>width then-- Opening new rectangle(s)?
+        local width = 0            -- Width of widest opened rectangle
+        for y = ip.min.y, ip.max.y + 1, 1 do
+            if cache[y] > width then -- Opening new rectangle(s)?
                 push(y, width)
                 width = cache[y]
             end
-            if cache[y]<width then  --// Closing rectangle(s)?
+            if cache[y] < width then --// Closing rectangle(s)?
                 local y0, w0
                 repeat
                     y0, w0 = pop()
-                    if width*(y-y0)> best_area then
+                    if width * (y - y0) > best_area then
                         best_ll.x, best_ll.y = x, y0
                         best_ur.x, best_ur.y = x + width - 1, y - 1
-                        best_area = width*(y-y0)
+                        best_area = width * (y - y0)
                     end
                     width = w0
                 until cache[y] >= width
@@ -340,10 +339,9 @@ end
 function subpattern.maxrectangle(ip)
     assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
     local min, max = maxrectangle_coordinates(ip)
-    local size = max - min + cell.new(1,1)
+    local size = max - min + cell.new(1, 1)
     return primitives.square(size.x, size.y):shift(min.x, min.y)
 end
-
 
 --- Lists of sub-patterns
 -- @section subpattern_lists
@@ -379,11 +377,11 @@ function subpattern.enclosed(ip, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
     assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "subpattern.enclosed requires a neighbourhood as the second argument")
-    local size = ip.max - ip.min + cell.new(1,1)
+    local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
     local segments = subpattern.segments(interior, nbh)
     local enclosed = {}
-    for i=1, #segments,1 do
+    for i = 1, #segments, 1 do
         local segment = segments[i]
         if segment.min.x > ip.min.x and segment.min.y > ip.min.y
             and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
@@ -395,25 +393,24 @@ end
 
 -- Binary space partitioning - internal function
 local function bspSplit(min, max, th_volume, outpatterns)
-    local size = max - min + cell.new(1,1)
-    local volume = size.x*size.y
+    local size = max - min + cell.new(1, 1)
+    local volume = size.x * size.y
 
     if volume > th_volume then
         local r1max, r2min
         if size.x > size.y then
-            local xch = math.floor((size.x-1)*0.5)
-            r1max = min + cell.new( xch, size.y-1)
-            r2min = min + cell.new( xch + 1, 0)
+            local xch = math.floor((size.x - 1) * 0.5)
+            r1max = min + cell.new(xch, size.y - 1)
+            r2min = min + cell.new(xch + 1, 0)
         else
-            local ych = math.floor((size.y-1)*0.5)
-            r1max = min + cell.new( size.x-1, ych)
-            r2min = min + cell.new( 0, ych + 1)
+            local ych = math.floor((size.y - 1) * 0.5)
+            r1max = min + cell.new(size.x - 1, ych)
+            r2min = min + cell.new(0, ych + 1)
         end
 
         -- Recurse on both new partitions
         bspSplit(min, r1max, th_volume, outpatterns)
         bspSplit(r2min, max, th_volume, outpatterns)
-
     else -- Passes threshold volume
         local np = primitives.square(size.x, size.y)
         np = pattern.shift(np, min.x, min.y)
@@ -434,14 +431,14 @@ end
 -- @param th_volume the highest acceptable volume for each final partition
 function subpattern.bsp(ip, th_volume)
     assert(getmetatable(ip) == pattern, "subpattern.bsp requires a pattern as an argument")
-    assert(th_volume,     "subpattern.bsp rules must specify a threshold volume for partitioning")
+    assert(th_volume, "subpattern.bsp rules must specify a threshold volume for partitioning")
     assert(th_volume > 0, "subpattern.bsp rules must specify positive threshold volume for partitioning")
     local bsp_subpatterns = {}
     local available = ip
     while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
         local min, max = maxrectangle_coordinates(available)
         bspSplit(min, max, th_volume, bsp_subpatterns)
-        for i=1, #bsp_subpatterns, 1 do
+        for i = 1, #bsp_subpatterns, 1 do
             available = available - bsp_subpatterns[i]
         end
     end
@@ -457,14 +454,14 @@ end
 -- @return A table of #nbh patterns, where each cell in ip is categorised.
 function subpattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(ip) == pattern,
-    "subpattern.neighbourhood_categories requires a pattern as a first argument")
+        "subpattern.neighbourhood_categories requires a pattern as a first argument")
     assert(getmetatable(nbh) == neighbourhood,
-    "subpattern.neighbourhood_categories requires a neighbourhood as a second argument")
+        "subpattern.neighbourhood_categories requires a neighbourhood as a second argument")
     local category_patterns = {}
-    for i=1, nbh:get_ncategories(), 1 do
+    for i = 1, nbh:get_ncategories(), 1 do
         category_patterns[i] = pattern.new()
     end
-    for icell in ip:cells()  do
+    for icell in ip:cells() do
         local cat = nbh:categorise(ip, icell)
         category_patterns[cat]:insert(icell.x, icell.y)
     end
@@ -477,7 +474,7 @@ end
 -- @param measure the measure used to judge distance between cells
 -- @return A table of Voronoi segments.
 function subpattern.voronoi(seeds, domain, measure)
-    assert(getmetatable(seeds) == pattern,  "subpattern.voronoi requires a pattern as a first argument")
+    assert(getmetatable(seeds) == pattern, "subpattern.voronoi requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
     assert(pattern.size(seeds) > 0, "subpattern.voronoi requires at least one target cell/seed")
     local seedcells = {}
@@ -489,15 +486,15 @@ function subpattern.voronoi(seeds, domain, measure)
     end
     for dp in domain:cells() do
         local min_cell = 1
-        local min_dist  = measure(dp, seedcells[1])
-        for j=2, #seedcells, 1 do
+        local min_dist = measure(dp, seedcells[1])
+        for j = 2, #seedcells, 1 do
             local distance = measure(dp, seedcells[j])
             if distance < min_dist then
                 min_cell = j
                 min_dist = distance
             end
         end
-        segments[min_cell]:insert(dp.x,dp.y)
+        segments[min_cell]:insert(dp.x, dp.y)
     end
     return segments
 end
@@ -515,12 +512,12 @@ end
 -- @return A bool, true if the algorithm converged, false if not.
 function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
     if max_ite == nil then max_ite = 30 end
-    assert(getmetatable(seeds)  == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
+    assert(getmetatable(seeds) == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi_relax requires a pattern as a second argument")
-    assert(type(measure)   == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
+    assert(type(measure) == 'function', "subpattern.voronoi_relax requires a distance measure as an argument")
     assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain")
     local current_seeds = seeds:clone()
-    for ite=1, max_ite, 1 do
+    for ite = 1, max_ite, 1 do
         local tesselation = subpattern.voronoi(current_seeds, domain, measure)
         local next_seeds  = pattern.new()
         for iseg = 1, #tesselation, 1 do
@@ -560,10 +557,10 @@ end
 -- @return A `pattern` consisting of the points of `ip` lying on the convex hull.
 -- @return A clockwise-ordered table of cells on the convex hull
 function subpattern.convex_hull_points(ip)
-    assert(getmetatable(ip)  == pattern,
-           "subpattern.convex_hull_points requires a pattern as a first argument")
+    assert(getmetatable(ip) == pattern,
+        "subpattern.convex_hull_points requires a pattern as a first argument")
     assert(ip:size() > 0,
-           "subpattern.convex_hull_points: input pattern must have at least one cell")
+        "subpattern.convex_hull_points: input pattern must have at least one cell")
     -- Build list of points
     local points = ip:cell_list()
     local p = #points
@@ -589,13 +586,13 @@ function subpattern.convex_hull_points(ip)
     end
     table.remove(upper)
     table.remove(lower)
-    for i=1,#lower do
+    for i = 1, #lower do
         table.insert(upper, lower[i])
     end
     -- Build pattern of points on the convex hull
     local convex_pattern = pattern.new()
-    for i=1, #upper do
-       convex_pattern:insert(upper[i].x, upper[i].y)
+    for i = 1, #upper do
+        convex_pattern:insert(upper[i].x, upper[i].y)
     end
     return convex_pattern, upper
 end
@@ -606,12 +603,12 @@ end
 -- @param ip input pattern for generating the convex hull
 -- @return A `pattern` consisting of the convex hull of `ip`
 function subpattern.convex_hull(ip)
-    assert(getmetatable(ip)  == pattern, "subpattern.convex_hull requires a pattern as a first argument")
+    assert(getmetatable(ip) == pattern, "subpattern.convex_hull requires a pattern as a first argument")
     assert(ip:size() > 0, "subpattern.convex_hull: input pattern must have at least one cell")
     local _, hull_points = subpattern.convex_hull_points(ip)
     local chull = pattern.new()
-    for i=1, #hull_points-1, 1 do
-       chull = chull + primitives.line(hull_points[i], hull_points[i+1])
+    for i = 1, #hull_points - 1, 1 do
+        chull = chull + primitives.line(hull_points[i], hull_points[i + 1])
     end
     chull = chull + primitives.line(hull_points[#hull_points], hull_points[1])
     return chull
@@ -627,7 +624,7 @@ end
 -- @param segments the table of segments to be drawn.
 -- @param chars the characters to be printed for each segment (optional).
 function subpattern.print_patterns(domain, segments, chars)
-    assert(getmetatable(domain)  == pattern, "subpattern.print_patterns requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern, "subpattern.print_patterns requires a pattern as a first argument")
     assert(domain:size() > 0, "subpattern.print_patterns: domain must have at least one cell")
     assert(type(segments) == "table", "subpattern.print_patterns: second argument must be a *table* of patterns")
     -- If no dictionary is supplied generate a new one (starting from '0')
@@ -635,23 +632,24 @@ function subpattern.print_patterns(domain, segments, chars)
         local start_char = 47
         assert(#segments < (200 - start_char), "subpattern.print_patterns: too many segments")
         chars = {}
-        for i=1, #segments, 1 do
-            table.insert(chars, string.char(i+start_char))
+        for i = 1, #segments, 1 do
+            table.insert(chars, string.char(i + start_char))
         end
     end
     assert(#segments == #chars,
-    "subpattern.print_patterns: there must be as many character table entries as segments")
+        "subpattern.print_patterns: there must be as many character table entries as segments")
     -- Print out the segments to a map
-    for i=domain.min.y, domain.max.y,1 do
+    for i = domain.min.y, domain.max.y, 1 do
         local string = ''
-        for j=domain.min.x, domain.max.x,1 do
+        for j = domain.min.x, domain.max.x, 1 do
             local token = ' '
-            for k,v in ipairs(segments) do
-                if v:has_cell(j, i) then token = chars[k] end end
-                string = string .. token
+            for k, v in ipairs(segments) do
+                if v:has_cell(j, i) then token = chars[k] end
             end
-            io.write(string .. '\n')
+            string = string .. token
         end
+        io.write(string .. '\n')
     end
+end
 
-    return subpattern
+return subpattern
