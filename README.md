@@ -69,13 +69,13 @@ for icell in ca:cells() do
     -- local foo = bar(icell.x, icell.y)
 end
 
--- Find all 4-contiguous segments of the CA pattern
+-- Find all 4-contiguous connected components of the CA pattern
 -- Uses the von-neumann neighbourhood to determine 'connectedness'
 -- but any custom neighbourhood can be used.
-local segments = subpattern.segments(ca, neighbourhood.von_neumann())
+local connected_components = subpattern.connected_components(ca, neighbourhood.von_neumann())
 
 -- Print a representation to io.output
-subpattern.print_patterns(domain, segments)
+subpattern.print_patterns(domain, connected_components)
 ```
 
 ## Installation

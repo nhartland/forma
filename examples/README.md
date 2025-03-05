@@ -190,7 +190,7 @@ subpattern.print_patterns(domain, {random}, {'#'})
 Here we generate a pattern randomly filled with points, and take as a scalar
 field `N(cell) = F_2(cell) - F_1(cell)`, where `F_n` is the Chebyshev distance
 to the nth nearest neighbour. Isolines at `N = 0` are drawn by thresholding `N`
-at 1 and taking the surface.
+at 1 and taking the interior hull.
 
 ```lua
 
@@ -216,9 +216,9 @@ local mask = function(tcell)
     return F2 - F1  > 1
 end
 
--- Compute the thresholded pattern and print its surface
+-- Compute the thresholded pattern and print its interior_hull
 local noise = subpattern.mask(sq, mask)
-subpattern.print_patterns(sq, {noise:surface()}, {'#'})
+subpattern.print_patterns(sq, {noise:interior_hull()}, {'#'})
 
 ```
 ### Output
@@ -292,13 +292,13 @@ for icell in ca:cells() do
     -- local foo = bar(icell.x, icell.y)
 end
 
--- Find all 4-contiguous segments of the CA pattern
+-- Find all 4-contiguous connected_components of the CA pattern
 -- Uses the von-neumann neighbourhood to determine 'connectedness'
 -- but any custom neighbourhood can be used)
-local segments = subpattern.segments(ca, neighbourhood.von_neumann())
+local connected_components = subpattern.connected_components(ca, neighbourhood.von_neumann())
 
 -- Print a representation to io.output
-subpattern.print_patterns(domain, segments)
+subpattern.print_patterns(domain, connected_components)
 
 ```
 ### Output

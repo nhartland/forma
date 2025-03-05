@@ -42,9 +42,9 @@ function testSubPatterns:testFloodFill()
     lu.assertEquals(floodfill, test_pattern)
 end
 
---  FloodFill segments ----------------------------------------------------------------
-function testSubPatterns:testFFSegments()
-    -- Measure the number of connected segments in a pattern by flood-filling.
+--  Connected Components --------------------------------------------------------------
+function testSubPatterns:testConnectedComponents()
+    -- Measure the number of connected components in a pattern by flood-filling.
     -- This test pattern should return one segment for the Moore neighbourhood,
     -- and five for the von Neumann neighbourhood. The shift is just a
     -- consistency check.
@@ -52,10 +52,10 @@ function testSubPatterns:testFFSegments()
                                       {0,1,1,0,},
                                       {0,1,1,0,},
                                       {1,0,0,1,}}):shift(100,-100)
-    local moore_segments = subpattern.segments(test_pattern, neighbourhood.moore())
-    local vn_segments    = subpattern.segments(test_pattern, neighbourhood.von_neumann())
-    lu.assertEquals(#moore_segments, 1)
-    lu.assertEquals(#vn_segments, 5)
+    local moore_components = subpattern.connected_components(test_pattern, neighbourhood.moore())
+    local vn_components    = subpattern.connected_components(test_pattern, neighbourhood.von_neumann())
+    lu.assertEquals(#moore_components, 1)
+    lu.assertEquals(#vn_components, 5)
 end
 
 --  Enclosed segments ----------------------------------------------------------------

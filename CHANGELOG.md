@@ -103,7 +103,14 @@ Initial release
  - Fixed luaunit at v3.3 
 
 ## Misc
- - Adjust `pattern.sum` so that it can also take a single table of patterns as
-   an argument (pattern.sum({a,b,c}) instead of just pattern.sum(a,b,c)).
+ - Adjust `pattern.union_all` so that it can also take a single table of patterns as
+   an argument (pattern.union_all({a,b,c}) instead of just pattern.union_all(a,b,c)).
  - Relaxed the assertions on the nature of distance measures in Mitchell
    sampling / Poisson disc sampling.
+
+## Breaking
+ - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
+   `+` operator.
+ - Renamed `pattern.edge` to `pattern.exterior_hull` to improve clarity.
+ - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
+ - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.

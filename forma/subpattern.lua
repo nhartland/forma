@@ -4,7 +4,7 @@
 -- `cell`s from the parent.
 --
 -- Several of these finders return a table of all relevant sub-patterns. For
--- example the `segments` method which returns a table of all contiguous
+-- example the `connected_components` method which returns a table of all contiguous
 -- (according to some `neighbourhood`) sub-patterns by using a `floodfill`.
 --
 -- In addition to the subpattern finders, a `print_patterns` utility is provided
@@ -345,16 +345,16 @@ end
 --- Lists of sub-patterns
 -- @section subpattern_lists
 
---- Generate a table of contiguous 'segments' or sub-patterns.
+--- Generate a table of a pattern's connected components.
 -- This performs a series of flood-fill operations until all
--- pattern cells are accounted for in the sub-patterns
--- @param ip pattern for which the segments are to be extracted
+-- pattern cells belong to a component components.
+-- @param ip pattern for which the connected_components are to be extracted
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
 -- @return A table of forma.patterns consisting of contiguous sub-patterns of ip.
-function subpattern.segments(ip, nbh)
+function subpattern.connected_components(ip, nbh)
     nbh = nbh or neighbourhood.moore()
-    assert(getmetatable(ip) == pattern, "subpattern.segments requires a pattern as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "subpattern.segments requires a neighbourhood as the second argument")
+    assert(getmetatable(ip) == pattern, "subpattern.connected_components requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "subpattern.connected_components requires a neighbourhood as the second argument")
     local wp = pattern.clone(ip)
     local segs = {}
     while pattern.size(wp) > 0 do
@@ -378,10 +378,10 @@ function subpattern.enclosed(ip, nbh)
     assert(getmetatable(nbh) == neighbourhood, "subpattern.enclosed requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
-    local segments = subpattern.segments(interior, nbh)
+    local connected_components = subpattern.connected_components(interior, nbh)
     local enclosed = {}
-    for i = 1, #segments, 1 do
-        local segment = segments[i]
+    for i = 1, #connected_components, 1 do
+        local segment = connected_components[i]
         if segment.min.x > ip.min.x and segment.min.y > ip.min.y
             and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
             table.insert(enclosed, segment)

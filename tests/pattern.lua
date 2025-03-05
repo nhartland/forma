@@ -65,8 +65,8 @@ function testPattern:testToString()
     lu.assertIsString(pattern_5_string)
 end
 
-function testPattern:testSum()
-    -- Test pattern.sum() helper function
+function testPattern:testUnion()
+    -- Test pattern.union() helper function
     local tp1 = pattern.new({{1,1,1,1,1},
                              {1,0,0,0,1},
                              {1,0,0,0,1},
@@ -78,14 +78,14 @@ function testPattern:testSum()
                              {0,1,1,1,0},
                              {0,0,0,0,0}})
     local tp12 = primitives.square(5)
-    local sum  = pattern.sum(tp1, tp2)
-    local sum_v2  = pattern.sum({tp1, tp2})
+    local union  = pattern.union(tp1, tp2)
+    local union_v2  = pattern.union({tp1, tp2})
     lu.assertEquals(tp1+tp2, tp12)
-    lu.assertEquals(tp1+tp2, sum)
-    lu.assertEquals(tp12, sum)
-    lu.assertNotEquals(tp1, sum)
-    lu.assertNotEquals(tp2, sum)
-    lu.assertEquals(sum, sum_v2)
+    lu.assertEquals(tp1+tp2, union)
+    lu.assertEquals(tp12, union)
+    lu.assertNotEquals(tp1, union)
+    lu.assertNotEquals(tp2, union)
+    lu.assertEquals(union, union_v2)
 end
 
 -- Test insert methods
@@ -192,56 +192,56 @@ function testPattern:testMedoid()
     lu.assertNotEquals(medoid5, medoid6)
 end
 
-function testPattern:testEdge()
-    -- Test pattern for edge determination
+function testPattern:testExteriorHull()
+    -- Test pattern for exterior_hull determination
     local test = pattern.new({{0,0,0},
                               {0,1,0},
                               {0,0,0}})
-    -- Moore neighbourhood edge
-    local moore_edge = pattern.new({{1,1,1},
+    -- Moore neighbourhood exterior_hull
+    local moore_exterior_hull = pattern.new({{1,1,1},
                                     {1,0,1},
                                     {1,1,1}})
-    -- Von Neumann neighbourhood edge
-    local vn_edge    = pattern.new({{0,1,0},
+    -- Von Neumann neighbourhood exterior_hull
+    local vn_exterior_hull    = pattern.new({{0,1,0},
                                     {1,0,1},
                                     {0,1,0}})
-    -- Diagonal neighbourhood edge
-    local d_edge     = pattern.new({{1,0,1},
+    -- Diagonal neighbourhood exterior_hull
+    local d_exterior_hull     = pattern.new({{1,0,1},
                                     {0,0,0},
                                     {1,0,1}})
 
-    -- Moore neighbourhood edge: default case
-    lu.assertEquals(test:edge(), moore_edge)
-    -- Von Neumann edge test
-    lu.assertEquals(test:edge(neighbourhood.von_neumann()), vn_edge)
-    -- Diagonal edge test
-    lu.assertEquals(test:edge(neighbourhood.diagonal()), d_edge)
+    -- Moore neighbourhood exterior_hull: default case
+    lu.assertEquals(test:exterior_hull(), moore_exterior_hull)
+    -- Von Neumann exterior_hull test
+    lu.assertEquals(test:exterior_hull(neighbourhood.von_neumann()), vn_exterior_hull)
+    -- Diagonal exterior_hull test
+    lu.assertEquals(test:exterior_hull(neighbourhood.diagonal()), d_exterior_hull)
 end
 
-function testPattern:testSurface()
-    -- Surface of a single point should just return that point back
-    local surface_pattern_3 = self.pattern_3:surface()
-    lu.assertEquals(surface_pattern_3, self.pattern_3)
+function testPattern:testInteriorHull()
+    -- IHull of a single point should just return that point back
+    local interior_hull_pattern_3 = self.pattern_3:interior_hull()
+    lu.assertEquals(interior_hull_pattern_3, self.pattern_3)
 
-    -- Test pattern for surface determination
+    -- Test pattern for interior_hull determination
     local test = pattern.new({{1,1,1,1,1},
                               {1,0,1,0,1},
                               {1,1,1,1,1},
                               {1,0,1,0,1},
                               {1,1,1,1,1}})
 
-    -- Moore neighbourhood surface - should be the same pattern
-    local moore_surface = test:surface()
-    lu.assertEquals(moore_surface, test)
+    -- Moore neighbourhood interior_hull - should be the same pattern
+    local moore_interior_hull = test:interior_hull()
+    lu.assertEquals(moore_interior_hull, test)
 
-    -- von Neumann neighbourhood surface - centre tile should be zero
-    local vn_surface = test:surface(neighbourhood.von_neumann())
+    -- von Neumann neighbourhood interior_hull - centre tile should be zero
+    local vn_interior_hull = test:interior_hull(neighbourhood.von_neumann())
     local vn_check = pattern.new({{1,1,1,1,1},
                                   {1,0,1,0,1},
                                   {1,1,0,1,1},
                                   {1,0,1,0,1},
                                   {1,1,1,1,1}})
-    lu.assertEquals(vn_surface, vn_check)
+    lu.assertEquals(vn_interior_hull, vn_check)
 end
 
 function testPattern:testNormalise()

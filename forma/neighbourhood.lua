@@ -2,7 +2,7 @@
 -- The **neighbourhood** of a `cell` in a `pattern` defines which other cells
 -- are considered its neighbours. This is an important definition for many
 -- functions in forma. For example, when finding all cells that border a
--- pattern in `subpattern.edge` a definition of *border* in terms of a
+-- pattern in `pattern.exterior_hull` a definition of *border* in terms of a
 -- neighbourhood is required. Cellular `automata` rules are also defined in
 -- terms of neighbourhoods.
 --

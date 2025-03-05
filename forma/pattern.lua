@@ -14,9 +14,8 @@
 -- that `enlarge` a pattern by a scale factor and modifiers than can `rotate`
 -- or reflect patterns in the x (`hreflect`) or y (`vreflect`) axes.
 -- Particuarly useful are manipulators which generate new patterns such as the
--- `edge` (outer hull) or `surface` (inner-hull) of other patterns. These
--- manipulators can be used with custom definitions of a cell's
--- `neighbourhood`.
+-- `exterior_hull` or `interior_hull` of other patterns. These manipulators can
+-- be used with custom definitions of a cell's `neighbourhood`.
 --
 -- Pattern coordinates should be reliable in [-65536, 65536]. This is
 -- adjustable through the `MAX_COORDINATE` constant.
@@ -45,9 +44,9 @@
 --
 -- -- Compute the outer (outside the existing pattern) hull
 -- -- Using 8-direction (Moore) neighbourhood
--- local outer_hull = p1:edge(neighbourhood.moore())
+-- local outer_hull = p1:exterior_hull(neighbourhood.moore())
 -- -- or equivalently
--- outer_hull = pattern.edge(p1, neighbourhood.moore())
+-- outer_hull = pattern.exterior_hull(p1, neighbourhood.moore())
 --
 -- @module forma.pattern
 local pattern         = {}
@@ -373,19 +372,11 @@ end
 --- Add two patterns to each other.
 -- @param a first pattern to be added
 -- @param b second pattern to be added
--- @return New pattern consisting of the superset of patterns a and b
+-- @return New pattern consisting of the union of patterns a and b
 function pattern.__add(a, b)
     assert(getmetatable(a) == pattern, "pattern addition requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
-
-    local c = pattern.clone(a)
-    for x, y in b:cell_coordinates() do
-        if c:has_cell(x, y) == false then
-            c:insert(x, y)
-        end
-    end
-
-    return c
+    return pattern.union(a,b)
 end
 
 --- Subtract one pattern from another.
@@ -425,11 +416,7 @@ end
 function pattern.__pow(a, b)
     assert(getmetatable(a) == pattern, "pattern exponent (XOR) requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern exponent (XOR) requires a pattern as the second argument")
-
-    -- XOR = (A union B) minus (A intersection B)
-    local unionAB   = a + b
-    local intersect = pattern.intersection(a, b)
-    return unionAB - intersect
+    return pattern.xor(a, b)
 end
 
 --- Pattern equality test.
@@ -686,34 +673,6 @@ function pattern.dilate(ip, nbh)
     return np
 end
 
---- Generate a pattern consisting of all cells on the edge of a provided pattern.
--- This returns a new pattern consisting of the inactive neighbours of an input
--- pattern, for a given definition of neighbourhood. Therefore the `edge`
--- method is useful for either enlarging patterns along their surface, or
--- determining a *border* of a pattern that does not overlap with the pattern
--- itself.
--- @param ip pattern for which the edges should be calculated
--- @param nbh defines which neighbourhood to scan in to determine edges (default 8/moore)
--- @return A pattern representing the edge (outer hull) of ip
-function pattern.edge(ip, nbh)
-    local ep = pattern.new()
-    nbh = nbh or neighbourhood.moore()
-    assert(getmetatable(ip) == pattern, "pattern.edge requires a pattern as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "pattern.edge requires a neighbourhood as an argument")
-    for ix, iy in ip:cell_coordinates() do
-        for j = 1, #nbh, 1 do
-            local jnbh = nbh[j]
-            local vx = ix + jnbh.x
-            local vy = iy + jnbh.y
-            if ip:has_cell(vx, vy) == false then
-                if ep:has_cell(vx, vy) == false then
-                    ep:insert(vx, vy)
-                end
-            end
-        end
-    end
-    return ep
-end
 
 --- Morphological opening of a pattern: erosion -> dilation.
 -- This removes small artifacts and "opens" narrow connections.
@@ -735,32 +694,37 @@ function pattern.closing(ip, nbh)
     return pattern.erode(dilated, nbh)
 end
 
---- Generate a pattern consisting of cells on the surface of a provided pattern.
+--- Generate a pattern consisting of cells on the interior_hull of a provided pattern.
 -- This returns a new pattern consisting of all active cells in an input pattern
--- that *neighbour* inactive cells. It is therefore very simmilar to `pattern.edge` but
--- returns a pattern which completely overlaps with the input pattern. This is therefore
--- useful when *shrinking* a pattern by removing a cell from its surface, or determining
--- a *border* of a pattern which consists of cells that are present in the original pattern.
--- @param ip pattern for which the surface should be calculated
--- @param nbh defines which neighbourhood to scan in to determine the surface (default 8/moore)
--- @return A pattern representing the surface (inner hull) of ip
-function pattern.surface(ip, nbh)
-    local sp = pattern.new()
+-- that *neighbour* inactive cells. It is therefore very simmilar to `pattern.exterior_hull` but
+-- returns a pattern which intersects with the input pattern. This is therefore
+-- useful when *shrinking* a pattern by removing a cell from its surface, or
+-- determining a *border* of a pattern which consists of cells that are present
+-- in the original pattern.
+-- @param ip pattern for which the interior hull should be calculated
+-- @param nbh defines which neighbourhood to scan in to determine the hull (default 8/moore)
+-- @return A pattern representing the interior hull of ip
+function pattern.interior_hull(ip, nbh)
     nbh = nbh or neighbourhood.moore()
-    assert(getmetatable(ip) == pattern, "pattern.surface requires a pattern as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "pattern.surface requires a neighbourhood as an argument")
-    for ix, iy in ip:cell_coordinates() do
-        for j = 1, #nbh, 1 do
-            local jnbh = nbh[j]
-            local vx = ix + jnbh.x
-            local vy = iy + jnbh.y
-            if ip:has_cell(vx, vy) == false then
-                sp:insert(ix, iy)
-                break
-            end
-        end
-    end
-    return sp
+    assert(getmetatable(ip) == pattern, "pattern.interior_hull requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.interior_hull requires a neighbourhood as an argument")
+    return (ip - pattern.erode(ip, nbh))
+end
+
+--- Generate a pattern consisting of all cells on the exterior hull of a provided pattern.
+-- This returns a new pattern consisting of the inactive neighbours of an input
+-- pattern, for a given definition of neighbourhood. Therefore the `exterior_hull`
+-- method is useful for either enlarging patterns along their surface, or
+-- determining a *border* of a pattern that does not overlap with the pattern
+-- itself.
+-- @param ip pattern for which the exterior_hull should be calculated
+-- @param nbh defines which neighbourhood to scan in to determine exterior (default 8/moore)
+-- @return A pattern representing the exterior hull of ip
+function pattern.exterior_hull(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.exterior_hull requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.exterior_hull requires a neighbourhood as an argument")
+    return (pattern.dilate(ip, nbh) - ip)
 end
 
 --- Generate a pattern consisting of the overlapping intersection of existing patterns
@@ -784,7 +748,7 @@ function pattern.intersection(...)
                 break
             end
         end
-        -- Cell exists in all segments
+        -- Cell exists in all patterns
         if foundCell == true then
             inter:insert(x, y)
         end
@@ -799,17 +763,13 @@ end
 function pattern.xor(a, b)
     assert(getmetatable(a) == pattern, "pattern.xor requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.xor requires a pattern as the second argument")
-
-    local unionAB = a + b
-    local interAB = pattern.intersection(a, b)
-    local xorAB   = unionAB - interAB
-    return xorAB
+    return (a+b) - (a*b)
 end
 
---- Generate a pattern consisting of the sum of existing patterns
--- @param ... patterns for summation, can be either a table ({a,b}) or a list of arguments (a,b)
--- @return A pattern consisting of the sum of the input patterns
-function pattern.sum(...)
+--- Generate a pattern consisting of the union of a set of patterns
+-- @param ... patterns to union, can be either a table ({a,b}) or a list of arguments (a,b)
+-- @return A pattern consisting of the union of the input patterns
+function pattern.union(...)
     local patterns = { ... }
     -- Handle a single, table argument of patterns ({a,b,c}) rather than (a,b,c)
     if #patterns == 1 then
@@ -817,11 +777,11 @@ function pattern.sum(...)
             patterns = patterns[1]
         end
     end
-    assert(#patterns > 1, "pattern.sum requires at least two patterns as arguments")
+    assert(#patterns > 1, "pattern.union requires at least two patterns as arguments")
     local total = pattern.clone(patterns[1])
     for i = 2, #patterns, 1 do
         local v = patterns[i]
-        assert(getmetatable(v) == pattern, "pattern.sum requires a pattern as an argument")
+        assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
         for x, y in v:cell_coordinates() do
             if total:has_cell(x, y) == false then
                 total:insert(x, y)
