@@ -96,6 +96,7 @@ Initial release
  - Pattern morphological operations `opening` and `closing`.
  - A pattern XOR method and a^b operator.
  - A pattern metamethod for intersection (a*b)
+ - A naive pattern thinning/skeletonisation method
 
 ## Bugfix
  - Fixed GitHub actions workflows by bumping `gh-action-lua` and
@@ -114,3 +115,4 @@ Initial release
  - Renamed `pattern.edge` to `pattern.exterior_hull` to improve clarity.
  - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
  - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
+ - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.

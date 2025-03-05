@@ -365,29 +365,29 @@ function subpattern.connected_components(ip, nbh)
     return segs
 end
 
---- Returns a table of 'enclosed' segments of a pattern.
--- Enclosed areas are the inactive areas of a pattern which are
--- completely surrounded by active areas
--- @param ip pattern for which the enclosed areas should be computed
+--- Returns a table of interior hole segments of a pattern.
+-- Interior holes are the inactive areas of a pattern which are
+-- completely surrounded by active areas.
+-- @param ip pattern for which the holes should be computed
 -- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
--- @return A table of forma.patterns comprising the enclosed areas of ip.
-function subpattern.enclosed(ip, nbh)
+-- @return A table of forma.patterns comprising the holes of ip.
+function subpattern.interior_holes(ip, nbh)
     nbh = nbh or neighbourhood.von_neumann()
-    assert(getmetatable(ip) == pattern, "subpattern.enclosed requires a pattern as the first argument")
-    assert(ip:size() > 0, "subpattern.enclosed requires a non-empty pattern as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "subpattern.enclosed requires a neighbourhood as the second argument")
+    assert(getmetatable(ip) == pattern, "subpattern.interior_holes requires a pattern as the first argument")
+    assert(ip:size() > 0, "subpattern.interior_holes requires a non-empty pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "subpattern.interior_holes requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
     local connected_components = subpattern.connected_components(interior, nbh)
-    local enclosed = {}
+    local holes = {}
     for i = 1, #connected_components, 1 do
         local segment = connected_components[i]
         if segment.min.x > ip.min.x and segment.min.y > ip.min.y
             and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
-            table.insert(enclosed, segment)
+            table.insert(holes, segment)
         end
     end
-    return enclosed
+    return holes
 end
 
 -- Binary space partitioning - internal function
@@ -610,6 +610,54 @@ function subpattern.convex_hull(ip)
     end
     chull = chull + primitives.line(hull_points[#hull_points], hull_points[1])
     return chull
+end
+
+--- Naive thinning (skeletonization) of a pattern.
+-- This approach repeatedly identifies "boundary" cells (using :interior_hull),
+-- then removes them one at a time if that removal does not disconnect the pattern.
+-- Additionally, any cell that has exactly 1 neighbor (an "endpoint") is not removed,
+-- preserving lines. The process repeats until no further cells can be safely removed.
+--
+-- This method is straightforward but can be slow for large patterns, since
+-- each removal triggers a connectivity check (via subpattern.segments).
+-- For advanced skeletonization, consider using algorithms like Guo–Hall.
+--
+-- @param ip   the input pattern to be thinned
+-- @param nbh  (optional) the neighbourhood defining adjacency (default moore)
+-- @return a new pattern representing the thinned shape
+function subpattern.thin(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    local current = pattern.clone(ip)
+
+    -- Helper: how many connected components are in this pattern under nbh?
+    local function num_components(pat)
+        return #subpattern.connected_components(pat, nbh)
+    end
+
+    local changed = true
+    while changed do
+        changed = false
+        local comp_count = num_components(current)
+
+        -- Identify the "boundary" cells. We can use interior_hull here:
+        local boundary = current:interior_hull(nbh)
+
+        for c in boundary:cells() do
+            -- Count how many active neighbors c has
+            local ncount = pattern.count_neighbors(current, nbh, c.x, c.y)
+            -- Otherwise, try removing it and check if the pattern stays connected
+            if ncount > 1 then
+                local candidate = current - pattern.new():insert(c.x, c.y)
+                if num_components(candidate) == comp_count then
+                    current = candidate
+                    changed = true
+                    break  -- re-check boundary from scratch
+                end
+            end
+        end
+    end
+
+    return current
 end
 
 --- Utilities

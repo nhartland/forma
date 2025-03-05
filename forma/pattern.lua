@@ -233,6 +233,45 @@ function pattern.size_sort(pa, pb)
     return pa:size() > pb:size()
 end
 
+--- Count how many active neighbors are around a given position in a pattern,
+-- based on a specified neighbourhood.
+-- This can be invoked in two ways:
+--    1) pattern.count_neighbors(p, nbh, c)
+--    2) pattern.count_neighbors(p, nbh, x, y)
+-- @param p   A forma.pattern
+-- @param nbh A forma.neighbourhood
+-- @param arg1 Either a cell object or the x-coordinate
+-- @param arg2 (optional) The y-coordinate if arg1 is x
+-- @return The integer count of active neighbors around that position
+function pattern.count_neighbors(p, nbh, arg1, arg2)
+    -- Validate arguments
+    assert(getmetatable(p) == pattern,
+        "count_neighbors: first argument must be a forma.pattern")
+    assert(getmetatable(nbh), 
+        "count_neighbors: second argument must be a neighbourhood")
+
+    -- Figure out whether arg1 is a cell or an x-coordinate
+    local x, y
+    if type(arg1) == 'table' and arg1.x and arg1.y then
+        -- arg1 is a cell-like table
+        x, y = arg1.x, arg1.y
+    else
+        -- arg1, arg2 are x,y
+        x, y = arg1, arg2
+    end
+
+    -- Compute neighbor count
+    local count = 0
+    for i = 1, #nbh, 1 do
+        local offset = nbh[i]
+        local nx, ny = x + offset.x, y + offset.y
+        if p:has_cell(nx, ny) then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 --- Return the total number of differing cells between two patterns.
 -- @param a first pattern for edit distance calculation
 -- @param b second pattern for edit distance calculation
