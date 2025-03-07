@@ -248,12 +248,12 @@ function testPattern:testNormalise()
     -- Test pattern normalisation
     -- the normalise method should set the origin of any pattern to (0,0)
     local test_pattern_1 = primitives.square(5)
-    local test_pattern_2 = test_pattern_1:shift(100,100)
+    local test_pattern_2 = test_pattern_1:translate(100,100)
     local test_pattern_3 = test_pattern_2:normalise()
     lu.assertNotEquals(test_pattern_1, test_pattern_2)
     lu.assertNotEquals(test_pattern_2, test_pattern_3)
     lu.assertEquals(test_pattern_1, test_pattern_3)
-    -- Test that doesn't depend on :shift
+    -- Test that doesn't depend on :translate
     local test_pattern_4 = pattern.new():insert(5,5)
     local test_pattern_5 = test_pattern_4:normalise()
     lu.assertTrue (test_pattern_4:has_cell(5,5))
@@ -313,7 +313,7 @@ local function test_generic_packing_function(fn)
         local pp = fn(test_point, test_pattern)
         lu.assertTrue( test_pattern:has_cell(pp.x, pp.y))
         -- Remove point from test pattern
-        test_pattern = test_pattern - test_point:shift(pp.x, pp.y)
+        test_pattern = test_pattern - test_point:translate(pp.x, pp.y)
     end
     -- Pattern should now be empty
     lu.assertEquals( test_pattern:size(), 0)
@@ -501,3 +501,21 @@ function testPattern:testClosing()
     lu.assertEquals(closed, c_closed)
 end
 
+function testPattern:testGradientSingleCell()
+    -- For a single cell, dilation -> a 3×3 block, erosion -> empty (no cell
+    -- has all 9 neighbors!). So the gradient should be that entire 3×3 block => 9 cells.
+    local grad = self.pattern_3:gradient(neighbourhood.moore())
+    lu.assertEquals(grad:size(), 9, "Single-cell morphological gradient (Moore+center) should be 9")
+end
+
+
+function testPattern:testGradient3x3Block()
+    -- With Moore
+    --  * Dilation of a 3×3 block => a 5×5 block from (-1,-1) to (3,3)
+    --  * Erosion => only the center cell (1,1) remains,
+    --    because we require all 9 neighbors to keep a cell.
+    -- => gradient = (5×5) minus that single center cell = 24 cells
+    local block3 = primitives.square(3)
+    local grad = block3:gradient(neighbourhood.moore())
+    lu.assertEquals(grad:size(), 24, "3×3 block morphological gradient (Moore+center) should be 24")
+end

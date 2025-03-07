@@ -88,15 +88,24 @@ Initial release
 
 # 0.6 (WIP)
 
+## Breaking
+ - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
+   `+` operator.
+ - Renamed `pattern.shift` to `pattern.translate` to improve clarity.
+ - Renamed `pattern.edge` to `pattern.exterior_hull` to improve clarity.
+ - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
+ - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
+ - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.
+
 ## Features
  - A raycasting tool for determining 'visible' areas of a pattern
    from a source cell.
  - A knight neighbourhood for knight-piece moves.
  - Pattern methods `dilate` and `erode` for morphological operations.
- - Pattern morphological operations `opening` and `closing`.
+ - Pattern morphological operations `opening`, `closing`, `gradient`.
  - A pattern XOR method and a^b operator.
  - A pattern metamethod for intersection (a*b)
- - A naive pattern thinning/skeletonisation method
+ - A naive pattern thinning/skeletonisation operation
 
 ## Bugfix
  - Fixed GitHub actions workflows by bumping `gh-action-lua` and
@@ -108,11 +117,3 @@ Initial release
    an argument (pattern.union_all({a,b,c}) instead of just pattern.union_all(a,b,c)).
  - Relaxed the assertions on the nature of distance measures in Mitchell
    sampling / Poisson disc sampling.
-
-## Breaking
- - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
-   `+` operator.
- - Renamed `pattern.edge` to `pattern.exterior_hull` to improve clarity.
- - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
- - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
- - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.

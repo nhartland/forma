@@ -14,7 +14,7 @@ local shapes = pattern.new()
 -- Randomly generate some circles in the domain
 for seed in seeds:cells() do
     local circle = primitives.circle(math.random(2, max_radius))
-    shapes = shapes + circle:shift(seed.x, seed.y)
+    shapes = shapes + circle:translate(seed.x, seed.y)
 end
 
 subpattern.print_patterns(domain, {shapes}, {'o'})

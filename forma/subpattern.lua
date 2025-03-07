@@ -339,7 +339,7 @@ function subpattern.maxrectangle(ip)
     assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
     local min, max = maxrectangle_coordinates(ip)
     local size = max - min + cell.new(1, 1)
-    return primitives.square(size.x, size.y):shift(min.x, min.y)
+    return primitives.square(size.x, size.y):translate(min.x, min.y)
 end
 
 --- Lists of sub-patterns
@@ -377,7 +377,7 @@ function subpattern.interior_holes(ip, nbh)
     assert(ip:size() > 0, "subpattern.interior_holes requires a non-empty pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "subpattern.interior_holes requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1, 1)
-    local interior = primitives.square(size.x, size.y):shift(ip.min.x, ip.min.y) - ip
+    local interior = primitives.square(size.x, size.y):translate(ip.min.x, ip.min.y) - ip
     local connected_components = subpattern.connected_components(interior, nbh)
     local holes = {}
     for i = 1, #connected_components, 1 do
@@ -412,7 +412,7 @@ local function bspSplit(min, max, th_volume, outpatterns)
         bspSplit(r2min, max, th_volume, outpatterns)
     else -- Passes threshold volume
         local np = primitives.square(size.x, size.y)
-        np = pattern.shift(np, min.x, min.y)
+        np = pattern.translate(np, min.x, min.y)
         table.insert(outpatterns, np)
     end
 end

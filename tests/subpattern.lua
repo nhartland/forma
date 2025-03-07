@@ -30,12 +30,12 @@ end
 --  FloodFill -------------------------------------------------------------------------
 function testSubPatterns:testFloodFill()
     -- Basic test of flood-fill algorithm. Tested on a fully-(moore) connected
-    -- pattern it should return the same pattern as input. The shift is just a
+    -- pattern it should return the same pattern as input. The translate is just a
     -- consistency check.
     local test_pattern = pattern.new({{1,0,0,1,},
                                       {0,1,1,0,},
                                       {0,1,1,0,},
-                                      {1,0,0,1,}}):shift(100,-100)
+                                      {1,0,0,1,}}):translate(100,-100)
     local floodfill = subpattern.floodfill(test_pattern,
                                            test_pattern:rcell(),
                                            neighbourhood.moore())
@@ -46,12 +46,12 @@ end
 function testSubPatterns:testConnectedComponents()
     -- Measure the number of connected components in a pattern by flood-filling.
     -- This test pattern should return one segment for the Moore neighbourhood,
-    -- and five for the von Neumann neighbourhood. The shift is just a
+    -- and five for the von Neumann neighbourhood. The translate is just a
     -- consistency check.
     local test_pattern = pattern.new({{1,0,0,1,},
                                       {0,1,1,0,},
                                       {0,1,1,0,},
-                                      {1,0,0,1,}}):shift(100,-100)
+                                      {1,0,0,1,}}):translate(100,-100)
     local moore_components = subpattern.connected_components(test_pattern, neighbourhood.moore())
     local vn_components    = subpattern.connected_components(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(#moore_components, 1)
@@ -61,7 +61,7 @@ end
 --  Interior holes ----------------------------------------------------------------
 function testSubPatterns:testInteriorHoles()
     -- Test pattern should return one hole for Moore neighbourhood,
-    -- and two for von Neumann neighbourhood. The shift is just a
+    -- and two for von Neumann neighbourhood. The translate is just a
     -- consistency check.
     local test_pattern = pattern.new({{1,1,1,1,1,1,1},
                                       {1,0,0,0,0,0,1},
@@ -69,7 +69,7 @@ function testSubPatterns:testInteriorHoles()
                                       {1,0,1,0,1,0,1},
                                       {1,0,0,1,0,0,1},
                                       {1,0,0,0,0,0,1},
-                                      {1,1,1,1,1,1,1}}):shift(100,-100)
+                                      {1,1,1,1,1,1,1}}):translate(100,-100)
     local moore_segments = subpattern.interior_holes(test_pattern, neighbourhood.moore())
     local vn_segments    = subpattern.interior_holes(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(#moore_segments, 1)
@@ -287,7 +287,7 @@ function testSubPatterns:testVoronoi_Chebyshev()
 end
 function testSubPatterns:testLloydsAlgorithm()
     local measure = cell.chebyshev
-    local segments, centres, converged = subpattern.voronoi_relax(self.seeds, self.square, measure)
+    local segments, centres, _ = subpattern.voronoi_relax(self.seeds, self.square, measure)
     self:commonVoronoi(segments, centres, measure)
 end
 -- Helper functions ------------------------------------------------------------------

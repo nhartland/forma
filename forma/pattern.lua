@@ -9,8 +9,8 @@
 -- manipulations return a new, modified pattern rather than modifying patterns
 -- in-place.
 --
--- Several pattern manipulators are provided here. For example a `shift`
--- manipulator which shifts the coordinates of an entire pattern, manipulators
+-- Several pattern manipulators are provided here. For example a `translate`
+-- manipulator which translates the coordinates of an entire pattern, manipulators
 -- that `enlarge` a pattern by a scale factor and modifiers than can `rotate`
 -- or reflect patterns in the x (`hreflect`) or y (`vreflect`) axes.
 -- Particuarly useful are manipulators which generate new patterns such as the
@@ -565,15 +565,15 @@ end
 -- These methods generate different 'child' patterns from an input pattern.
 -- @section manipulators
 
---- Generate a copy of a pattern shifted by a vector(x,y)
+--- Generate a copy of a pattern translated by a vector(x,y)
 -- @param ip pattern to be shifted
--- @param sx amount to shift x-coordinates by
--- @param sy amount to shift y-coordinates by
--- @return New pattern consisting of ip shifted by (sx,sy)
-function pattern.shift(ip, sx, sy)
-    assert(getmetatable(ip) == pattern, "pattern.shift requires a pattern as the first argument")
-    assert(floor(sx) == sx, 'pattern.shift requires an integer for the x coordinate')
-    assert(floor(sy) == sy, 'pattern.shift requires an integer for the y coordinate')
+-- @param sx amount to translate x-coordinates by
+-- @param sy amount to translate y-coordinates by
+-- @return New pattern consisting of ip translated by (sx,sy)
+function pattern.translate(ip, sx, sy)
+    assert(getmetatable(ip) == pattern, "pattern.translate requires a pattern as the first argument")
+    assert(floor(sx) == sx, 'pattern.translate requires an integer for the x coordinate')
+    assert(floor(sy) == sy, 'pattern.translate requires an integer for the y coordinate')
 
     local sp = pattern.new()
     for tx, ty in ip:cell_coordinates() do
@@ -585,12 +585,12 @@ function pattern.shift(ip, sx, sy)
     return sp
 end
 
---- Copy a pattern, shifting its origin to (0,0).
+--- Copy a pattern, translating its origin to (0,0).
 -- @param ip pattern to be normalised
 -- @return A new normalised pattern
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
-    return ip:shift(-ip.min.x, -ip.min.y)
+    return ip:translate(-ip.min.x, -ip.min.y)
 end
 
 --- Generate an enlarged version of a pattern.
@@ -713,12 +713,29 @@ function pattern.dilate(ip, nbh)
 end
 
 
+--- Morphological gradient of a pattern.
+-- This returns a new pattern consisting of the difference between the dilation
+-- and erosion of an input pattern. This is useful for determining the 'edges'
+-- of a pattern, as it returns the cells that are active in the dilation but not
+-- in the erosion.
+-- @param ip input pattern
+-- @param nbh neighbourhood used for dilation/erosion
+-- @return new pattern which is the gradient of ip
+function pattern.gradient(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.gradient requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.gradient requires a neighbourhood as the second argument")
+    return pattern.dilate(ip, nbh) - pattern.erode(ip, nbh)
+end
+
 --- Morphological opening of a pattern: erosion -> dilation.
 -- This removes small artifacts and "opens" narrow connections.
 -- @param ip input pattern
 -- @param nbh neighbourhood used for erosion/dilation
 -- @return new pattern after opening
 function pattern.opening(ip, nbh)
+    assert(getmetatable(ip) == pattern, "pattern.opening requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.opening requires a neighbourhood as the second argument")
     local eroded = pattern.erode(ip, nbh)
     return pattern.dilate(eroded, nbh)
 end
@@ -729,6 +746,8 @@ end
 -- @param nbh neighbourhood used for dilation/erosion
 -- @return new pattern after closing
 function pattern.closing(ip, nbh)
+    assert(getmetatable(ip) == pattern, "pattern.closing requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.closing requires a neighbourhood as the second argument")
     local dilated = pattern.dilate(ip, nbh)
     return pattern.erode(dilated, nbh)
 end
