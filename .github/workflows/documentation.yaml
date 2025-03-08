@@ -1,7 +1,9 @@
 name: Documentation
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
 jobs:
   generate_docs:
     runs-on: ubuntu-latest
@@ -14,8 +16,10 @@ jobs:
       - name: Generate documentation 
         run: ldoc --output contents --dir docs .
       - name: Publish GitHub Pages
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: crazy-max/ghaction-github-pages@v4.1.0
         with:
           build_dir: docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              - name: Deploy

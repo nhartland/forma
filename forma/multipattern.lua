@@ -3,12 +3,7 @@
 -- class aims to provide a convenient collection with some
 -- common methods for handling them.
 --
-
----
--- A class representing a *collection* of `pattern` objects.
--- Each multipattern holds an array of patterns, along with methods
--- for operating on them in a *fluent* style (chaining).
--- @classmod multipattern
+-- @module forma.multipattern
 local multipattern = {}
 local pattern = require('forma.pattern')
 
@@ -19,7 +14,7 @@ multipattern.__index = multipattern
 
 
 --- Create a new multipattern from a list of patterns.
--- @param {pattern,...} list_of_patterns an array of `pattern` objects
+-- @param subpatterns an array of `pattern` objects
 -- @return multipattern a new multipattern containing those patterns
 function multipattern.new(subpatterns)
     local mp = {
@@ -56,7 +51,8 @@ end
 --  local bigger = mp:map(function(p) return p:enlarge(2) end)
 --  ```
 --
--- @param function fn a function taking `(pattern, index)` and returning a new `pattern`
+-- @param mp the multipattern upon which to map the function
+-- @param fn a function taking `(pattern, index)` and returning a new `pattern`
 -- @return multipattern a new multipattern of the mapped results
 function multipattern.map(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.map requires a multipattern as an argument")
@@ -77,7 +73,8 @@ end
 --  ```
 --  local bigSegs = mp:filter(function(p) return p:size() >= 10 end)
 --  ```
--- @param function predicate a function `(pattern) -> boolean`
+-- @param mp the multipattern upon which to filter
+-- @param fn a function `(pattern) -> boolean`
 -- @return multipattern a new multipattern containing only the sub-patterns passing the test
 function multipattern.filter(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.filter requires a multipattern as an argument")
@@ -100,7 +97,8 @@ end
 --   local shifted = mp:apply("shift", 10, 5)
 --   -- calls p:shift(10,5) on each pattern p
 --   ```
--- @param string method the name of a function in `pattern`
+-- @param mp the multipattern upon which to apply the method
+-- @param method the name of a function in `pattern`
 -- @param ... additional arguments to pass to that method
 -- @return multipattern a new multipattern of the method's results
 function multipattern.apply(mp, method, ...)
@@ -122,6 +120,7 @@ end
 --   ```
 --   local combined = mp:union_all()
 --   ```
+-- @param mp the multipattern to union over
 -- @return pattern a single pattern combining all sub-patterns
 function multipattern.union_all(mp)
     return pattern.union(mp.subpatterns)
