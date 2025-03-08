@@ -6,6 +6,5 @@ local primitives = require('forma.primitives')
 local square = primitives.square(80,20)
 local bsp = subpattern.bsp(square, 50)
 
--- Print resulting pattern segments
-subpattern.print_patterns(square,bsp)
-
+-- Print the BSP
+bsp:print()

@@ -11,4 +11,5 @@ local rn = subpattern.random(sq, 10)
 local measure  = cell.chebyshev
 local segments = subpattern.voronoi(rn, sq, measure)
 
-subpattern.print_patterns(sq, segments)
+-- Print the tesselation
+segments:print()

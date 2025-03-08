@@ -147,10 +147,11 @@ end
 -- can be used, with one entry per subpattern.
 -- @param mp the multipattern to be drawn.
 -- @param chars the characters to be printed for each subpattern (optional).
-function multipattern.print(mp, chars)
+-- @param domain the domain in which to print (optional).
+function multipattern.print(mp, chars, domain)
     assert(getmetatable(mp) == multipattern, "multipattern.print requires a multipattern as a first argument")
-    local domain = mp:union_all()
-    assert(domain:size() > 0, "multipattern.print: multipattern must have at least one cell")
+    domain = domain or mp:union_all()
+    assert(domain:size() > 0, "multipattern.print: domain must have at least one cell")
     local n = mp:n_subpatterns()
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then

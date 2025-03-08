@@ -12,4 +12,4 @@ local thresholds = {0, 0.5, 0.7}
 local noise  = subpattern.perlin(domain, frequency, depth, thresholds)
 
 -- Print resulting pattern segments
-subpattern.print_patterns(domain, noise, {'.', '+', 'o'})
+noise:print({'.', '+', 'o'}, domain)

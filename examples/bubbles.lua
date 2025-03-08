@@ -1,8 +1,9 @@
 -- Circle primitives
-local cell       = require('forma.cell')
-local pattern    = require('forma.pattern')
-local primitives = require('forma.primitives')
-local subpattern = require('forma.subpattern')
+local cell         = require('forma.cell')
+local pattern      = require('forma.pattern')
+local primitives   = require('forma.primitives')
+local subpattern   = require('forma.subpattern')
+local multipattern = require('forma.multipattern')
 
 local max_radius = 4
 
@@ -17,6 +18,5 @@ for seed in seeds:cells() do
     shapes = shapes + circle:translate(seed.x, seed.y)
 end
 
-subpattern.print_patterns(domain, {shapes}, {'o'})
-
+multipattern.new({shapes}):print({'o'}, domain)
 

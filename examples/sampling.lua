@@ -8,6 +8,7 @@
 local cell          = require('forma.cell')
 local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
+local multipattern  = require('forma.multipattern')
 
 -- Domain and seed
 local measure = cell.chebyshev
@@ -19,4 +20,4 @@ local random  = subpattern.poisson_disc(domain, measure, 4)
 --local random   = subpattern.random(domain, 40)
 --local _, random = subpattern.voronoi_relax(random, domain, measure)
 
-subpattern.print_patterns(domain, {random}, {'#'})
+multipattern.new({random}):print({'#'}, domain)

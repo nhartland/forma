@@ -32,5 +32,5 @@ symmetrised_pattern = symmetrised_pattern:hreflect():hreflect()
 -- Categorise the pattern according to possible vN neighbours and print to screen
 -- This turns the basic pattern into standard 'box-drawing' characters
 local vn = neighbourhood.von_neumann()
-local segments = subpattern.neighbourhood_categories(symmetrised_pattern, vn)
-subpattern.print_patterns(symmetrised_pattern, segments, vn:category_label())
+subpattern.neighbourhood_categories(symmetrised_pattern, vn)
+          :print(vn:category_label())

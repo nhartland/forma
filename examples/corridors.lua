@@ -25,4 +25,4 @@ until converged
 
 local nbh = neighbourhood.von_neumann()
 local segments = subpattern.neighbourhood_categories(ca, nbh)
-subpattern.print_patterns(domain, segments, nbh:category_label())
+segments:print(nbh:category_label(), domain)

@@ -4,6 +4,7 @@ local primitives    = require('forma.primitives')
 local subpattern    = require('forma.subpattern')
 local automata      = require('forma.automata')
 local neighbourhood = require('forma.neighbourhood')
+local multipattern  = require('forma.multipattern')
 
 -- Domain for CA
 local sq = primitives.square(80,20)
@@ -20,4 +21,4 @@ while converged == false and ite < 1000 do
 end
 
 -- Print to stdout
-subpattern.print_patterns(sq, {ca}, {'#'})
+multipattern.new({ca}):print({'#'}, sq)

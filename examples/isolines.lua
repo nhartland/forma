@@ -7,6 +7,7 @@
 local cell          = require('forma.cell')
 local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
+local multipattern  = require('forma.multipattern')
 
 -- Distance measure
 local measure = cell.chebyshev
@@ -28,5 +29,5 @@ end
 
 -- Compute the thresholded pattern and print its interior hull
 local noise = subpattern.mask(sq, mask)
-subpattern.print_patterns(sq, {noise:interior_hull()}, {'#'})
+multipattern.new({noise:interior_hull()}):print({'#'}, sq)
 

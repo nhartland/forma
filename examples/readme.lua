@@ -38,5 +38,5 @@ end
 local connected_components = subpattern.connected_components(ca, neighbourhood.von_neumann())
 
 -- Print a representation to io.output
-subpattern.print_patterns(domain, connected_components)
+connected_components:print(nil, domain)
 
