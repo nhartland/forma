@@ -19,16 +19,7 @@ local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
 local multipattern  = require('forma.multipattern')
-
--- Fisher-Yates shuffle
--- Returns a shuffled version of the input table
-local function shuffle(table, rng)
-    if rng == nil then rng = math.random end
-    for i = #table, 1, -1 do
-        local j = rng(#table)
-        table[i], table[j] = table[j], table[i]
-    end
-end
+local rutils        = require('forma.utils.random')
 
 --- Sub-patterns
 -- @section subpatterns
@@ -220,7 +211,7 @@ function subpattern.perlin(ip, freq, depth, thresholds, rng)
     -- Generate permutation vector
     local p = {}
     for i = 0, 255, 1 do p[i] = i end
-    shuffle(p, rng)
+    rutils.shuffle(p, rng)
 
     -- Generate sample patterns
     local samples = {}

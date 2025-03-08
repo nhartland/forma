@@ -57,6 +57,7 @@ local floor           = math.floor
 
 local cell            = require('forma.cell')
 local neighbourhood   = require('forma.neighbourhood')
+local rutils = require('forma.utils.random')
 
 -- Pattern indexing
 -- For enabling syntax sugar pattern:method
@@ -76,20 +77,6 @@ local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
     return xp - MAX_COORDINATE, yp - MAX_COORDINATE
-end
-
--- Copies an input table in a randomly shuffled order
-local function shuffled_copy(intable, rng)
-    -- Copy and Fisher-Yates shuffle
-    local extable = {}
-    for i = 1, #intable, 1 do
-        local j = rng(1, i)
-        if j ~= i then
-            extable[i] = extable[j]
-        end
-        extable[j] = intable[i]
-    end
-    return extable
 end
 
 --- Basic methods.
@@ -346,7 +333,7 @@ function pattern.shuffled_cells(ip, rng)
 
     -- Copy and Fisher-Yates shuffle
     local cellkeys = ip.cellkey
-    local skeys = shuffled_copy(cellkeys, rng)
+    local skeys = rutils.shuffled_copy(cellkeys, rng)
 
     -- Return iterator
     return function()
@@ -375,7 +362,7 @@ function pattern.shuffled_coordinates(ip, rng)
 
     -- Copy and Fisher-Yates shuffle
     local cellkeys = ip.cellkey
-    local skeys = shuffled_copy(cellkeys, rng)
+    local skeys = rutils.shuffled_copy(cellkeys, rng)
 
     -- Return iterator
     return function()

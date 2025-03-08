@@ -5,7 +5,6 @@
 --
 -- @module forma.multipattern
 local multipattern = {}
-local pattern = require('forma.pattern')
 
 
 -- Multipattern indexing
@@ -136,6 +135,8 @@ end
 -- @param mp the multipattern to union over.
 -- @return a single pattern combining all sub-patterns.
 function multipattern.union_all(mp)
+    -- Require here to avoid circular dependency.
+    local pattern = require('forma.pattern')
     return pattern.union(mp.subpatterns)
 end
 
