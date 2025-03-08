@@ -86,7 +86,7 @@ Initial release
  - Slightly improved example gallery generation
  - Changed to using LuaRocks as test runner
 
-# 0.6
+# 1.0 (WIP)
 
 ## Breaking
  - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
@@ -96,8 +96,10 @@ Initial release
  - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
  - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
  - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.
+ - Many subpattern methods that used to return a table of subpatterns, now return a multipattern.
 
 ## Features
+ - A multipattern class for handling collections of patterns.
  - A raycasting tool for determining 'visible' areas of a pattern
    from a source cell.
  - A knight neighbourhood for knight-piece moves.
