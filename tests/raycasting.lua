@@ -5,10 +5,10 @@ local primitives = require("forma.primitives")
 local subpattern = require("forma.subpattern")
 local raycasting = require("forma.raycasting")
 
-testRaycasting = {}
+TestRaycasting = {}
 
 -- Test single ray ------------------------------------------------
-function testRaycasting:testRay()
+function TestRaycasting:testRay()
     -- Test here is simmilar to line primitives
     -- Draw a bunch of lines, check their properties
     local domain = primitives.square(100)
@@ -20,7 +20,7 @@ function testRaycasting:testRay()
 end
 
 -- Test 360 raycasting ------------------------------------------------
-function testRaycasting:test360()
+function TestRaycasting:test360()
     local domain = primitives.square(100)
     for _=1, 100, 1 do
         local start  = domain:rcell()

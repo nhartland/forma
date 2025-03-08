@@ -7,16 +7,16 @@ local primitives    = require("forma.primitives")
 local subpattern    = require("forma.subpattern")
 local neighbourhood = require("forma.neighbourhood")
 
-testSubPatterns = {}
+TestSubPatterns = {}
 
-function testSubPatterns:setUp()
+function TestSubPatterns:setUp()
     -- Test patterns for Voronoi tesselation and random sampling tests
     self.square = primitives.square(10)
     self.seeds = subpattern.random(self.square, 10)
 end
 
 --  Masked subpattern  ---------------------------------------------------------------
-function testSubPatterns:testMask()
+function TestSubPatterns:testMask()
     -- Mask out all seed points from the square input pattern,
     -- then check that the masked pattern is identical to
     -- the input pattern minus the seeds.
@@ -28,7 +28,7 @@ function testSubPatterns:testMask()
 end
 
 --  FloodFill -------------------------------------------------------------------------
-function testSubPatterns:testFloodFill()
+function TestSubPatterns:testFloodFill()
     -- Basic test of flood-fill algorithm. Tested on a fully-(moore) connected
     -- pattern it should return the same pattern as input. The translate is just a
     -- consistency check.
@@ -43,7 +43,7 @@ function testSubPatterns:testFloodFill()
 end
 
 --  Connected Components --------------------------------------------------------------
-function testSubPatterns:testConnectedComponents()
+function TestSubPatterns:testConnectedComponents()
     -- Measure the number of connected components in a pattern by flood-filling.
     -- This test pattern should return one segment for the Moore neighbourhood,
     -- and five for the von Neumann neighbourhood. The translate is just a
@@ -59,7 +59,7 @@ function testSubPatterns:testConnectedComponents()
 end
 
 --  Interior holes ----------------------------------------------------------------
-function testSubPatterns:testInteriorHoles()
+function TestSubPatterns:testInteriorHoles()
     -- Test pattern should return one hole for Moore neighbourhood,
     -- and two for von Neumann neighbourhood. The translate is just a
     -- consistency check.
@@ -81,7 +81,7 @@ function testSubPatterns:testInteriorHoles()
 end
 
 --  Perlin noise ----------------------------------------------------------------
-function testSubPatterns:testPerlin()
+function TestSubPatterns:testPerlin()
     -- Test subpattern generation by thresholding perlin noise.
     local test_domain = primitives.square(80, 20)
     local frequency, depth = 0.2, 1
@@ -97,14 +97,14 @@ function testSubPatterns:testPerlin()
 end
 
 --  Random sampling ------------------------------------------------------------------
-function testSubPatterns:testRandom()
+function TestSubPatterns:testRandom()
     lu.assertEquals(getmetatable(self.seeds),  pattern)
     lu.assertEquals(pattern.size(self.seeds), 10)
     lu.assertTrue(self:check_for_overlap({self.square, self.seeds}))
 end
 
 --  Poisson-disc sampling ------------------------------------------------------------------
-function testSubPatterns:testPoissonDisk()
+function TestSubPatterns:testPoissonDisk()
     local r = 3
     local measure  = cell.chebyshev
     local domain = primitives.square(10)
@@ -123,7 +123,7 @@ function testSubPatterns:testPoissonDisk()
 end
 
 -- Mitchell's best-candidate sampling -------------------------------------------------
-function testSubPatterns:testMitchellSampling()
+function TestSubPatterns:testMitchellSampling()
     -- Approximate Poisson-disc by Mitchell's best-candidate algorithm
     local measure = cell.chebyshev
     local domain  = primitives.square(10)
@@ -135,7 +135,7 @@ function testSubPatterns:testMitchellSampling()
 end
 
 --  Maximum Rectangle  ---------------------------------------------------------------
-function testSubPatterns:testMaxRectangle()
+function TestSubPatterns:testMaxRectangle()
     -- Basic test of the 'maximum rectangular area' subpattern finder.
     -- When run on a square pattern, it should return the input pattern.
     local rect = subpattern.maxrectangle(self.square)
@@ -147,7 +147,7 @@ function testSubPatterns:testMaxRectangle()
 end
 
 --  Binary space partitioning  -------------------------------------------------------
-function testSubPatterns:testBinarySpacePartition()
+function TestSubPatterns:testBinarySpacePartition()
     -- Testing on a square test pattern. The returned segments should all
     -- have fewer than 10 active cells.
     local partitions  = subpattern.bsp(self.square, 10)
@@ -164,7 +164,7 @@ function testSubPatterns:testBinarySpacePartition()
 end
 
 -- Categorisation subpatterns --------------------------------------------------------
-function testSubPatterns:testCategories()
+function TestSubPatterns:testCategories()
     -- Compute a random sample of the square 10x10 pattern with 40 samples
     local sample = subpattern.random(self.square, 40)
     -- Loop through a couple of example neighbourhoods
@@ -183,7 +183,7 @@ end
 
 --  Convex hull ---------------------------------------------------------------------
 -- Tests the function returning all points on the convex hull
-function testSubPatterns:testConvexHullPoints()
+function TestSubPatterns:testConvexHullPoints()
     -- Pattern for running convex hull algorithm over
     local test_pattern = pattern.new({{1,0,0,0,1},
                                       {0,0,1,0,0},
@@ -201,7 +201,7 @@ function testSubPatterns:testConvexHullPoints()
     lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
 end
 -- Test the function computing the convex hull
-function testSubPatterns:testConvexHull()
+function TestSubPatterns:testConvexHull()
     -- Pattern for running convex hull algorithm over
     local test_pattern = pattern.new({{1,0,0,0,1},
                                       {0,0,1,0,0},
@@ -219,7 +219,7 @@ function testSubPatterns:testConvexHull()
     lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
 end
 -- Thinning --------------------------------------------------------------------------
-function testSubPatterns:testThinning()
+function TestSubPatterns:testThinning()
     -- Test 1: Thinning a 3x3 block
     -- Expectation: only the center (1,1) remains.
     local block = pattern.new({
@@ -241,7 +241,7 @@ function testSubPatterns:testThinning()
     lu.assertEquals(row_thinned, row, "Row should be unchanged by thinning")
 end
 -- Voronoi tesselation ---------------------------------------------------------------
-function testSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
+function TestSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
 
     -- Check for the correct number of segments, and that there are no overlaps
     lu.assertEquals(#voronoi_segments, seeds:size())
@@ -270,28 +270,28 @@ function testSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
 end
 
 -- Test Voronoi tesselation with various distance measures
-function testSubPatterns:testVoronoi_Manhattan()
+function TestSubPatterns:testVoronoi_Manhattan()
     local measure = cell.manhattan
     local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
     self:commonVoronoi(voronoi_segments, self.seeds, measure)
 end
-function testSubPatterns:testVoronoi_Euclidean()
+function TestSubPatterns:testVoronoi_Euclidean()
     local measure = cell.euclidean
     local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
     self:commonVoronoi(voronoi_segments, self.seeds, measure)
 end
-function testSubPatterns:testVoronoi_Chebyshev()
+function TestSubPatterns:testVoronoi_Chebyshev()
     local measure = cell.chebyshev
     local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
     self:commonVoronoi(voronoi_segments, self.seeds, measure)
 end
-function testSubPatterns:testLloydsAlgorithm()
+function TestSubPatterns:testLloydsAlgorithm()
     local measure = cell.chebyshev
     local segments, centres, _ = subpattern.voronoi_relax(self.seeds, self.square, measure)
     self:commonVoronoi(segments, centres, measure)
 end
 -- Helper functions ------------------------------------------------------------------
-function testSubPatterns:check_for_overlap(segments)
+function TestSubPatterns:check_for_overlap(segments)
     -- Check that segments overlap
     -- Returns true if there is an overlap, false otherwise
     for i=1, #segments-1, 1 do

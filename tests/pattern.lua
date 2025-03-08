@@ -4,9 +4,9 @@ local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local neighbourhood = require("forma.neighbourhood")
 
-testPattern = {}
+TestPattern = {}
 
-function testPattern:setUp()
+function TestPattern:setUp()
     self.pattern_1 = pattern.new()
     self.pattern_2 = primitives.square(5)
     self.pattern_3 = primitives.square(1)
@@ -19,7 +19,7 @@ function testPattern:setUp()
 end
 
 -- Test the spatial hashing limits
-function testPattern:testSpatialHash()
+function TestPattern:testSpatialHash()
     local max = pattern.get_max_coordinate()
     lu.assertTrue( max > 0 )
     local limits = { -max, max, 0 }
@@ -33,7 +33,7 @@ function testPattern:testSpatialHash()
 end
 
 -- Test eq, add, sub operators
-function testPattern:testOperators()
+function TestPattern:testOperators()
     lu.assertEquals(self.pattern_1, self.pattern_1)
     lu.assertEquals(self.pattern_1 + self.pattern_2,
                     self.pattern_2)
@@ -43,7 +43,7 @@ function testPattern:testOperators()
                     self.pattern_2)
 end
 
-function testPattern:testConstructor()
+function TestPattern:testConstructor()
     lu.assertEquals(pattern.size(self.pattern_1),0)
     lu.assertEquals(pattern.size(self.pattern_2),25)
     lu.assertEquals(pattern.size(self.pattern_2),25)
@@ -52,20 +52,20 @@ function testPattern:testConstructor()
     lu.assertEquals(self.pattern_5, self.pattern_2)
 end
 
-function testPattern:testClone()
+function TestPattern:testClone()
     -- Test pattern cloning
     local pattern_5_clone = self.pattern_5:clone()
     lu.assertEquals(pattern_5_clone, self.pattern_5)
     lu.assertNotEquals(pattern_5_clone, self.pattern_4)
 end
 
-function testPattern:testToString()
+function TestPattern:testToString()
     -- Test pattern tostring method
     local pattern_5_string = tostring(self.pattern_5)
     lu.assertIsString(pattern_5_string)
 end
 
-function testPattern:testUnion()
+function TestPattern:testUnion()
     -- Test pattern.union() helper function
     local tp1 = pattern.new({{1,1,1,1,1},
                              {1,0,0,0,1},
@@ -89,7 +89,7 @@ function testPattern:testUnion()
 end
 
 -- Test insert methods
-function testPattern:testInsert()
+function TestPattern:testInsert()
     -- Test both insert methods
     local insert_test = pattern.new()
     pattern.insert(insert_test, 1, -1)
@@ -103,7 +103,7 @@ function testPattern:testInsert()
 end
 
 -- Test the standard iterator methods
-function testPattern:testIterators()
+function TestPattern:testIterators()
     local sqpat = primitives.square(20)
     -- These should return alive cells in the same order
     local cells = sqpat:cells()
@@ -124,7 +124,7 @@ end
 
 -- Test the shuffled iterator methods
 -- It's a bit tricky to test, given the randomness
-function testPattern:testShuffledIterators()
+function TestPattern:testShuffledIterators()
     local sqpat = primitives.square(20)
     for icell in sqpat:shuffled_cells() do
         lu.assertTrue(sqpat:has_cell(icell.x, icell.y))
@@ -134,7 +134,7 @@ function testPattern:testShuffledIterators()
     end
 end
 
-function testPattern:testCentroid()
+function TestPattern:testCentroid()
     -- Test five patterns which should have the same
     -- centroid, and one which should not
     local centroid1 = pattern.new({{1,1,1},
@@ -163,7 +163,7 @@ function testPattern:testCentroid()
     lu.assertNotEquals(centroid5, centroid6)
 end
 
-function testPattern:testMedoid()
+function TestPattern:testMedoid()
     -- Test five patterns which should have the same
     -- medoid, and one which should not
     local medoid1 = pattern.new({{1,1,1},
@@ -192,7 +192,7 @@ function testPattern:testMedoid()
     lu.assertNotEquals(medoid5, medoid6)
 end
 
-function testPattern:testExteriorHull()
+function TestPattern:testExteriorHull()
     -- Test pattern for exterior_hull determination
     local test = pattern.new({{0,0,0},
                               {0,1,0},
@@ -218,7 +218,7 @@ function testPattern:testExteriorHull()
     lu.assertEquals(test:exterior_hull(neighbourhood.diagonal()), d_exterior_hull)
 end
 
-function testPattern:testInteriorHull()
+function TestPattern:testInteriorHull()
     -- IHull of a single point should just return that point back
     local interior_hull_pattern_3 = self.pattern_3:interior_hull()
     lu.assertEquals(interior_hull_pattern_3, self.pattern_3)
@@ -244,7 +244,7 @@ function testPattern:testInteriorHull()
     lu.assertEquals(vn_interior_hull, vn_check)
 end
 
-function testPattern:testNormalise()
+function TestPattern:testNormalise()
     -- Test pattern normalisation
     -- the normalise method should set the origin of any pattern to (0,0)
     local test_pattern_1 = primitives.square(5)
@@ -261,14 +261,14 @@ function testPattern:testNormalise()
     lu.assertTrue (test_pattern_5:has_cell(0,0))
 end
 
-function testPattern:testEnlarge()
+function TestPattern:testEnlarge()
     local enlarged_pattern_1 = self.pattern_1:enlarge(2)
     local enlarged_pattern_2 = self.pattern_2:enlarge(2)
     lu.assertEquals(enlarged_pattern_1:size(),0)
     lu.assertEquals(enlarged_pattern_2:size(),100)
 end
 
-function testPattern:testReflect()
+function TestPattern:testReflect()
     -- Test that a square pattern rotated both vertically and horizontally
     -- is a square pattern of twice the side length
     local test_square_4 = primitives.square(4)
@@ -283,7 +283,7 @@ function testPattern:testReflect()
     lu.assertEquals(test_irreg, test_irreg_reflect)
 end
 
-function testPattern:testRotate()
+function TestPattern:testRotate()
     -- Test that radially symmetric pattern is unchanged after rotation
     local rotate_pattern_2 = self.pattern_2:rotate():normalise()
     lu.assertEquals(rotate_pattern_2, self.pattern_2)
@@ -325,12 +325,12 @@ local function test_generic_packing_function(fn)
     lu.assertEquals(pp2, nil)
 end
 
-function testPattern:testPacktile()
+function TestPattern:testPacktile()
     -- Run generic testing function
     test_generic_packing_function(pattern.packtile)
 end
 
-function testPattern:testPacktileCentre()
+function TestPattern:testPacktileCentre()
     -- Run generic testing function
     test_generic_packing_function(pattern.packtile_centre)
     -- Test centre-packing
@@ -343,7 +343,7 @@ function testPattern:testPacktileCentre()
     lu.assertEquals(pp.y, 1)
 end
 
-function testPattern:testEditDistance()
+function TestPattern:testEditDistance()
     -- Self-distances
     lu.assertEquals(self.pattern_1:edit_distance(self.pattern_1), 0)
     lu.assertEquals(self.pattern_2:edit_distance(self.pattern_2), 0)
@@ -359,7 +359,7 @@ function testPattern:testEditDistance()
     lu.assertEquals(edit_distance_23, 5*5 - 1) -- one common point
 end
 
-function testPattern:testDilation()
+function TestPattern:testDilation()
     -- Single-cell pattern
     local single = pattern.new({{1}})  -- 1 at (0,0)
     -- Dilation with a Moore neighborhood (8 directions, plus center).
@@ -371,7 +371,7 @@ function testPattern:testDilation()
     lu.assertTrue(dil:has_cell(0, 0))
 end
 
-function testPattern:testErosion()
+function TestPattern:testErosion()
     -- 3x3 block. By default, pattern.new interprets
     -- the top row of the table as y=0, then next as y=1, etc.
     -- So the pattern has these active coords (x,y):
@@ -391,7 +391,7 @@ function testPattern:testErosion()
     lu.assertTrue(eroded:has_cell(1,1))
 end
 
-function testPattern:testXor()
+function TestPattern:testXor()
     -- We'll test the function-based XOR (pattern.xor(a, b)).
     -- For example, define two single-cell patterns side-by-side:
     local a = pattern.new({{1,0}}) -- active cell at (0,0)
@@ -405,7 +405,7 @@ function testPattern:testXor()
     lu.assertEquals(pattern.xor(a, a):size(), 0)
 end
 
-function testPattern:testIntersectionOperator()
+function TestPattern:testIntersectionOperator()
     -- We'll assume you bound `__mul` to pattern.intersection, so a*b does set intersection.
     local a = pattern.new({
         {1,1},  -- cells at (0,0) and (1,0)
@@ -424,7 +424,7 @@ function testPattern:testIntersectionOperator()
     lu.assertFalse(i:has_cell(0,0))
 end
 
-function testPattern:testXorOperator()
+function TestPattern:testXorOperator()
     -- We'll assume you bound `__pow` to pattern XOR, so a^b does symmetric difference.
     local a = pattern.new({
         {1,1},  -- (0,0), (1,0)
@@ -440,7 +440,7 @@ function testPattern:testXorOperator()
     lu.assertTrue(x:has_cell(0,0))
 end
 
-function testPattern:testOpening()
+function TestPattern:testOpening()
     -- This pattern is a 3x3 block plus a single "finger" cell on the top row.
     -- The table rows go from top to bottom in your code, so:
     --   row 0 => y=0
@@ -477,7 +477,7 @@ function testPattern:testOpening()
     lu.assertEquals(opened, p_open)
 end
 
-function testPattern:testClosing()
+function TestPattern:testClosing()
     -- A 3x3 block with a single hole in the middle (1,1):
     --    (0,0),(1,0),(2,0),
     --    (0,1),      (2,1),
@@ -501,7 +501,7 @@ function testPattern:testClosing()
     lu.assertEquals(closed, c_closed)
 end
 
-function testPattern:testGradientSingleCell()
+function TestPattern:testGradientSingleCell()
     -- For a single cell, dilation -> a 3×3 block, erosion -> empty (no cell
     -- has all 9 neighbors!). So the gradient should be that entire 3×3 block => 9 cells.
     local grad = self.pattern_3:gradient(neighbourhood.moore())
@@ -509,7 +509,7 @@ function testPattern:testGradientSingleCell()
 end
 
 
-function testPattern:testGradient3x3Block()
+function TestPattern:testGradient3x3Block()
     -- With Moore
     --  * Dilation of a 3×3 block => a 5×5 block from (-1,-1) to (3,3)
     --  * Erosion => only the center cell (1,1) remains,

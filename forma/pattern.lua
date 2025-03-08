@@ -247,7 +247,7 @@ function pattern.count_neighbors(p, nbh, arg1, arg2)
     -- Validate arguments
     assert(getmetatable(p) == pattern,
         "count_neighbors: first argument must be a forma.pattern")
-    assert(getmetatable(nbh), 
+    assert(getmetatable(nbh),
         "count_neighbors: second argument must be a neighbourhood")
 
     -- Figure out whether arg1 is a cell or an x-coordinate

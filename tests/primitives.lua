@@ -5,10 +5,10 @@ local pattern    = require("forma.pattern")
 local primitives = require("forma.primitives")
 local subpattern = require("forma.subpattern")
 
-testPrimitives = {}
+TestPrimitives = {}
 
 -- Test circle raster ------------------------------------------------
-function testPrimitives:testCircle()
+function TestPrimitives:testCircle()
     for i=1,10,1 do
         local circle_raster = primitives.circle(i)
         -- Check that all holes are less than i from centre
@@ -20,7 +20,7 @@ function testPrimitives:testCircle()
     end
 end
 -- Test square raster ------------------------------------------------
-function testPrimitives:testSquare()
+function TestPrimitives:testSquare()
     for i=1,10,1 do
         -- Check that there are the correct number of points
         local square_raster = primitives.square(i)
@@ -30,7 +30,7 @@ function testPrimitives:testSquare()
     lu.assertEquals(test_pattern, primitives.square(2))
 end
 -- Test line raster ------------------------------------------------
-function testPrimitives:testLine()
+function TestPrimitives:testLine()
     -- Draw a bunch of lines, check their properties
     for _=1, 100, 1 do
         local start  = cell.new(math.random(-100, 100), math.random(-100, 100))
@@ -46,7 +46,7 @@ function testPrimitives:testLine()
     end
 end
 -- Test Bezier raster ------------------------------------------------
-function testPrimitives:testBezier()
+function TestPrimitives:testBezier()
     -- Draw a bunch of lines, check their properties
     for N=1, 100, 1 do
         local start   = cell.new(math.random(-100, 100), math.random(-100, 100))

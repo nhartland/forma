@@ -5,9 +5,9 @@ local automata      = require("forma.automata")
 local primitives    = require("forma.primitives")
 local neighbourhood = require("forma.neighbourhood")
 
-testAutomata = {}
+TestAutomata = {}
 
-function testAutomata:setUp()
+function TestAutomata:setUp()
     -- Ruleset for Conway's GOL
     self.life_rule= automata.rule(neighbourhood.moore(), "B3/S23")
 
@@ -63,7 +63,7 @@ function testAutomata:setUp()
 end
 
 -- Test that all still lives immediately converge
-function testAutomata:testStillLifes()
+function TestAutomata:testStillLifes()
     for _, still in ipairs(self.stills) do
         local newstill, converged = automata.iterate(still, self.sixbysix, {self.life_rule})
         lu.assertTrue(converged)
@@ -72,7 +72,7 @@ function testAutomata:testStillLifes()
 end
 
 -- Test that all oscillators have period 2
-function testAutomata:testOscillators()
+function TestAutomata:testOscillators()
     for _, oscillator in ipairs(self.oscillators) do
         local newoscillator, converged = automata.iterate(oscillator, self.sixbysix, {self.life_rule})
         newoscillator, converged = automata.iterate(newoscillator, self.sixbysix, {self.life_rule})
@@ -82,7 +82,7 @@ function testAutomata:testOscillators()
 end
 
 -- Test the asynchronous CA update
-function testAutomata:testAsynchronous()
+function TestAutomata:testAsynchronous()
     -- Verify all synchronous oscillators differ only by one cell
     for _, oscillator in ipairs(self.oscillators) do
         local newoscillator, converged = automata.async_iterate(oscillator, self.sixbysix, {self.life_rule})
