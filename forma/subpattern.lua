@@ -253,10 +253,10 @@ local function floodfill(x, y, nbh, domain, retpat)
 end
 
 --- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
--- @param ip pattern upon which the flood fill is to be performed
--- @param ipt a `cell` specifying the origin of the flood fill
--- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
--- @return a forma.pattern consisting of the contiguous segment about cell
+-- @param ip pattern upon which the flood fill is to be performed.
+-- @param ipt a `cell` specifying the origin of the flood fill.
+-- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore).
+-- @return a forma.pattern consisting of the contiguous subpattern about `ipt`.
 function subpattern.floodfill(ip, ipt, nbh)
     assert(getmetatable(ip) == pattern, "subpattern.floodfill requires a pattern as the first argument")
     assert(ipt, "subpattern.floodfill requires a cell as the second argument")
@@ -268,10 +268,10 @@ end
 
 -- Find the (lower-left and upper-right) coordinates of the maximal contiguous
 -- rectangular area within a pattern.
--- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529.
--- @param ip the input pattern
--- @return the minimum and maxium coordinates of the area
+-- @param ip the input pattern.
+-- @return the minimum and maxium coordinates of the area.
 local function maxrectangle_coordinates(ip)
+    -- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529.
     local best_ll = cell.new(0, 0)
     local best_ur = cell.new(-1, -1)
     local best_area = 0
@@ -334,7 +334,7 @@ local function maxrectangle_coordinates(ip)
 end
 
 --- Find the maximal contiguous rectangular area within a pattern.
--- @param ip the input pattern
+-- @param ip the input pattern.
 -- @return The subpattern of `ip` consisting of its largest contiguous rectangular area.
 function subpattern.maxrectangle(ip)
     assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
@@ -343,7 +343,7 @@ function subpattern.maxrectangle(ip)
     return primitives.square(size.x, size.y):translate(min.x, min.y)
 end
 
---- Lists of sub-patterns
+--- Multipatterns
 -- @section subpattern_lists
 
 --- Generate a multipattern of a pattern's connected components.
@@ -366,9 +366,9 @@ function subpattern.connected_components(ip, nbh)
     return multipattern.new(segs)
 end
 
---- Returns a multipattern of interior hole segments of a pattern.
--- Interior holes are the inactive areas of a pattern which are
--- completely surrounded by active areas.
+--- Returns a multipattern of a parent pattern's interior holes.
+-- Interior holes are the inactive areas of a pattern which are completely
+-- surrounded by active areas.
 -- @param ip pattern for which the holes should be computed.
 -- @param nbh defines which directions to scan in while flood-filling (default 4/vn).
 -- @return A multipattern comprising the holes of ip.
