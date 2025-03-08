@@ -20,7 +20,7 @@ multipattern.__index = multipattern
 
 --- Create a new multipattern from a list of patterns.
 -- @param {pattern,...} list_of_patterns an array of `pattern` objects
--- @return multipattern a new multipattern containing those patterns
+-- @return a new multipattern containing those patterns
 function multipattern.new(subpatterns)
     local mp = {
         subpatterns = subpatterns or {}
@@ -32,7 +32,7 @@ end
 
 --- Clone the multipattern.
 -- @param mp multipattern to clone
--- @return cloned multipattern
+-- @return the cloned multipattern
 function multipattern.clone(mp)
     local subpatterns = {}
     for i, p in ipairs(mp.subpatterns) do
@@ -57,7 +57,7 @@ end
 --  ```
 --
 -- @param function fn a function taking `(pattern, index)` and returning a new `pattern`
--- @return multipattern a new multipattern of the mapped results
+-- @return a new multipattern of the mapped results
 function multipattern.map(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.map requires a multipattern as an argument")
     -- Applies `fn` to each pattern in this multipattern,
@@ -78,7 +78,7 @@ end
 --  local bigSegs = mp:filter(function(p) return p:size() >= 10 end)
 --  ```
 -- @param function predicate a function `(pattern) -> boolean`
--- @return multipattern a new multipattern containing only the sub-patterns passing the test
+-- @return a new multipattern containing only the sub-patterns passing the test
 function multipattern.filter(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.filter requires a multipattern as an argument")
     -- Keeps only those patterns for which fn(pat) == true.
@@ -102,7 +102,7 @@ end
 --   ```
 -- @param string method the name of a function in `pattern`
 -- @param ... additional arguments to pass to that method
--- @return multipattern a new multipattern of the method's results
+-- @return a new multipattern of the method's results
 function multipattern.apply(mp, method, ...)
     assert(getmetatable(mp) == multipattern, "multipattern.apply requires a multipattern as an argument")
     local new_subpatterns = {}
@@ -122,7 +122,7 @@ end
 --   ```
 --   local combined = mp:union_all()
 --   ```
--- @return pattern a single pattern combining all sub-patterns
+-- @return a single pattern combining all sub-patterns
 function multipattern.union_all(mp)
     return pattern.union(mp.subpatterns)
 end
