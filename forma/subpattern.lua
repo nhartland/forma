@@ -18,6 +18,7 @@ local cell          = require('forma.cell')
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
+local multipattern  = require('forma.multipattern')
 
 -- Fisher-Yates shuffle
 -- Returns a shuffled version of the input table
@@ -192,14 +193,14 @@ end
 -- Samples an input pattern by thresholding a Perlin-noise pattern in the
 -- domain.  This function takes an initial sampling frequency, and computes
 -- perlin noise over the input pattern by taking the product of `depth`
--- successively halved frequencies. A table of subpatterns are then returned,
+-- successively halved frequencies. A multipattern is then returned,
 -- consisting of the perlin noise function thresholded at requested levels.
 -- @param ip pattern upon which the thresholded noise sampling is to be performed.
 -- @param freq (float) frequency of desired perlin noise
 -- @param depth (int), sampling depth.
 -- @param thresholds table of sampling thresholds (between 0 and 1).
 -- @param rng (optional) a random number generator, following the signature of math.random.
--- @return a table of `patterns`, one per threshold entry.
+-- @return a `multipattern`, one subpattern per threshold entry.
 function subpattern.perlin(ip, freq, depth, thresholds, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(ip) == pattern,
@@ -236,7 +237,7 @@ function subpattern.perlin(ip, freq, depth, thresholds, rng)
             end
         end
     end
-    return samples
+    return multipattern.new(samples)
 end
 
 -- Helper function for subpattern.floodfill
@@ -345,12 +346,12 @@ end
 --- Lists of sub-patterns
 -- @section subpattern_lists
 
---- Generate a table of a pattern's connected components.
+--- Generate a multipattern of a pattern's connected components.
 -- This performs a series of flood-fill operations until all
--- pattern cells belong to a component components.
--- @param ip pattern for which the connected_components are to be extracted
--- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore)
--- @return A table of forma.patterns consisting of contiguous sub-patterns of ip.
+-- pattern cells belong to a component component.
+-- @param ip pattern for which the connected_components are to be extracted.
+-- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore).
+-- @return A multipattern consisting of contiguous sub-patterns of ip.
 function subpattern.connected_components(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "subpattern.connected_components requires a pattern as the first argument")
@@ -362,15 +363,15 @@ function subpattern.connected_components(ip, nbh)
         table.insert(segs, subpattern.floodfill(wp, rancell, nbh))
         wp = wp - segs[#segs]
     end
-    return segs
+    return multipattern.new(segs)
 end
 
---- Returns a table of interior hole segments of a pattern.
+--- Returns a multipattern of interior hole segments of a pattern.
 -- Interior holes are the inactive areas of a pattern which are
 -- completely surrounded by active areas.
--- @param ip pattern for which the holes should be computed
--- @param nbh defines which directions to scan in while flood-filling (default 4/vn)
--- @return A table of forma.patterns comprising the holes of ip.
+-- @param ip pattern for which the holes should be computed.
+-- @param nbh defines which directions to scan in while flood-filling (default 4/vn).
+-- @return A multipattern comprising the holes of ip.
 function subpattern.interior_holes(ip, nbh)
     nbh = nbh or neighbourhood.von_neumann()
     assert(getmetatable(ip) == pattern, "subpattern.interior_holes requires a pattern as the first argument")
@@ -378,7 +379,8 @@ function subpattern.interior_holes(ip, nbh)
     assert(getmetatable(nbh) == neighbourhood, "subpattern.interior_holes requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):translate(ip.min.x, ip.min.y) - ip
-    local connected_components = subpattern.connected_components(interior, nbh)
+    local connected_components = subpattern.connected_components(interior, nbh).subpatterns
+    -- TODO: interesting case for multipattern.filter
     local holes = {}
     for i = 1, #connected_components, 1 do
         local segment = connected_components[i]
@@ -387,7 +389,7 @@ function subpattern.interior_holes(ip, nbh)
             table.insert(holes, segment)
         end
     end
-    return holes
+    return multipattern.new(holes)
 end
 
 -- Binary space partitioning - internal function
@@ -426,8 +428,9 @@ end
 -- will recursively subdivide every rectangular area evenly in two until the
 -- volume of the largest remaining area is less than `th_volume`.
 --
--- @param ip the pattern for which the BSP will be run over
--- @param th_volume the highest acceptable volume for each final partition
+-- @param ip the pattern for which the BSP will be run over.
+-- @param th_volume the highest acceptable volume for each final partition.
+-- @returns A multipattern consisting of the BSP subpatterns.
 function subpattern.bsp(ip, th_volume)
     assert(getmetatable(ip) == pattern, "subpattern.bsp requires a pattern as an argument")
     assert(th_volume, "subpattern.bsp rules must specify a threshold volume for partitioning")
@@ -441,16 +444,16 @@ function subpattern.bsp(ip, th_volume)
             available = available - bsp_subpatterns[i]
         end
     end
-    return bsp_subpatterns
+    return multipattern.new(bsp_subpatterns)
 end
 
 --- Determine subpatterns for all `neighbourhood` categories.
 -- Each neighbourhood has a number of possible combinations or `categories`
 -- of active cells. This function categorises each cell in an input pattern
 -- into one of the neighbourhood's categories.
--- @param ip the pattern in which cells are to be categorised
--- @param nbh the forma.neighbourhood used for the categorisation
--- @return A table of #nbh patterns, where each cell in ip is categorised.
+-- @param ip the pattern in which cells are to be categorised.
+-- @param nbh the forma.neighbourhood used for the categorisation.
+-- @return A multipattern of #nbh subpatterns, where each cell in ip is categorised.
 function subpattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(ip) == pattern,
         "subpattern.neighbourhood_categories requires a pattern as a first argument")
@@ -464,14 +467,14 @@ function subpattern.neighbourhood_categories(ip, nbh)
         local cat = nbh:categorise(ip, icell)
         category_patterns[cat]:insert(icell.x, icell.y)
     end
-    return category_patterns
+    return multipattern.new(category_patterns)
 end
 
 --- Generate Voronoi tesselations of cells in a domain.
--- @param seeds the set of seed cells for the tesselation
--- @param domain the domain of the tesselation
--- @param measure the measure used to judge distance between cells
--- @return A table of Voronoi segments.
+-- @param seeds the set of seed cells for the tesselation.
+-- @param domain the domain of the tesselation.
+-- @param measure the measure used to judge distance between cells.
+-- @return A multipattern of Voronoi segments.
 function subpattern.voronoi(seeds, domain, measure)
     assert(getmetatable(seeds) == pattern, "subpattern.voronoi requires a pattern as a first argument")
     assert(getmetatable(domain) == pattern, "subpattern.voronoi requires a pattern as a second argument")
@@ -495,18 +498,18 @@ function subpattern.voronoi(seeds, domain, measure)
         end
         segments[min_cell]:insert(dp.x, dp.y)
     end
-    return segments
+    return multipattern.new(segments)
 end
 
 --- Generate (approx) centroidal Voronoi tessellation.
 -- Given a set of prior seeds and a domain, this iterates the position of the
 -- seeds until they are approximately located at the centre of their Voronoi
 -- segments. Lloyd's algorithm is used.
--- @param seeds the original seed points to be relaxed
--- @param domain the domain to be tesselated
--- @param measure the distance measure to be used between cells
--- @param max_ite (optional) maximum number of iterations of relaxation (default 30)
--- @return A table of resuling Voronoi segments.
+-- @param seeds the original seed points to be relaxed.
+-- @param domain the domain to be tesselated.
+-- @param measure the distance measure to be used between cells.
+-- @param max_ite (optional) maximum number of iterations of relaxation (default 30).
+-- @return A multipattern of Voronoi segments.
 -- @return A `pattern` consisting of the voronoi segment centres.
 -- @return A bool, true if the algorithm converged, false if not.
 function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
@@ -517,7 +520,7 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
     assert(seeds:size() <= domain:size(), "subpattern.voronoi_relax: too many seeds for domain")
     local current_seeds = seeds:clone()
     for ite = 1, max_ite, 1 do
-        local tesselation = subpattern.voronoi(current_seeds, domain, measure)
+        local tesselation = subpattern.voronoi(current_seeds, domain, measure).subpatterns
         local next_seeds  = pattern.new()
         for iseg = 1, #tesselation, 1 do
             if tesselation[iseg]:size() > 0 then
@@ -538,9 +541,9 @@ function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
             end
         end
         if current_seeds == next_seeds then
-            return tesselation, current_seeds, true  -- converged
+            return multipattern.new(tesselation), current_seeds, true  -- converged
         elseif ite == max_ite then
-            return tesselation, current_seeds, false -- max ite
+            return multipattern.new(tesselation), current_seeds, false -- max ite
         end
         current_seeds = next_seeds
     end
@@ -552,9 +555,9 @@ end
 -- monotone chain convex hull algorithm. Adapted from sixFinger's
 -- implementation at
 -- https://gist.github.com/sixFingers/ee5c1dce72206edc5a42b3246a52ce2e
--- @param ip input pattern for generating the convex hull
+-- @param ip input pattern for generating the convex hull.
 -- @return A `pattern` consisting of the points of `ip` lying on the convex hull.
--- @return A clockwise-ordered table of cells on the convex hull
+-- @return A clockwise-ordered table of cells on the convex hull.
 function subpattern.convex_hull_points(ip)
     assert(getmetatable(ip) == pattern,
         "subpattern.convex_hull_points requires a pattern as a first argument")
@@ -598,8 +601,8 @@ end
 --- Compute the convex hull of a pattern.
 -- This computes the points on a pattern's convex hull with
 -- subpattern.convex_hull_points and connects the points with line rasters.
--- @param ip input pattern for generating the convex hull
--- @return A `pattern` consisting of the convex hull of `ip`
+-- @param ip input pattern for generating the convex hull.
+-- @return A `pattern` consisting of the convex hull of `ip`.
 function subpattern.convex_hull(ip)
     assert(getmetatable(ip) == pattern, "subpattern.convex_hull requires a pattern as a first argument")
     assert(ip:size() > 0, "subpattern.convex_hull: input pattern must have at least one cell")
@@ -613,25 +616,25 @@ function subpattern.convex_hull(ip)
 end
 
 --- Naive thinning (skeletonization) of a pattern.
--- This approach repeatedly identifies "boundary" cells (using :interior_hull),
+-- This approach repeatedly identifies "boundary" cells (using `interior_hull`),
 -- then removes them one at a time if that removal does not disconnect the pattern.
--- Additionally, any cell that has exactly 1 neighbor (an "endpoint") is not removed,
+-- Additionally, any cell that has exactly one neighbor (an "endpoint") is not removed,
 -- preserving lines. The process repeats until no further cells can be safely removed.
 --
 -- This method is straightforward but can be slow for large patterns, since
 -- each removal triggers a connectivity check (via subpattern.segments).
 -- For advanced skeletonization, consider using algorithms like Guo–Hall.
 --
--- @param ip   the input pattern to be thinned
--- @param nbh  (optional) the neighbourhood defining adjacency (default moore)
--- @return a new pattern representing the thinned shape
+-- @param ip   the input pattern to be thinned.
+-- @param nbh  (optional) the neighbourhood defining adjacency (default moore).
+-- @return a new pattern representing the thinned shape.
 function subpattern.thin(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     local current = pattern.clone(ip)
 
     -- Helper: how many connected components are in this pattern under nbh?
     local function num_components(pat)
-        return #subpattern.connected_components(pat, nbh)
+        return subpattern.connected_components(pat, nbh):n_subpatterns()
     end
 
     local changed = true
@@ -658,44 +661,6 @@ function subpattern.thin(ip, nbh)
     end
 
     return current
-end
-
---- Utilities
--- @section subpattern_utils
-
---- Print a table of forma.patterns.
--- Prints a table of pattern segments to `io.output`. If provided, a table of
--- segment labels can be used, with one entry per segment.
--- @param domain the basic pattern from which the segments were generated.
--- @param segments the table of segments to be drawn.
--- @param chars the characters to be printed for each segment (optional).
-function subpattern.print_patterns(domain, segments, chars)
-    assert(getmetatable(domain) == pattern, "subpattern.print_patterns requires a pattern as a first argument")
-    assert(domain:size() > 0, "subpattern.print_patterns: domain must have at least one cell")
-    assert(type(segments) == "table", "subpattern.print_patterns: second argument must be a *table* of patterns")
-    -- If no dictionary is supplied generate a new one (starting from '0')
-    if chars == nil then
-        local start_char = 47
-        assert(#segments < (200 - start_char), "subpattern.print_patterns: too many segments")
-        chars = {}
-        for i = 1, #segments, 1 do
-            table.insert(chars, string.char(i + start_char))
-        end
-    end
-    assert(#segments == #chars,
-        "subpattern.print_patterns: there must be as many character table entries as segments")
-    -- Print out the segments to a map
-    for i = domain.min.y, domain.max.y, 1 do
-        local string = ''
-        for j = domain.min.x, domain.max.x, 1 do
-            local token = ' '
-            for k, v in ipairs(segments) do
-                if v:has_cell(j, i) then token = chars[k] end
-            end
-            string = string .. token
-        end
-        io.write(string .. '\n')
-    end
 end
 
 return subpattern

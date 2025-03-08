@@ -54,8 +54,8 @@ function TestSubPatterns:testConnectedComponents()
                                       {1,0,0,1,}}):translate(100,-100)
     local moore_components = subpattern.connected_components(test_pattern, neighbourhood.moore())
     local vn_components    = subpattern.connected_components(test_pattern, neighbourhood.von_neumann())
-    lu.assertEquals(#moore_components, 1)
-    lu.assertEquals(#vn_components, 5)
+    lu.assertEquals(moore_components:n_subpatterns(), 1)
+    lu.assertEquals(vn_components:n_subpatterns(), 5)
 end
 
 --  Interior holes ----------------------------------------------------------------
@@ -70,14 +70,14 @@ function TestSubPatterns:testInteriorHoles()
                                       {1,0,0,1,0,0,1},
                                       {1,0,0,0,0,0,1},
                                       {1,1,1,1,1,1,1}}):translate(100,-100)
-    local moore_segments = subpattern.interior_holes(test_pattern, neighbourhood.moore())
-    local vn_segments    = subpattern.interior_holes(test_pattern, neighbourhood.von_neumann())
-    lu.assertEquals(#moore_segments, 1)
-    lu.assertEquals(#vn_segments, 2)
-    lu.assertFalse(self:check_for_overlap(vn_segments))
+    local moore_subpatterns = subpattern.interior_holes(test_pattern, neighbourhood.moore())
+    local vn_subpatterns    = subpattern.interior_holes(test_pattern, neighbourhood.von_neumann())
+    lu.assertEquals(moore_subpatterns:n_subpatterns(), 1)
+    lu.assertEquals(vn_subpatterns:n_subpatterns(), 2)
+    lu.assertFalse(self:check_for_overlap(vn_subpatterns.subpatterns))
     -- Check that neighbourhood defaults to vN, and edge diagonal case
     local test_circle = primitives.circle(1)
-    lu.assertEquals(#subpattern.interior_holes(test_circle),1)
+    lu.assertEquals(subpattern.interior_holes(test_circle):n_subpatterns(),1)
 end
 
 --  Perlin noise ----------------------------------------------------------------
@@ -86,7 +86,7 @@ function TestSubPatterns:testPerlin()
     local test_domain = primitives.square(80, 20)
     local frequency, depth = 0.2, 1
     local thresholds = {0, 0.5, 0.7, 1}
-    local noise  = subpattern.perlin(test_domain, frequency, depth, thresholds)
+    local noise  = subpattern.perlin(test_domain, frequency, depth, thresholds).subpatterns
     lu.assertEquals(test_domain, noise[1]) -- Lowest threshold is zero, should be identical to domain
     lu.assertEquals(noise[4]:size(), 0)    -- Lowest threshold is one, should be an empty pattern
 
@@ -148,9 +148,9 @@ end
 
 --  Binary space partitioning  -------------------------------------------------------
 function TestSubPatterns:testBinarySpacePartition()
-    -- Testing on a square test pattern. The returned segments should all
+    -- Testing on a square test pattern. The returned subpatterns should all
     -- have fewer than 10 active cells.
-    local partitions  = subpattern.bsp(self.square, 10)
+    local partitions  = subpattern.bsp(self.square, 10).subpatterns
     local total_points = 0
     local resum = pattern.new()
     for _, partition in ipairs(partitions) do
@@ -170,9 +170,9 @@ function TestSubPatterns:testCategories()
     -- Loop through a couple of example neighbourhoods
     local measures = {neighbourhood.moore(), neighbourhood.von_neumann()}
     for _, measure in ipairs(measures) do
-        local c_segments = subpattern.neighbourhood_categories(sample, measure)
+        local c_subpatterns = subpattern.neighbourhood_categories(sample, measure).subpatterns
         -- Ensure each category pattern only contains correctly categorised points
-        for cat, seg in ipairs(c_segments) do
+        for cat, seg in ipairs(c_subpatterns) do
             for icell in seg:cells() do
                 local test_cat = measure:categorise(sample, icell)
                 lu.assertEquals(cat, test_cat)
@@ -241,22 +241,22 @@ function TestSubPatterns:testThinning()
     lu.assertEquals(row_thinned, row, "Row should be unchanged by thinning")
 end
 -- Voronoi tesselation ---------------------------------------------------------------
-function TestSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
+function TestSubPatterns:commonVoronoi(voronoi_multipattern, seeds, measure)
 
-    -- Check for the correct number of segments, and that there are no overlaps
-    lu.assertEquals(#voronoi_segments, seeds:size())
-    lu.assertFalse(self:check_for_overlap(voronoi_segments))
+    -- Check for the correct number of subpatterns, and that there are no overlaps
+    lu.assertEquals(voronoi_multipattern:n_subpatterns(), seeds:size())
+    lu.assertFalse(self:check_for_overlap(voronoi_multipattern.subpatterns))
 
-    -- Check that, for every cell in every segment, the
-    -- closest seed for that segment intersects with the segment
-    -- (should define a voronoi tesselation)
-    for _,segment in ipairs(voronoi_segments) do
+    -- Check that, for every cell in every subpattern, the closest seed for
+    -- that subpattern intersects with it (should define a voronoi
+    -- tesselation).
+    for _,sp in ipairs(voronoi_multipattern.subpatterns) do
         -- Loop over all cells in this segment
-        for segment_cell in segment:cells() do
+        for sp_cell in sp:cells() do
             -- Find the closest seed to this cell
             local closest_seed, seed_distance = nil, math.huge
             for seed_cell in seeds:cells() do
-                local distance = measure(segment_cell, seed_cell)
+                local distance = measure(sp_cell, seed_cell)
                 if distance < seed_distance then
                     seed_distance = distance
                     closest_seed = seed_cell
@@ -264,7 +264,7 @@ function TestSubPatterns:commonVoronoi(voronoi_segments, seeds, measure)
             end
 
             -- Ensure that the closest seed is in the cell
-            lu.assertTrue(segment:has_cell(closest_seed.x, closest_seed.y))
+            lu.assertTrue(sp:has_cell(closest_seed.x, closest_seed.y))
         end
     end
 end
@@ -272,31 +272,31 @@ end
 -- Test Voronoi tesselation with various distance measures
 function TestSubPatterns:testVoronoi_Manhattan()
     local measure = cell.manhattan
-    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
-    self:commonVoronoi(voronoi_segments, self.seeds, measure)
+    local voronoi_multipattern = subpattern.voronoi(self.seeds, self.square, measure)
+    self:commonVoronoi(voronoi_multipattern, self.seeds, measure)
 end
 function TestSubPatterns:testVoronoi_Euclidean()
     local measure = cell.euclidean
-    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
-    self:commonVoronoi(voronoi_segments, self.seeds, measure)
+    local voronoi_multipattern = subpattern.voronoi(self.seeds, self.square, measure)
+    self:commonVoronoi(voronoi_multipattern, self.seeds, measure)
 end
 function TestSubPatterns:testVoronoi_Chebyshev()
     local measure = cell.chebyshev
-    local voronoi_segments = subpattern.voronoi(self.seeds, self.square, measure)
-    self:commonVoronoi(voronoi_segments, self.seeds, measure)
+    local voronoi_multipattern = subpattern.voronoi(self.seeds, self.square, measure)
+    self:commonVoronoi(voronoi_multipattern, self.seeds, measure)
 end
 function TestSubPatterns:testLloydsAlgorithm()
     local measure = cell.chebyshev
-    local segments, centres, _ = subpattern.voronoi_relax(self.seeds, self.square, measure)
-    self:commonVoronoi(segments, centres, measure)
+    local multipattern, centres, _ = subpattern.voronoi_relax(self.seeds, self.square, measure)
+    self:commonVoronoi(multipattern, centres, measure)
 end
 -- Helper functions ------------------------------------------------------------------
-function TestSubPatterns:check_for_overlap(segments)
-    -- Check that segments overlap
+function TestSubPatterns:check_for_overlap(subpatterns)
+    -- Check that subpatterns overlap
     -- Returns true if there is an overlap, false otherwise
-    for i=1, #segments-1, 1 do
-        for j=i+1, #segments, 1 do
-            local int = pattern.intersection(segments[i], segments[j])
+    for i=1, #subpatterns-1, 1 do
+        for j=i+1, #subpatterns, 1 do
+            local int = pattern.intersection(subpatterns[i], subpatterns[j])
             if int:size() ~= 0 then return true end
         end
     end

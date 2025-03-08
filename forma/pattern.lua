@@ -837,7 +837,10 @@ function pattern.union(...)
             patterns = patterns[1]
         end
     end
-    assert(#patterns > 1, "pattern.union requires at least two patterns as arguments")
+    -- Attempting to union list of a single pattern
+    if #patterns == 1 then
+        return patterns[1]
+    end
     local total = pattern.clone(patterns[1])
     for i = 2, #patterns, 1 do
         local v = patterns[i]
