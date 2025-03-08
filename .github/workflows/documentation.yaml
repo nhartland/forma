@@ -6,15 +6,15 @@ jobs:
   generate_docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: leafo/gh-actions-lua@v9
-      - uses: leafo/gh-actions-luarocks@v4
+      - uses: actions/checkout@v4
+      - uses: leafo/gh-actions-lua@v11
+      - uses: leafo/gh-actions-luarocks@v5
       - name: Install ldoc
         run: luarocks install ldoc
       - name: Generate documentation 
         run: ldoc --output contents --dir docs .
       - name: Publish GitHub Pages
-        uses: crazy-max/ghaction-github-pages@v1.4.0
+        uses: crazy-max/ghaction-github-pages@v4.1.0
         with:
           build_dir: docs
         env:
