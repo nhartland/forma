@@ -3,8 +3,8 @@
 -- `pattern`. The simplest of these is the `random` sampling of a fraction of
 -- `cell`s from the parent.
 --
--- Several of these finders return a table of all relevant sub-patterns. For
--- example the `connected_components` method which returns a table of all contiguous
+-- Several of these finders return a multipattern of all relevant sub-patterns. For
+-- example the `connected_components` method which returns a multipattern of all contiguous
 -- (according to some `neighbourhood`) sub-patterns by using a `floodfill`.
 --
 -- In addition to the subpattern finders, a `print_patterns` utility is provided
@@ -77,7 +77,7 @@ end
 -- Sample a domain according to the Poisson-disc procedure. For a given
 -- distance measure `distance`, this generates samples that are never closer
 -- together than a specified radius.  While much slower than `subpattern.random`,
--- it provides a more uniform distribution of points in the domain (simmilar to
+-- it provides a more uniform distribution of points in the domain (similar to
 -- that of `subpattern.voronoi_relax`).
 -- @param ip domain pattern to sample from
 -- @param distance a measure  of distance between two cells d(a,b) e.g cell.euclidean
@@ -348,7 +348,7 @@ end
 
 --- Generate a multipattern of a pattern's connected components.
 -- This performs a series of flood-fill operations until all
--- pattern cells belong to a component component.
+-- pattern cells belong to a connected component.
 -- @param ip pattern for which the connected_components are to be extracted.
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore).
 -- @return A multipattern consisting of contiguous sub-patterns of ip.
@@ -421,7 +421,7 @@ end
 --- Generate subpatterns by binary space partition.
 -- This works by finding all the contiguous rectangular volumes in the input
 -- pattern and running a binary space partition on all of them. The partitions
--- are then returned in a table.
+-- are then returned in a multipattern.
 --
 -- The BSP is controlled by the `threshold volume` parameter. The algorithm
 -- will recursively subdivide every rectangular area evenly in two until the
@@ -508,9 +508,9 @@ end
 -- @param domain the domain to be tesselated.
 -- @param measure the distance measure to be used between cells.
 -- @param max_ite (optional) maximum number of iterations of relaxation (default 30).
--- @return A multipattern of Voronoi segments.
--- @return A `pattern` consisting of the voronoi segment centres.
--- @return A bool, true if the algorithm converged, false if not.
+-- @return A `multipattern` of Voronoi segments after relaxation.
+-- @return A `pattern` containing the relaxed seed positions (centroids).
+-- @return A boolean indicating whether the algorithm converged.
 function subpattern.voronoi_relax(seeds, domain, measure, max_ite)
     if max_ite == nil then max_ite = 30 end
     assert(getmetatable(seeds) == pattern, "subpattern.voronoi_relax requires a pattern as a first argument")

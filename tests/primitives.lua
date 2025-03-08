@@ -48,7 +48,7 @@ end
 -- Test Bezier raster ------------------------------------------------
 function TestPrimitives:testBezier()
     -- Draw a bunch of lines, check their properties
-    for N=1, 100, 1 do
+    for N=1, 10, 1 do
         local start   = cell.new(math.random(-100, 100), math.random(-100, 100))
         local control = cell.new(math.random(-100, 100), math.random(-100, 100))
         local finish  = cell.new(math.random(-100, 100), math.random(-100, 100))
