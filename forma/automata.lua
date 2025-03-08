@@ -58,7 +58,7 @@ local function parse_rule(nbh, rulesub)
 end
 
 --- Ruleset Generation
--- @section
+-- @section Ruleset Generation
 
 --- Define a cellular automata rule.
 -- CA rules in forma are defined by a `neighbourhood` in the usual CA sense and
@@ -130,7 +130,7 @@ local function check_ruleset(ruleset)
 end
 
 --- CA Iteration
--- @section
+-- @section CA Iteration
 
 --- Synchronous cellular automata iteration.
 -- Performs one standard synchronous CA update on pattern prevp in the specified domain.
