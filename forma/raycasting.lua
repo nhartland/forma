@@ -15,7 +15,7 @@ local pattern = require('forma.pattern')
 -- Adapted from: http://www.roguebasin.com/index.php?title=LOS_using_strict_definition
 -- @param v0 starting cell of ray
 -- @param v1 end cell of ray
--- @param the domain in which we are casting
+-- @param domain the domain in which we are casting
 -- @return true or false depending on whether the ray was successfully cast
 function ray.cast(v0, v1, domain)
     assert(getmetatable(v0) == cell, "ray.cast requires a cell as the first argument")
@@ -52,9 +52,9 @@ end
 
 --- Casts rays from a start cell across an octant.
 -- @param v0 starting cell of ray
--- @param the domain in which we are casting
--- @param the octant identifier (integer between 1 and 8)
--- @param radius the maximum length of the ray
+-- @param domain the domain in which we are casting
+-- @param oct the octant identifier (integer between 1 and 8)
+-- @param ray_length the maximum length of the ray
 -- @return the pattern illuminated by the ray casting
 function ray.cast_octant(v0, domain, oct, ray_length)
     assert(getmetatable(v0) == cell, "ray.cast_octant requires a cell as the first argument")
@@ -89,9 +89,9 @@ function ray.cast_octant(v0, domain, oct, ray_length)
 end
 
 --- Casts rays from a starting cell in all directions
--- @param v0 starting cell of ray
--- @param the domain in which we are casting
--- @param the maximum length of the ray
+-- @param v starting cell of ray
+-- @param domain the domain in which we are casting
+-- @param ray_length the maximum length of the ray
 -- @return the pattern illuminated by the ray casting
 function ray.cast_360(v, domain, ray_length)
     assert(getmetatable(v) == cell, "ray.cast_360 requires a cell as the first argument")
