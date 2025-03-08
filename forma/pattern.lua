@@ -734,6 +734,7 @@ end
 -- @param nbh neighbourhood used for erosion/dilation
 -- @return new pattern after opening
 function pattern.opening(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.opening requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.opening requires a neighbourhood as the second argument")
     local eroded = pattern.erode(ip, nbh)
@@ -746,6 +747,7 @@ end
 -- @param nbh neighbourhood used for dilation/erosion
 -- @return new pattern after closing
 function pattern.closing(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.closing requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.closing requires a neighbourhood as the second argument")
     local dilated = pattern.dilate(ip, nbh)
