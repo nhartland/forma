@@ -379,17 +379,16 @@ function subpattern.interior_holes(ip, nbh)
     assert(getmetatable(nbh) == neighbourhood, "subpattern.interior_holes requires a neighbourhood as the second argument")
     local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):translate(ip.min.x, ip.min.y) - ip
-    local connected_components = subpattern.connected_components(interior, nbh).subpatterns
-    -- TODO: interesting case for multipattern.filter
-    local holes = {}
-    for i = 1, #connected_components, 1 do
-        local segment = connected_components[i]
-        if segment.min.x > ip.min.x and segment.min.y > ip.min.y
-            and segment.max.x < ip.max.x and segment.max.y < ip.max.y then
-            table.insert(holes, segment)
+    local connected_components = subpattern.connected_components(interior, nbh)
+    -- Filter out those components that are not interior.
+    local function fn(sp)
+        if sp.min.x > ip.min.x and sp.min.y > ip.min.y
+            and sp.max.x < ip.max.x and sp.max.y < ip.max.y then
+            return true
         end
+        return false
     end
-    return multipattern.new(holes)
+    return connected_components:filter(fn)
 end
 
 -- Binary space partitioning - internal function
