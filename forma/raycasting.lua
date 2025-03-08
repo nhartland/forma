@@ -1,9 +1,13 @@
 --- Ray tracing algorithms
--- Algorithms for identifying visible segments of a pattern from a single cell
--- This can be used for 'field of view' applications
+-- Algorithms for identifying visible segments of a pattern from a single cell.
+-- This can be used for 'field of view' applications.
+--
 -- Sources:
--- http:--www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html
--- http://www.roguebasin.com/index.php?title=LOS_using_strict_definition
+--
+-- `http://www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html`
+-- `http://www.roguebasin.com/index.php?title=LOS_using_strict_definition`
+--
+-- @module forma.raycasting
 
 local ray     = {}
 
@@ -12,7 +16,9 @@ local pattern = require('forma.pattern')
 
 --- Casts a ray from a start to an end cell.
 -- Returns {true/false} if the cast is successful/blocked.
--- Adapted from: http://www.roguebasin.com/index.php?title=LOS_using_strict_definition
+-- Adapted from:
+--
+-- `http://www.roguebasin.com/index.php?title=LOS_using_strict_definition`
 -- @param v0 starting cell of ray
 -- @param v1 end cell of ray
 -- @param domain the domain in which we are casting
@@ -89,17 +95,17 @@ function ray.cast_octant(v0, domain, oct, ray_length)
 end
 
 --- Casts rays from a starting cell in all directions
--- @param v starting cell of ray
+-- @param v0 starting cell of ray
 -- @param domain the domain in which we are casting
 -- @param ray_length the maximum length of the ray
 -- @return the pattern illuminated by the ray casting
-function ray.cast_360(v, domain, ray_length)
-    assert(getmetatable(v) == cell, "ray.cast_360 requires a cell as the first argument")
+function ray.cast_360(v0, domain, ray_length)
+    assert(getmetatable(v0) == cell, "ray.cast_360 requires a cell as the first argument")
     assert(getmetatable(domain) == pattern, "ray.cast_360 requires a pattern as the second argument")
     assert(type(ray_length) == 'number', "ray.cast_360 requires a number as the third argument")
-    local lit_pattern = pattern.new():insert(v.x, v.y)
+    local lit_pattern = pattern.new():insert(v0.x, v0.y)
     for ioct = 1, 8, 1 do
-        local np = ray.cast_octant(v, domain, ioct, ray_length)
+        local np = ray.cast_octant(v0, domain, ioct, ray_length)
         lit_pattern = lit_pattern + np
     end
     return lit_pattern

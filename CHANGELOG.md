@@ -86,7 +86,7 @@ Initial release
  - Slightly improved example gallery generation
  - Changed to using LuaRocks as test runner
 
-# 0.6 (WIP)
+# 0.6
 
 ## Breaking
  - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
