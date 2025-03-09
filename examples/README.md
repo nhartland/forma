@@ -1,9 +1,10 @@
 # *forma* example gallery
 * [Binary space partitioning](#binary-space-partitioning)
-* [Convex hull finder](#convex-hull-finder)
 * [Voronoi tessellation](#voronoi-tessellation)
+* [Convex hull finder](#convex-hull-finder)
 * [Perlin noise sampling](#perlin-noise-sampling)
 * [Maximum rectangle finding](#maximum-rectangle-finding)
+* [Raycasting](#raycasting)
 * [Circle primitives](#circle-primitives)
 * [Cellular automata](#cellular-automata)
 * [Sampling methods](#sampling-methods)
@@ -15,56 +16,54 @@
 ## Binary space partitioning
 
 ```lua
-local subpattern = require('forma.subpattern')
 local primitives = require('forma.primitives')
 
 -- Generate an 80x20 square and partition it into segments of maximally 50 cells
 local square = primitives.square(80,20)
-local bsp = subpattern.bsp(square, 50)
+local bsp = square:bsp(50)
 
--- Print resulting pattern segments
-subpattern.print_patterns(square,bsp)
-
+-- Print the BSP
+bsp:print()
 ```
 ### Output
 ![Example Image](img/./binary_space_partition.png )
-## Convex hull finder
-This generates a messy random pattern, and finds its convex hull.
-
-```lua
-
-local subpattern = require('forma.subpattern')
-local primitives = require('forma.primitives')
-
--- Generate a domain and a random set of points
-local domain = primitives.square(80, 20)
-local points = subpattern.random(domain, 30)
-
--- Find the convex hull
-local c_hull = subpattern.convex_hull(points)
-subpattern.print_patterns(domain,{c_hull, points}, {'x', 'o'})
-```
-### Output
-![Example Image](img/./convex_hull.png )
 ## Voronoi tessellation
 
 ```lua
 local cell       = require('forma.cell')
 local primitives = require('forma.primitives')
-local subpattern = require('forma.subpattern')
 
 -- Generate a random pattern in a specified domain
 local sq = primitives.square(80,20)
-local rn = subpattern.random(sq, 10)
+local rn = sq:sample(10)
 
 -- Compute the corresponding voronoi tesselation
 local measure  = cell.chebyshev
-local segments = subpattern.voronoi(rn, sq, measure)
+local segments = rn:voronoi(sq, measure)
 
-subpattern.print_patterns(sq, segments)
+-- Print the tesselation
+segments:print()
 ```
 ### Output
 ![Example Image](img/./voronoi.png )
+## Convex hull finder
+This generates a messy random pattern, and finds its convex hull.
+
+```lua
+
+local primitives   = require('forma.primitives')
+local multipattern = require('forma.multipattern')
+
+-- Generate a domain and a random set of points
+local domain = primitives.square(80, 20)
+local points = domain:sample(30)
+
+-- Find the convex hull
+local c_hull = points:convex_hull()
+multipattern.new({domain, c_hull, points}):print({' ', 'x', 'o'})
+```
+### Output
+![Example Image](img/./convex_hull.png )
 ## Perlin noise sampling
 Here we sample a square domain pattern according to perlin noise,
 generating three new patterns consisting of the noise thresholded at
@@ -72,16 +71,15 @@ values of 0, 0.5 and 0.7.
 
 ```lua
 
-local subpattern = require('forma.subpattern')
 local primitives = require('forma.primitives')
 
 local domain = primitives.square(80,20)
 local frequency, depth = 0.2, 1
 local thresholds = {0, 0.5, 0.7}
-local noise  = subpattern.perlin(domain, frequency, depth, thresholds)
+local noise  = domain:perlin(frequency, depth, thresholds)
 
 -- Print resulting pattern segments
-subpattern.print_patterns(domain, noise, {'.', '+', 'o'})
+noise:print({'.', '+', 'o'}, domain)
 ```
 ### Output
 ![Example Image](img/./perlin.png )
@@ -91,32 +89,55 @@ rectangle of active cells within it.
 
 ```lua
 
-local subpattern = require('forma.subpattern')
 local primitives = require('forma.primitives')
+local multipattern = require('forma.multipattern')
 
 -- Generate a domain and a messy 'blocking' pattern
 local domain = primitives.square(80, 20)
-local blocks = subpattern.random(domain, 80)
+local blocks = domain:sample(80)
 
 -- Find the largest contiguous 'unblocked' rectangle in the base pattern
-local mxrect = subpattern.maxrectangle(domain - blocks)
-subpattern.print_patterns(domain,{blocks, mxrect}, {'o','#'})
+local mxrect = (domain-blocks):max_rectangle()
+
+-- Print it nicely as a multipattern
+multipattern.new({blocks, mxrect}):print({'o','#'}, domain)
 ```
 ### Output
 ![Example Image](img/./maxrectangle.png )
+## Raycasting
+This generates a messy random blocking pattern, selects a random point
+within it, and casts rays from that point to identify a 'visible' area.
+
+```lua
+
+local primitives   = require('forma.primitives')
+local raycasting   = require("forma.raycasting")
+local multipattern = require("forma.multipattern")
+
+-- Generate a domain and a messy 'blocking' pattern
+local domain = primitives.square(80, 20)
+local blocks = domain:sample(100)
+domain = domain - blocks
+
+-- Cast rays in all direction from a random point in the domain
+local traced = raycasting.cast_360(domain:rcell(), domain, 10)
+multipattern.new({blocks, traced}):print({'#', '+'}, domain)
+```
+### Output
+![Example Image](img/./raycasting.png )
 ## Circle primitives
 
 ```lua
-local cell       = require('forma.cell')
-local pattern    = require('forma.pattern')
-local primitives = require('forma.primitives')
-local subpattern = require('forma.subpattern')
+local cell         = require('forma.cell')
+local pattern      = require('forma.pattern')
+local primitives   = require('forma.primitives')
+local multipattern = require('forma.multipattern')
 
 local max_radius = 4
 
 -- Setup domain and some random seeds
 local domain = primitives.square(80,20)
-local seeds  = subpattern.poisson_disc(domain, cell.euclidean, 2*max_radius)
+local seeds  = domain:sample_poisson(cell.euclidean, 2*max_radius)
 local shapes = pattern.new()
 
 -- Randomly generate some circles in the domain
@@ -125,8 +146,7 @@ for seed in seeds:cells() do
     shapes = shapes + circle:translate(seed.x, seed.y)
 end
 
-subpattern.print_patterns(domain, {shapes}, {'o'})
-
+multipattern.new({shapes}):print({'o'}, domain)
 
 ```
 ### Output
@@ -136,15 +156,15 @@ Demonstration of classic cellular-automata cave generation (4-5 rule).
 
 ```lua
 local primitives    = require('forma.primitives')
-local subpattern    = require('forma.subpattern')
 local automata      = require('forma.automata')
 local neighbourhood = require('forma.neighbourhood')
+local multipattern  = require('forma.multipattern')
 
 -- Domain for CA
 local sq = primitives.square(80,20)
 
 -- CA initial condition: sample at random from the domain
-local ca = subpattern.random(sq, 800)
+local ca = sq:sample(800)
 
 -- Moore neighbourhood 4-5 rule
 local moore = automata.rule(neighbourhood.moore(), "B5678/S45678")
@@ -155,13 +175,13 @@ while converged == false and ite < 1000 do
 end
 
 -- Print to stdout
-subpattern.print_patterns(sq, {ca}, {'#'})
+multipattern.new({ca}):print({'#'}, sq)
 ```
 ### Output
 ![Example Image](img/./cellular_automata.png )
 ## Sampling methods
 Demonstrations of various methods for sampling from a pattern.
-1. `pattern.random` generates white noise, it's fast and irreguarly distributed.
+1. `pattern.sample` generates white noise, it's fast and irreguarly distributed.
 2. Lloyd's algorithm when a specific number of uniform samples are desired.
 3. Mitchell's algorithm is a good (fast) approximation of (2).
 3. Poisson-disc when a minimum separation between samples is the only requirement.
@@ -169,20 +189,20 @@ Demonstrations of various methods for sampling from a pattern.
 ```lua
 
 local cell          = require('forma.cell')
-local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
+local multipattern  = require('forma.multipattern')
 
 -- Domain and seed
 local measure = cell.chebyshev
 local domain   = primitives.square(80,20)
 
 -- Random samples, uncomment these turn by turn to see the differences
-local random  = subpattern.poisson_disc(domain, measure, 4)
---local random  = subpattern.mitchell_sample(domain, measure, 100, 100)
---local random   = subpattern.random(domain, 40)
---local _, random = subpattern.voronoi_relax(random, domain, measure)
+local random  = domain:sample_poisson(measure, 4)
+--local random  = domain:sample_mitchell(measure, 100, 100)
+--local random   = domain:sample(40)
+--local _, random = domain:voronoi_relax(random, domain, measure)
 
-subpattern.print_patterns(domain, {random}, {'#'})
+multipattern.new({random}):print({'#'}, domain)
 ```
 ### Output
 ![Example Image](img/./sampling.png )
@@ -195,15 +215,15 @@ at 1 and taking the interior hull.
 ```lua
 
 local cell          = require('forma.cell')
-local subpattern    = require('forma.subpattern')
 local primitives    = require('forma.primitives')
+local multipattern  = require('forma.multipattern')
 
 -- Distance measure
 local measure = cell.chebyshev
 
 -- Domain and list of seed cells
 local sq = primitives.square(80,20)
-local rn = subpattern.random(sq, 20):cell_list()
+local rn = sq:sample(20):cell_list()
 
 -- Worley noise mask
 local mask = function(tcell)
@@ -216,9 +236,9 @@ local mask = function(tcell)
     return F2 - F1  > 1
 end
 
--- Compute the thresholded pattern and print its interior_hull
-local noise = subpattern.mask(sq, mask)
-subpattern.print_patterns(sq, {noise:interior_hull()}, {'#'})
+-- Compute the thresholded pattern and print its interior hull
+local noise = sq:filter(mask)
+multipattern.new({noise:interior_hull()}):print({'#'}, sq)
 
 ```
 ### Output
@@ -232,12 +252,11 @@ generates an interesting 'corridor' like pattern.
 
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
-local subpattern    = require('forma.subpattern')
 local neighbourhood = require('forma.neighbourhood')
 
 -- Generate a domain, and an initial state ca with one random seed cell
 local domain = primitives.square(80,20)
-local ca = subpattern.random(domain, 1)
+local ca = domain:sample(1)
 
 -- Complicated ruleset, try leaving out or adding more rules
 local moore = automata.rule(neighbourhood.moore(),      "B12/S012345678")
@@ -250,9 +269,10 @@ repeat
     ca, converged = automata.async_iterate(ca, domain, ruleset)
 until converged
 
+-- Print corridors to screen using box-building characters
 local nbh = neighbourhood.von_neumann()
-local segments = subpattern.neighbourhood_categories(ca, nbh)
-subpattern.print_patterns(domain, segments, nbh:category_label())
+ca:neighbourhood_categories(nbh)
+  :print(nbh:category_label(), domain)
 ```
 ### Output
 ![Example Image](img/./corridors.png )
@@ -264,8 +284,8 @@ generation and then computes the contiguous sub-patterns and prints them.
 
 -- Load forma modules, lazy init is also available, i.e
 -- require('forma')
+local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
-local subpattern    = require('forma.subpattern')
 local automata      = require('forma.automata')
 local neighbourhood = require('forma.neighbourhood')
 
@@ -273,7 +293,7 @@ local neighbourhood = require('forma.neighbourhood')
 local domain = primitives.square(80,20)
 
 -- CA initial condition: 800-point random sample of the domain
-local ca = subpattern.random(domain, 800)
+local ca = pattern.sample(domain, 800)
 
 -- Moore (8-cell) neighbourhood 4-5 rule
 local moore = automata.rule(neighbourhood.moore(), "B5678/S45678")
@@ -285,20 +305,20 @@ while converged == false and ite < 1000 do
     ite = ite+1
 end
 
--- Access a subpattern's cell coordinates for external use
+-- Access a pattern's cell coordinates for external use
 for icell in ca:cells() do
     -- local foo = bar(icell)
     -- or
     -- local foo = bar(icell.x, icell.y)
 end
 
--- Find all 4-contiguous connected_components of the CA pattern
+-- Find all 4-contiguous connected components of the CA pattern
 -- Uses the von-neumann neighbourhood to determine 'connectedness'
 -- but any custom neighbourhood can be used)
-local connected_components = subpattern.connected_components(ca, neighbourhood.von_neumann())
+local connected_components = ca:connected_components(neighbourhood.von_neumann())
 
 -- Print a representation to io.output
-subpattern.print_patterns(domain, connected_components)
+connected_components:print(nil, domain)
 
 ```
 ### Output
@@ -312,7 +332,6 @@ use also of symmetrisation methods to generate a final, symmetric pattern.
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
-local subpattern    = require('forma.subpattern')
 local neighbourhood = require('forma.neighbourhood')
 
 -- Domain for CA to operate in
@@ -339,8 +358,8 @@ symmetrised_pattern = symmetrised_pattern:hreflect():hreflect()
 -- Categorise the pattern according to possible vN neighbours and print to screen
 -- This turns the basic pattern into standard 'box-drawing' characters
 local vn = neighbourhood.von_neumann()
-local segments = subpattern.neighbourhood_categories(symmetrised_pattern, vn)
-subpattern.print_patterns(symmetrised_pattern, segments, vn:category_label())
+symmetrised_pattern:neighbourhood_categories(vn)
+                   :print(vn:category_label())
 ```
 ### Output
 ![Example Image](img/./async_automata.png )
