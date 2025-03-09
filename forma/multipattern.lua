@@ -9,7 +9,20 @@ local multipattern = {}
 
 -- Multipattern indexing
 -- For enabling syntax sugar multipattern:method
-multipattern.__index = multipattern
+-- This retains the ability to index by number.
+multipattern.__index = function(mp, key)
+    if type(key) == "number" then
+        return mp.subpatterns[key]
+    else
+        return multipattern[key]
+    end
+end
+
+--- Multipattern length.
+-- Returns the number of subpatterns in the multipattern.
+multipattern.__len = function(mp)
+    return mp:n_subpatterns()
+end
 
 
 --- Create a new multipattern from a list of patterns.

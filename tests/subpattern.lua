@@ -86,7 +86,7 @@ function TestSubPatterns:testPerlin()
     local test_domain = primitives.square(80, 20)
     local frequency, depth = 0.2, 1
     local thresholds = {0, 0.5, 0.7, 1}
-    local noise  = subpattern.perlin(test_domain, frequency, depth, thresholds).subpatterns
+    local noise  = subpattern.perlin(test_domain, frequency, depth, thresholds)
     lu.assertEquals(test_domain, noise[1]) -- Lowest threshold is zero, should be identical to domain
     lu.assertEquals(noise[4]:size(), 0)    -- Lowest threshold is one, should be an empty pattern
 
