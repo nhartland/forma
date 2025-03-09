@@ -11,7 +11,7 @@ TestSubPatterns = {}
 function TestSubPatterns:setUp()
     -- Test patterns for Voronoi tesselation and random sampling tests
     self.square = primitives.square(10)
-    self.seeds = pattern.random(self.square, 10)
+    self.seeds = pattern.sample(self.square, 10)
 end
 
 --  Filter subpattern  ---------------------------------------------------------------
@@ -107,7 +107,7 @@ function TestSubPatterns:testPoissonDisk()
     local r = 3
     local measure  = cell.chebyshev
     local domain = primitives.square(10)
-    local sample = pattern.random_poisson(domain, measure, r)
+    local sample = pattern.sample_poisson(domain, measure, r)
     -- In a poisson disc sample, all sample points should be at least `r` from each other
     local cell_list = sample:cell_list()
     for i = 1, #cell_list, 1 do
@@ -126,7 +126,7 @@ function TestSubPatterns:testMitchellSampling()
     -- Approximate Poisson-disc by Mitchell's best-candidate algorithm
     local measure = cell.chebyshev
     local domain  = primitives.square(10)
-    local sample  = pattern.random_mitchell(domain, measure, 10, 10)
+    local sample  = pattern.sample_mitchell(domain, measure, 10, 10)
     -- Check that domain is unmodified
     lu.assertEquals(domain:size(), 100)
     -- Check that the sample doesn't fall out of the domain
@@ -137,11 +137,11 @@ end
 function TestSubPatterns:testMaxRectangle()
     -- Basic test of the 'maximum rectangular area' subpattern finder.
     -- When run on a square pattern, it should return the input pattern.
-    local rect = pattern.maxrectangle(self.square)
+    local rect = pattern.max_rectangle(self.square)
     lu.assertEquals(rect, self.square)
     -- Adding a single extra point far from the square pattern should not change anything
     local extra_point = self.square + pattern.new():insert(1000,1000)
-    local rect2 = pattern.maxrectangle(extra_point)
+    local rect2 = pattern.max_rectangle(extra_point)
     lu.assertEquals(rect2, self.square)
 end
 
@@ -165,7 +165,7 @@ end
 -- Categorisation subpatterns --------------------------------------------------------
 function TestSubPatterns:testCategories()
     -- Compute a random sample of the square 10x10 pattern with 40 samples
-    local sample = pattern.random(self.square, 40)
+    local sample = pattern.sample(self.square, 40)
     -- Loop through a couple of example neighbourhoods
     local measures = {neighbourhood.moore(), neighbourhood.von_neumann()}
     for _, measure in ipairs(measures) do

@@ -114,12 +114,12 @@ function pattern.new(prototype)
 
     if prototype ~= nil then
         assert(type(prototype) == 'table',
-            'pattern.new requires either no arguments or a N*N matrix as a prototype')
+            'pattern.new requires either no arguments or a N*M matrix as a prototype')
         local N, M = #prototype, nil
         for i = 1, N, 1 do
             local row = prototype[i]
             assert(type(row) == 'table',
-                'pattern.new requires either no arguments or a N*N matrix as a prototype')
+                'pattern.new requires either no arguments or a N*M matrix as a prototype')
             if i == 1 then
                 M = #row
             else
@@ -382,7 +382,7 @@ function pattern.cells(ip)
 end
 
 --- Iterator over active cell coordinates in the pattern.
--- Simmilar to `pattern.cells` but provides an iterator that runs over (x,y)
+-- Similar to `pattern.cells` but provides an iterator that runs over (x,y)
 -- coordinates instead of `cell` instances. Normally faster than
 -- `pattern.cells` as no tables are created here.
 -- @param ip source pattern for active cell iterator
@@ -405,7 +405,7 @@ function pattern.cell_coordinates(ip)
 end
 
 --- Shuffled iterator over active cells in the pattern.
--- Simmilar to `pattern.cells` but provides an iterator that returns cells in a
+-- Similar to `pattern.cells` but provides an iterator that returns cells in a
 -- randomised order, according to a provided random number generator. See
 -- `pattern.cells` for usage.
 -- @param ip source pattern for active cell iterator
@@ -433,7 +433,7 @@ function pattern.shuffled_cells(ip, rng)
 end
 
 --- Shuffled iterator over active cell coordinates in the pattern.
--- Simmilar to `pattern.cell_coordinates` but returns cell (x,y) coordinates in
+-- Similar to `pattern.cell_coordinates` but returns cell (x,y) coordinates in
 -- a randomised order according to a provided random number generator. See
 -- `pattern.cell_coordinates` for usage.
 -- @param ip source pattern for active cell
@@ -554,7 +554,7 @@ end
 -- These methods select certain cells from a pattern.
 -- @section cellselectors
 
---- Pattern random cell method.
+--- pattern.sample cell method.
 -- Returns a cell at random from the pattern.
 -- @param ip pattern for random cell retrieval
 -- @param rng (optional) A random number generating table, following the signature of math.random.
@@ -739,12 +739,12 @@ end
 -- @param ncells the number of desired cells in the sample
 -- @param rng (optional) a random number generator, following the signature of math.random.
 -- @return a pattern of `ncells` cells sampled randomly from `domain`
-function pattern.random(ip, ncells, rng)
-    assert(getmetatable(ip) == pattern, "pattern.random requires a pattern as the first argument")
-    assert(type(ncells) == 'number', "pattern.random requires an integer number of cells as the second argument")
-    assert(math.floor(ncells) == ncells, "pattern.random requires an integer number of cells as the second argument")
-    assert(ncells > 0, "pattern.random requires at least one sample to be requested")
-    assert(ncells <= ip:size(), "pattern.random requires a domain larger than the number of requested samples")
+function pattern.sample(ip, ncells, rng)
+    assert(getmetatable(ip) == pattern, "pattern.sample requires a pattern as the first argument")
+    assert(type(ncells) == 'number', "pattern.sample requires an integer number of cells as the second argument")
+    assert(math.floor(ncells) == ncells, "pattern.sample requires an integer number of cells as the second argument")
+    assert(ncells > 0, "pattern.sample requires at least one sample to be requested")
+    assert(ncells <= ip:size(), "pattern.sample requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
     local p = pattern.new()
     local next_coords = ip:shuffled_coordinates(rng)
@@ -758,7 +758,7 @@ end
 --- Poisson-disc random subpattern.
 -- Sample a domain according to the Poisson-disc procedure. For a given
 -- distance measure `distance`, this generates samples that are never closer
--- together than a specified radius.  While much slower than `pattern.random`,
+-- together than a specified radius.  While much slower than `pattern.sample`,
 -- it provides a more uniform distribution of points in the domain (similar to
 -- that of `pattern.voronoi_relax`).
 -- @param ip domain pattern to sample from
@@ -766,10 +766,10 @@ end
 -- @param radius the minimum separation in `distance` between two sample points.
 -- @param rng (optional) a random number generator, following the signature of math.random.
 -- @return a Poisson-disc sample of `domain`
-function pattern.random_poisson(ip, distance, radius, rng)
-    assert(getmetatable(ip) == pattern, "pattern.poisson_disc requires a pattern as the first argument")
-    assert(type(distance) == 'function', "pattern.poisson_disc requires a distance measure as an argument")
-    assert(type(radius) == "number", "pattern.poisson_disc requires a number as the target radius")
+function pattern.sample_poisson(ip, distance, radius, rng)
+    assert(getmetatable(ip) == pattern, "pattern.sample_poisson requires a pattern as the first argument")
+    assert(type(distance) == 'function', "pattern.sample_poisson requires a distance measure as an argument")
+    assert(type(radius) == "number", "pattern.sample_poisson requires a number as the target radius")
     if rng == nil then rng = math.random end
     local sample = pattern.new()
     local domain = ip:clone()
@@ -793,18 +793,18 @@ end
 -- @param k the number of candidates samples at each iteration
 -- @param rng (optional) a random number generator, following the signature of math.random.
 -- @return an approximate Poisson-disc sample of `domain`
-function pattern.random_mitchell(ip, distance, n, k, rng)
+function pattern.sample_mitchell(ip, distance, n, k, rng)
     -- Bridson's Poisson Disk would be better, but it's hard to implement as it
     -- needs a rasterised form of an isosurface for a general distance matric.
     assert(getmetatable(ip) == pattern,
-        "pattern.mitchell_sample requires a pattern as the first argument")
+        "pattern.sample_mitchell requires a pattern as the first argument")
     assert(ip:size() >= n,
-        "pattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
-    assert(type(distance) == 'function', "pattern.mitchell_sample requires a distance measure as an argument")
-    assert(type(n) == "number", "pattern.mitchell_sample requires a target number of samples")
-    assert(type(k) == "number", "pattern.mitchell_sample requires a target number of candidate tries")
+        "pattern.sample_mitchell requires a pattern with at least as many points as in the requested sample")
+    assert(type(distance) == 'function', "pattern.sample_mitchell requires a distance measure as an argument")
+    assert(type(n) == "number", "pattern.sample_mitchell requires a target number of samples")
+    assert(type(k) == "number", "pattern.sample_mitchell requires a target number of candidate tries")
     if rng == nil then rng = math.random end
-    local seed = ip:rcell()
+    local seed = ip:rcell(rng)
     local sample = pattern.new():insert(seed.x, seed.y)
     for _ = 2, n, 1 do
         local min_distance = 0
@@ -847,25 +847,25 @@ local function floodfill(x, y, nbh, domain, retpat)
     end
 end
 
---- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
+--- Returns the contiguous sub-pattern of ip that surrounds the cell icell
 -- @param ip pattern upon which the flood fill is to be performed.
--- @param ipt a `cell` specifying the origin of the flood fill.
+-- @param icell a `cell` specifying the origin of the flood fill.
 -- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore).
 -- @return a forma.pattern consisting of the contiguous subpattern about `ipt`.
-function pattern.floodfill(ip, ipt, nbh)
+function pattern.floodfill(ip, icell, nbh)
     assert(getmetatable(ip) == pattern, "pattern.floodfill requires a pattern as the first argument")
-    assert(ipt, "pattern.floodfill requires a cell as the second argument")
+    assert(icell, "pattern.floodfill requires a cell as the second argument")
     if nbh == nil then nbh = neighbourhood.moore() end
     local retpat = pattern.new()
-    floodfill(ipt.x, ipt.y, nbh, ip, retpat)
+    floodfill(icell.x, icell.y, nbh, ip, retpat)
     return retpat
 end
 
 --- Find the maximal contiguous rectangular area within a pattern.
 -- @param ip the input pattern.
 -- @return The subpattern of `ip` consisting of its largest contiguous rectangular area.
-function pattern.maxrectangle(ip)
-    assert(getmetatable(ip) == pattern, "pattern.maxrectangle requires a pattern as an argument")
+function pattern.max_rectangle(ip)
+    assert(getmetatable(ip) == pattern, "pattern.max_rectangle requires a pattern as an argument")
     local primitives = require('forma.primitives')
     local bsp = require('forma.utils.bsp')
     local min, max = bsp.max_rectangle_coordinates(ip)
@@ -1041,7 +1041,7 @@ end
 
 --- Generate a pattern consisting of cells on the interior_hull of a provided pattern.
 -- This returns a new pattern consisting of all active cells in an input pattern
--- that *neighbour* inactive cells. It is therefore very simmilar to `pattern.exterior_hull` but
+-- that *neighbour* inactive cells. It is therefore very similar to `pattern.exterior_hull` but
 -- returns a pattern which intersects with the input pattern. This is therefore
 -- useful when *shrinking* a pattern by removing a cell from its surface, or
 -- determining a *border* of a pattern which consists of cells that are present
@@ -1086,13 +1086,14 @@ end
 -- solutions. Solutions are returned 'first-come-first-served'.
 -- @param `a` the pattern to be packed in `b`.
 -- @param `b` the domain which we are searching for packing solutions.
+-- @param rng (optional) a random number generator, following the signature of math.random.
 -- @return a cell in `b` where `a` can be placed, `nil` if impossible.
-function pattern.packtile(a, b)
-    assert(getmetatable(a) == pattern, "pattern.packtile requires a pattern as a first argument")
-    assert(getmetatable(b) == pattern, "pattern.packtile requires a pattern as a second argument")
-    assert(a:size() > 0, "pattern.packtile requires a non-empty pattern as a first argument")
+function pattern.find_packing_position(a, b, rng)
+    assert(getmetatable(a) == pattern, "pattern.find_packing_position requires a pattern as a first argument")
+    assert(getmetatable(b) == pattern, "pattern.find_packing_position requires a pattern as a second argument")
+    assert(a:size() > 0, "pattern.find_packing_position requires a non-empty pattern as a first argument")
     -- cell to fix coordinate systems
-    local hinge = a:rcell()
+    local hinge = a:rcell(rng)
     -- Loop over possible positions in b
     for bcell in b:cells() do
         local coordshift = bcell - hinge -- Get coordinate transformation
@@ -1111,15 +1112,15 @@ function pattern.packtile(a, b)
     return nil
 end
 
---- Center-weighted version of pattern.packtile.
+--- Center-weighted version of pattern.find_packing_position.
 -- Tries to fit pattern `a` as close as possible to pattern `b`'s centre.
 -- @param a the pattern to be packed into pattern `b`.
 -- @param b the domain which we are searching for packing solutions
 -- @return a cell in `b` where `a` can be placed, nil if no solution found.
-function pattern.packtile_centre(a, b)
-    assert(getmetatable(a) == pattern, "pattern.packtile_centre requires a pattern as a first argument")
-    assert(getmetatable(b) == pattern, "pattern.packtile_centre requires a pattern as a second argument")
-    assert(a:size() > 0, "pattern.packtile_centre requires a non-empty pattern as a first argument")
+function pattern.find_central_packing_position(a, b)
+    assert(getmetatable(a) == pattern, "pattern.find_central_packing_position requires a pattern as a first argument")
+    assert(getmetatable(b) == pattern, "pattern.find_central_packing_position requires a pattern as a second argument")
+    assert(a:size() > 0, "pattern.find_central_packing_position requires a non-empty pattern as a first argument")
     if b:size() == 0 then return nil end
     -- cell to fix coordinate systems
     local hinge    = a:medoid()
@@ -1162,13 +1163,14 @@ function pattern.connected_components(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.connected_components requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.connected_components requires a neighbourhood as the second argument")
     local wp = pattern.clone(ip)
-    local segs = {}
+    local mp = multipattern.new()
     while pattern.size(wp) > 0 do
-        local rancell = pattern.rcell(wp)
-        table.insert(segs, pattern.floodfill(wp, rancell, nbh))
-        wp = wp - segs[#segs]
+        local seed_cell = wp:cells()()
+        local segment = pattern.floodfill(wp, seed_cell, nbh)
+        wp = wp - segment
+        mp:insert(segment)
     end
-    return multipattern.new(segs)
+    return mp
 end
 
 --- Returns a multipattern of a parent pattern's interior holes.
@@ -1216,7 +1218,7 @@ function pattern.bsp(ip, th_volume)
     local available = ip
     local mp = multipattern.new()
     local bsp = require('forma.utils.bsp')
-    while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
+    while pattern.size(available) > 0 do -- Keep finding max rectangles and BSP them
         local min, max = bsp.max_rectangle_coordinates(available)
         bsp.split(min, max, th_volume, mp)
         -- Remove split patterns from available space
