@@ -13,7 +13,7 @@
 -- manipulator which translates the coordinates of an entire pattern, manipulators
 -- that `enlarge` a pattern by a scale factor and modifiers than can `rotate`
 -- or reflect patterns in the x (`hreflect`) or y (`vreflect`) axes.
--- Particuarly useful are manipulators which generate new patterns such as the
+-- Particularly useful are manipulators which generate new patterns such as the
 -- `exterior_hull` or `interior_hull` of other patterns. These manipulators can
 -- be used with custom definitions of a cell's `neighbourhood`.
 --
