@@ -27,12 +27,12 @@ end
 function TestMultipattern:testNew()
     -- Create a multipattern from a list of patterns
     local mp = multipattern.new({self.p1, self.p2})
-    lu.assertEquals(#mp.subpatterns, 2)
-    lu.assertEquals(mp.subpatterns[1], self.p1)
-    lu.assertEquals(mp.subpatterns[2], self.p2)
+    lu.assertEquals(#mp.components, 2)
+    lu.assertEquals(mp.components[1], self.p1)
+    lu.assertEquals(mp.components[2], self.p2)
     -- Test indexing
-    lu.assertEquals(mp[1], mp.subpatterns[1])
-    lu.assertEquals(mp[2], mp.subpatterns[2])
+    lu.assertEquals(mp[1], mp.components[1])
+    lu.assertEquals(mp[2], mp.components[2])
 end
 
 function TestMultipattern:testMap()
@@ -50,7 +50,7 @@ function TestMultipattern:testFilter()
     -- Suppose we only keep patterns with size == 3
     local mp = multipattern.new({self.p1, self.p2, self.p3})
     local filtered = mp:filter(function(pat) return pat:size() == 3 end)
-    lu.assertEquals(#filtered.subpatterns, 1)  -- only p3 has size=3
+    lu.assertEquals(#filtered.components, 1)  -- only p3 has size=3
     lu.assertEquals(filtered[1], self.p3)
 end
 

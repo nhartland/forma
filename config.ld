@@ -13,7 +13,6 @@ file = {
         './forma/cell.lua',
         './forma/pattern.lua',
         './forma/primitives.lua',
-        './forma/subpattern.lua',
         './forma/automata.lua',
         './forma/multipattern.lua',
         './forma/neighbourhood.lua',

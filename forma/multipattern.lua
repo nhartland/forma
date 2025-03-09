@@ -12,25 +12,25 @@ local multipattern = {}
 -- This retains the ability to index by number.
 multipattern.__index = function(mp, key)
     if type(key) == "number" then
-        return mp.subpatterns[key]
+        return mp.components[key]
     else
         return multipattern[key]
     end
 end
 
 --- Multipattern length.
--- Returns the number of subpatterns in the multipattern.
+-- Returns the number of components in the multipattern.
 multipattern.__len = function(mp)
-    return mp:n_subpatterns()
+    return mp:n_components()
 end
 
 
 --- Create a new multipattern from a list of patterns.
--- @param subpatterns an array of `pattern` objects.
+-- @param components an array of `pattern` objects.
 -- @return a new multipattern containing those patterns.
-function multipattern.new(subpatterns)
+function multipattern.new(components)
     local mp = {
-        subpatterns = subpatterns or {}
+        components = components or {}
     }
 
     mp = setmetatable(mp, multipattern)
@@ -41,12 +41,12 @@ end
 -- @param mp multipattern to clone.
 -- @return the cloned multipattern.
 function multipattern.clone(mp)
-    local subpatterns = {}
-    for i, p in ipairs(mp.subpatterns) do
-        subpatterns[i] = p:clone()
+    local components = {}
+    for i, p in ipairs(mp.components) do
+        components[i] = p:clone()
     end
 
-    return multipattern.new(subpatterns)
+    return multipattern.new(components)
 end
 
 --- Insert a pattern into the multipattern.
@@ -55,15 +55,15 @@ end
 -- @return the new multipattern.
 function multipattern.insert(mp, ip)
     assert(getmetatable(mp) == multipattern, "multipattern.insert requires a multipattern as the first argument")
-    table.insert(mp.subpatterns, ip)
+    table.insert(mp.components, ip)
 end
 
---- Count the number of subpatterns in a multipattern.
+--- Count the number of components in a multipattern.
 -- @param mp the multipattern to count.
--- @return the number of subpatterns.
-function multipattern.n_subpatterns(mp)
-    assert(getmetatable(mp) == multipattern, "multipattern.n_subpatterns requires a multipattern as the first argument")
-    return #mp.subpatterns
+-- @return the number of components.
+function multipattern.n_components(mp)
+    assert(getmetatable(mp) == multipattern, "multipattern.n_components requires a multipattern as the first argument")
+    return #mp.components
 end
 
 --- Map a function over all patterns in this multipattern.
@@ -83,11 +83,11 @@ function multipattern.map(mp, fn)
     -- Applies `fn` to each pattern in this multipattern,
     -- returning a new multipattern of results.
     -- fn is a function(pat, index) -> (some pattern)
-    local new_subpatterns = {}
-    for i, pat in ipairs(mp.subpatterns) do
-        new_subpatterns[i] = fn(pat, i)
+    local new_components = {}
+    for i, pat in ipairs(mp.components) do
+        new_components[i] = fn(pat, i)
     end
-    return multipattern.new(new_subpatterns)
+    return multipattern.new(new_components)
 end
 
 --- Filter out sub-patterns according to a predicate.
@@ -103,13 +103,13 @@ end
 function multipattern.filter(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.filter requires a multipattern as an argument")
     -- Keeps only those patterns for which fn(pat) == true.
-    local new_subpatterns = {}
-    for _, pat in ipairs(mp.subpatterns) do
+    local new_components = {}
+    for _, pat in ipairs(mp.components) do
         if fn(pat) then
-            new_subpatterns[#new_subpatterns+1] = pat
+            new_components[#new_components+1] = pat
         end
     end
-    return multipattern.new(new_subpatterns)
+    return multipattern.new(new_components)
 end
 
 --- Apply a named method to each pattern, returning a new multipattern.
@@ -127,13 +127,13 @@ end
 -- @return a new multipattern of the method's results.
 function multipattern.apply(mp, method, ...)
     assert(getmetatable(mp) == multipattern, "multipattern.apply requires a multipattern as an argument")
-    local new_subpatterns = {}
-    for i, pat in ipairs(mp.subpatterns) do
+    local new_components = {}
+    for i, pat in ipairs(mp.components) do
         local m = pat[method]
         assert(type(m) == "function", "No method named '"..tostring(method).."' on pattern")
-        new_subpatterns[i] = m(pat, ...)
+        new_components[i] = m(pat, ...)
     end
-    return multipattern.new(new_subpatterns)
+    return multipattern.new(new_components)
 end
 
 --- Union all sub-patterns into a single pattern.
@@ -149,7 +149,7 @@ end
 function multipattern.union_all(mp)
     -- Require here to avoid circular dependency.
     local pattern = require('forma.pattern')
-    return pattern.union(mp.subpatterns)
+    return pattern.union(mp.components)
 end
 
 --- Utilities
@@ -165,24 +165,24 @@ function multipattern.print(mp, chars, domain)
     assert(getmetatable(mp) == multipattern, "multipattern.print requires a multipattern as a first argument")
     domain = domain or mp:union_all()
     assert(domain:size() > 0, "multipattern.print: domain must have at least one cell")
-    local n = mp:n_subpatterns()
+    local n = mp:n_components()
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
         local start_char = 47
-        assert(n < (200 - start_char), "multipattern.print: too many subpatterns")
+        assert(n < (200 - start_char), "multipattern.print: too many components")
         chars = {}
         for i = 1, n, 1 do
             table.insert(chars, string.char(i + start_char))
         end
     end
     assert(n == #chars,
-        "multipattern.print: there must be as many character table entries as subpatterns")
+        "multipattern.print: there must be as many character table entries as components")
     -- Print out the segments to a map
     for i = domain.min.y, domain.max.y, 1 do
         local string = ''
         for j = domain.min.x, domain.max.x, 1 do
             local token = ' '
-            for k, v in ipairs(mp.subpatterns) do
+            for k, v in ipairs(mp.components) do
                 if v:has_cell(j, i) then token = chars[k] end
             end
             string = string .. token

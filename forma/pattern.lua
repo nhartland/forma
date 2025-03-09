@@ -912,7 +912,7 @@ function pattern.thin(ip, nbh)
     local current = pattern.clone(ip)
     -- Helper: how many connected components are in this pattern under nbh?
     local function num_components(pat)
-        return pattern.connected_components(pat, nbh):n_subpatterns()
+        return pattern.connected_components(pat, nbh):n_components()
     end
     local changed = true
     while changed do
@@ -1112,7 +1112,7 @@ function pattern.find_packing_position(a, b, rng)
     return nil
 end
 
---- Center-weighted version of pattern.find_packing_position.
+--- Center-weighted version of `pattern.find_packing_position`.
 -- Tries to fit pattern `a` as close as possible to pattern `b`'s centre.
 -- @param a the pattern to be packed into pattern `b`.
 -- @param b the domain which we are searching for packing solutions
@@ -1261,7 +1261,7 @@ end
 -- @param depth (int), sampling depth.
 -- @param thresholds table of sampling thresholds (between 0 and 1).
 -- @param rng (optional) a random number generator, following the signature of math.random.
--- @return a `multipattern`, one subpattern per threshold entry.
+-- @return a `multipattern`, one component per threshold entry.
 function pattern.perlin(ip, freq, depth, thresholds, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(ip) == pattern,
@@ -1349,9 +1349,9 @@ function pattern.voronoi_relax(seeds, domain, measure, max_ite)
     assert(seeds:size() <= domain:size(), "pattern.voronoi_relax: too many seeds for domain")
     local current_seeds = seeds:clone()
     for ite = 1, max_ite, 1 do
-        local tesselation = pattern.voronoi(current_seeds, domain, measure).subpatterns
+        local tesselation = pattern.voronoi(current_seeds, domain, measure)
         local next_seeds  = pattern.new()
-        for iseg = 1, #tesselation, 1 do
+        for iseg = 1, tesselation:n_components(), 1 do
             if tesselation[iseg]:size() > 0 then
                 -- Mostly the centroid should be within the domain
                 -- If not, attempt the medoid. In either case if
@@ -1370,9 +1370,9 @@ function pattern.voronoi_relax(seeds, domain, measure, max_ite)
             end
         end
         if current_seeds == next_seeds then
-            return multipattern.new(tesselation), current_seeds, true  -- converged
+            return tesselation, current_seeds, true  -- converged
         elseif ite == max_ite then
-            return multipattern.new(tesselation), current_seeds, false -- max ite
+            return tesselation, current_seeds, false -- max ite
         end
         current_seeds = next_seeds
     end
