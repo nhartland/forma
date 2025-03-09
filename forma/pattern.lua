@@ -57,7 +57,8 @@ local floor           = math.floor
 
 local cell            = require('forma.cell')
 local neighbourhood   = require('forma.neighbourhood')
-local rutils = require('forma.utils.random')
+local rutils          = require('forma.utils.random')
+local multipattern    = require('forma.multipattern')
 
 -- Pattern indexing
 -- For enabling syntax sugar pattern:method
@@ -268,6 +269,23 @@ function pattern.edit_distance(a, b)
     local common = pattern.intersection(a, b)
     local edit_distance = (a - common):size() + (b - common):size()
     return edit_distance
+end
+
+--- Filter a pattern with a boolean callback.
+-- Generate a subpattern by applying a boolean filter to an input pattern.
+-- @param ip the pattern to be masked.
+-- @param fn a function that takes a `cell` and returns true if the cell passes the filter
+-- @return A pattern consisting only of those cells in `ip` which pass the `fn` argument.
+function pattern.filter(ip, fn)
+    assert(getmetatable(ip) == pattern, "pattern.filter requires a pattern as the first argument")
+    assert(type(fn) == 'function', 'pattern.filter requires a function for the second argument')
+    local np = pattern.new()
+    for icell in ip:cells() do
+        if fn(icell) == true then
+            np:insert(icell.x, icell.y)
+        end
+    end
+    return np
 end
 
 --- Generate a pattern consisting of the overlapping intersection of existing patterns
@@ -711,6 +729,214 @@ function pattern.hreflect(ip)
     return np
 end
 
+--- Random subpatterns
+-- @section random_subpatterns
+
+--- Random subpattern.
+-- For a given domain, returns a pattern sampling randomly from it, generating a random
+-- subset with a fixed fraction of the size of the domain.
+-- @param ip pattern for sampling a random pattern from
+-- @param ncells the number of desired cells in the sample
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return a pattern of `ncells` cells sampled randomly from `domain`
+function pattern.random(ip, ncells, rng)
+    assert(getmetatable(ip) == pattern, "pattern.random requires a pattern as the first argument")
+    assert(type(ncells) == 'number', "pattern.random requires an integer number of cells as the second argument")
+    assert(math.floor(ncells) == ncells, "pattern.random requires an integer number of cells as the second argument")
+    assert(ncells > 0, "pattern.random requires at least one sample to be requested")
+    assert(ncells <= ip:size(), "pattern.random requires a domain larger than the number of requested samples")
+    if rng == nil then rng = math.random end
+    local p = pattern.new()
+    local next_coords = ip:shuffled_coordinates(rng)
+    for _ = 1, ncells, 1 do
+        local x, y = next_coords()
+        p:insert(x, y)
+    end
+    return p
+end
+
+--- Poisson-disc random subpattern.
+-- Sample a domain according to the Poisson-disc procedure. For a given
+-- distance measure `distance`, this generates samples that are never closer
+-- together than a specified radius.  While much slower than `pattern.random`,
+-- it provides a more uniform distribution of points in the domain (similar to
+-- that of `pattern.voronoi_relax`).
+-- @param ip domain pattern to sample from
+-- @param distance a measure  of distance between two cells d(a,b) e.g cell.euclidean
+-- @param radius the minimum separation in `distance` between two sample points.
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return a Poisson-disc sample of `domain`
+function pattern.random_poisson(ip, distance, radius, rng)
+    assert(getmetatable(ip) == pattern, "pattern.poisson_disc requires a pattern as the first argument")
+    assert(type(distance) == 'function', "pattern.poisson_disc requires a distance measure as an argument")
+    assert(type(radius) == "number", "pattern.poisson_disc requires a number as the target radius")
+    if rng == nil then rng = math.random end
+    local sample = pattern.new()
+    local domain = ip:clone()
+    while domain:size() > 0 do
+        local dart = domain:rcell(rng)
+        local mask = function(icell) return distance(icell, dart) >= radius end
+        domain = pattern.filter(domain, mask)
+        sample:insert(dart.x, dart.y)
+    end
+    return sample
+end
+
+--- Mitchell's best candidate sampling.
+-- Generates an approximate Poisson-disc sampling by Mitchell's algorithm.
+-- Picks 'k' sample point attempts at every iteration, and picks the candidate
+-- that maximises the distance to existing samples. Halts when `n` samples are
+-- picked.
+-- @param ip domain pattern to sample from
+-- @param distance a measure of distance between two cells d(a,b) e.g cell.euclidean
+-- @param n the requested number of samples
+-- @param k the number of candidates samples at each iteration
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return an approximate Poisson-disc sample of `domain`
+function pattern.random_mitchell(ip, distance, n, k, rng)
+    -- Bridson's Poisson Disk would be better, but it's hard to implement as it
+    -- needs a rasterised form of an isosurface for a general distance matric.
+    assert(getmetatable(ip) == pattern,
+        "pattern.mitchell_sample requires a pattern as the first argument")
+    assert(ip:size() >= n,
+        "pattern.mitchell_sample requires a pattern with at least as many points as in the requested sample")
+    assert(type(distance) == 'function', "pattern.mitchell_sample requires a distance measure as an argument")
+    assert(type(n) == "number", "pattern.mitchell_sample requires a target number of samples")
+    assert(type(k) == "number", "pattern.mitchell_sample requires a target number of candidate tries")
+    if rng == nil then rng = math.random end
+    local seed = ip:rcell()
+    local sample = pattern.new():insert(seed.x, seed.y)
+    for _ = 2, n, 1 do
+        local min_distance = 0
+        local min_sample   = nil
+
+        -- Generate k samples, keeping the furthest
+        for _ = 1, k, 1 do
+            local jcell = ip:rcell(rng)
+            while sample:has_cell(jcell.x, jcell.y) do
+                jcell = ip:rcell(rng)
+            end
+            local jdistance = math.huge
+            for vcell in sample:cells() do
+                jdistance = math.min(jdistance, distance(jcell, vcell))
+            end
+            if jdistance > min_distance then
+                min_sample   = jcell
+                min_distance = jdistance
+            end
+        end
+        -- Push selected sample
+        sample:insert(min_sample.x, min_sample.y)
+    end
+    return sample
+end
+
+--- Deterministic subpatterns.
+-- Finder methods for specific subpatterns of a pattern.
+--@section deterministic_subpatterns
+
+-- Helper function for pattern.floodfill
+local function floodfill(x, y, nbh, domain, retpat)
+    if domain:has_cell(x, y) and retpat:has_cell(x, y) == false then
+        retpat:insert(x, y)
+        for i = 1, #nbh, 1 do
+            local nx = nbh[i].x + x
+            local ny = nbh[i].y + y
+            floodfill(nx, ny, nbh, domain, retpat)
+        end
+    end
+end
+
+--- Returns the contiguous sub-pattern of ip that surrounts `cell` ipt
+-- @param ip pattern upon which the flood fill is to be performed.
+-- @param ipt a `cell` specifying the origin of the flood fill.
+-- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore).
+-- @return a forma.pattern consisting of the contiguous subpattern about `ipt`.
+function pattern.floodfill(ip, ipt, nbh)
+    assert(getmetatable(ip) == pattern, "pattern.floodfill requires a pattern as the first argument")
+    assert(ipt, "pattern.floodfill requires a cell as the second argument")
+    if nbh == nil then nbh = neighbourhood.moore() end
+    local retpat = pattern.new()
+    floodfill(ipt.x, ipt.y, nbh, ip, retpat)
+    return retpat
+end
+
+--- Find the maximal contiguous rectangular area within a pattern.
+-- @param ip the input pattern.
+-- @return The subpattern of `ip` consisting of its largest contiguous rectangular area.
+function pattern.maxrectangle(ip)
+    assert(getmetatable(ip) == pattern, "pattern.maxrectangle requires a pattern as an argument")
+    local primitives = require('forma.primitives')
+    local bsp = require('forma.utils.bsp')
+    local min, max = bsp.max_rectangle_coordinates(ip)
+    local size = max - min + cell.new(1, 1)
+    return primitives.square(size.x, size.y):translate(min.x, min.y)
+end
+
+--- Compute the convex hull of a pattern.
+-- This computes the points on a pattern's convex hull and connects the points
+-- with line rasters.
+-- @param ip input pattern for generating the convex hull.
+-- @return A `pattern` consisting of the convex hull of `ip`.
+function pattern.convex_hull(ip)
+    assert(getmetatable(ip) == pattern, "pattern.convex_hull requires a pattern as a first argument")
+    assert(ip:size() > 0, "pattern.convex_hull: input pattern must have at least one cell")
+    local convex_hull = require('forma.utils.convex_hull')
+    local primitives = require('forma.primitives')
+    local hull_points = convex_hull.points(ip)
+    local chull = pattern.new()
+    for i = 1, #hull_points - 1, 1 do
+        chull = chull + primitives.line(hull_points[i], hull_points[i + 1])
+    end
+    chull = chull + primitives.line(hull_points[#hull_points], hull_points[1])
+    return chull
+end
+
+--- Naive thinning (skeletonization) of a pattern.
+-- This approach repeatedly identifies "boundary" cells (using `interior_hull`),
+-- then removes them one at a time if that removal does not disconnect the pattern.
+-- Additionally, any cell that has exactly one neighbor (an "endpoint") is not removed,
+-- preserving lines. The process repeats until no further cells can be safely removed.
+--
+-- This method is straightforward but can be slow for large patterns, since
+-- each removal triggers a connectivity check (via pattern.connected_components).
+-- For advanced skeletonization, consider using algorithms like Guo–Hall.
+--
+-- @param ip   the input pattern to be thinned.
+-- @param nbh  (optional) the neighbourhood defining adjacency (default moore).
+-- @return a new pattern representing the thinned shape.
+function pattern.thin(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.thin requires a pattern as a first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.thin requires a neighbourhood as the second argument")
+    local current = pattern.clone(ip)
+    -- Helper: how many connected components are in this pattern under nbh?
+    local function num_components(pat)
+        return pattern.connected_components(pat, nbh):n_subpatterns()
+    end
+    local changed = true
+    while changed do
+        changed = false
+        local comp_count = num_components(current)
+        -- Identify the "boundary" cells. We can use interior_hull here:
+        local boundary = current:interior_hull(nbh)
+        for c in boundary:cells() do
+            -- Count how many active neighbors c has
+            local ncount = pattern.count_neighbors(current, nbh, c.x, c.y)
+            -- Otherwise, try removing it and check if the pattern stays connected
+            if ncount > 1 then
+                local candidate = current - pattern.new():insert(c.x, c.y)
+                if num_components(candidate) == comp_count then
+                    current = candidate
+                    changed = true
+                    break  -- re-check boundary from scratch
+                end
+            end
+        end
+    end
+    return current
+end
+
 --- Morphological transformations.
 -- Morphological transformations of patterns.
 --@section morphology
@@ -921,6 +1147,236 @@ function pattern.packtile_centre(a, b)
     end
     return nil
 end
+
+--- Multipatterns
+-- @section multipatterns
+
+--- Generate a multipattern of a pattern's connected components.
+-- This performs a series of flood-fill operations until all
+-- pattern cells belong to a connected component.
+-- @param ip pattern for which the connected_components are to be extracted.
+-- @param nbh defines which neighbourhood to scan in while flood-filling (default 8/moore).
+-- @return A multipattern consisting of contiguous sub-patterns of ip.
+function pattern.connected_components(ip, nbh)
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(ip) == pattern, "pattern.connected_components requires a pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.connected_components requires a neighbourhood as the second argument")
+    local wp = pattern.clone(ip)
+    local segs = {}
+    while pattern.size(wp) > 0 do
+        local rancell = pattern.rcell(wp)
+        table.insert(segs, pattern.floodfill(wp, rancell, nbh))
+        wp = wp - segs[#segs]
+    end
+    return multipattern.new(segs)
+end
+
+--- Returns a multipattern of a parent pattern's interior holes.
+-- Interior holes are the inactive areas of a pattern which are completely
+-- surrounded by active areas.
+-- @param ip pattern for which the holes should be computed.
+-- @param nbh defines which directions to scan in while flood-filling (default 4/vn).
+-- @return A multipattern comprising the holes of ip.
+function pattern.interior_holes(ip, nbh)
+    nbh = nbh or neighbourhood.von_neumann()
+    assert(getmetatable(ip) == pattern, "pattern.interior_holes requires a pattern as the first argument")
+    assert(ip:size() > 0, "pattern.interior_holes requires a non-empty pattern as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "pattern.interior_holes requires a neighbourhood as the second argument")
+    local primitives    = require('forma.primitives')
+    local size = ip.max - ip.min + cell.new(1, 1)
+    local interior = primitives.square(size.x, size.y):translate(ip.min.x, ip.min.y) - ip
+    local connected_components = pattern.connected_components(interior, nbh)
+    -- Filter out those components that are not interior.
+    local function fn(sp)
+        if sp.min.x > ip.min.x and sp.min.y > ip.min.y
+            and sp.max.x < ip.max.x and sp.max.y < ip.max.y then
+            return true
+        end
+        return false
+    end
+    return connected_components:filter(fn)
+end
+
+--- Generate subpatterns by binary space partition.
+-- This works by finding all the contiguous rectangular volumes in the input
+-- pattern and running a binary space partition on all of them. The partitions
+-- are then returned in a multipattern.
+--
+-- The BSP is controlled by the `threshold volume` parameter. The algorithm
+-- will recursively subdivide every rectangular area evenly in two until the
+-- volume of the largest remaining area is less than `th_volume`.
+--
+-- @param ip the pattern for which the BSP will be run over.
+-- @param th_volume the highest acceptable volume for each final partition.
+-- @return A multipattern consisting of the BSP subpatterns.
+function pattern.bsp(ip, th_volume)
+    assert(getmetatable(ip) == pattern, "pattern.bsp requires a pattern as an argument")
+    assert(th_volume, "pattern.bsp rules must specify a threshold volume for partitioning")
+    assert(th_volume > 0, "pattern.bsp rules must specify positive threshold volume for partitioning")
+    local available = ip
+    local mp = multipattern.new()
+    local bsp = require('forma.utils.bsp')
+    while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
+        local min, max = bsp.max_rectangle_coordinates(available)
+        bsp.split(min, max, th_volume, mp)
+        -- Remove split patterns from available space
+        available = available - mp:union_all()
+    end
+    return mp
+end
+
+--- Determine subpatterns for all `neighbourhood` categories.
+-- Each neighbourhood has a number of possible combinations or `categories`
+-- of active cells. This function categorises each cell in an input pattern
+-- into one of the neighbourhood's categories.
+-- @param ip the pattern in which cells are to be categorised.
+-- @param nbh the forma.neighbourhood used for the categorisation.
+-- @return A multipattern of #nbh subpatterns, where each cell in ip is categorised.
+function pattern.neighbourhood_categories(ip, nbh)
+    assert(getmetatable(ip) == pattern,
+        "pattern.neighbourhood_categories requires a pattern as a first argument")
+    assert(getmetatable(nbh) == neighbourhood,
+        "pattern.neighbourhood_categories requires a neighbourhood as a second argument")
+    local category_patterns = {}
+    for i = 1, nbh:get_ncategories(), 1 do
+        category_patterns[i] = pattern.new()
+    end
+    for icell in ip:cells() do
+        local cat = nbh:categorise(ip, icell)
+        category_patterns[cat]:insert(icell.x, icell.y)
+    end
+    return multipattern.new(category_patterns)
+end
+
+--- Perlin noise sampling.
+-- Samples an input pattern by thresholding a Perlin-noise pattern in the
+-- domain.  This function takes an initial sampling frequency, and computes
+-- perlin noise over the input pattern by taking the product of `depth`
+-- successively halved frequencies. A multipattern is then returned,
+-- consisting of the perlin noise function thresholded at requested levels.
+-- @param ip pattern upon which the thresholded noise sampling is to be performed.
+-- @param freq (float) frequency of desired perlin noise
+-- @param depth (int), sampling depth.
+-- @param thresholds table of sampling thresholds (between 0 and 1).
+-- @param rng (optional) a random number generator, following the signature of math.random.
+-- @return a `multipattern`, one subpattern per threshold entry.
+function pattern.perlin(ip, freq, depth, thresholds, rng)
+    if rng == nil then rng = math.random end
+    assert(getmetatable(ip) == pattern,
+        "pattern.perlin requires a pattern as the first argument")
+    assert(type(freq) == "number",
+        "pattern.perlin requires a numerical frequency value.")
+    assert(math.floor(depth) == depth,
+        "pattern.perlin requires an integer sampling depth.")
+    assert(type(thresholds) == "table",
+        "pattern.perlin requires a table of requested thresholds.")
+
+    for _, th in ipairs(thresholds) do
+        assert(th >= 0 and th <= 1,
+            "pattern.perlin requires thresholds between 0 and 1.")
+    end
+
+    -- Generate sample patterns
+    local samples = {}
+    for i = 1, #thresholds, 1 do
+        samples[i] = pattern.new()
+    end
+
+    -- Fill sample patterns
+    local noise = require('forma.utils.noise')
+    local p = noise.init(rng)
+    for ix, iy in ip:cell_coordinates() do
+        local nv = noise.perlin(p, ix, iy, freq, depth)
+        for ith, th in ipairs(thresholds) do
+            if nv >= th then
+                samples[ith]:insert(ix, iy)
+            end
+        end
+    end
+    return multipattern.new(samples)
+end
+
+
+--- Generate Voronoi tesselations of cells in a domain.
+-- @param seeds the set of seed cells for the tesselation.
+-- @param domain the domain of the tesselation.
+-- @param measure the measure used to judge distance between cells.
+-- @return A multipattern of Voronoi segments.
+function pattern.voronoi(seeds, domain, measure)
+    assert(getmetatable(seeds) == pattern, "pattern.voronoi requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern, "pattern.voronoi requires a pattern as a second argument")
+    assert(pattern.size(seeds) > 0, "pattern.voronoi requires at least one target cell/seed")
+    local seedcells = {}
+    local segments  = {}
+    for iseed in seeds:cells() do
+        assert(domain:has_cell(iseed.x, iseed.y), "forma.voronoi: cell outside of domain")
+        table.insert(seedcells, iseed)
+        table.insert(segments, pattern.new())
+    end
+    for dp in domain:cells() do
+        local min_cell = 1
+        local min_dist = measure(dp, seedcells[1])
+        for j = 2, #seedcells, 1 do
+            local distance = measure(dp, seedcells[j])
+            if distance < min_dist then
+                min_cell = j
+                min_dist = distance
+            end
+        end
+        segments[min_cell]:insert(dp.x, dp.y)
+    end
+    return multipattern.new(segments)
+end
+
+--- Generate (approx) centroidal Voronoi tessellation.
+-- Given a set of prior seeds and a domain, this iterates the position of the
+-- seeds until they are approximately located at the centre of their Voronoi
+-- segments. Lloyd's algorithm is used.
+-- @param seeds the original seed points to be relaxed.
+-- @param domain the domain to be tesselated.
+-- @param measure the distance measure to be used between cells.
+-- @param max_ite (optional) maximum number of iterations of relaxation (default 30).
+-- @return A `multipattern` of Voronoi segments after relaxation.
+-- @return A `pattern` containing the relaxed seed positions (centroids).
+-- @return A boolean indicating whether the algorithm converged.
+function pattern.voronoi_relax(seeds, domain, measure, max_ite)
+    if max_ite == nil then max_ite = 30 end
+    assert(getmetatable(seeds) == pattern, "pattern.voronoi_relax requires a pattern as a first argument")
+    assert(getmetatable(domain) == pattern, "pattern.voronoi_relax requires a pattern as a second argument")
+    assert(type(measure) == 'function', "pattern.voronoi_relax requires a distance measure as an argument")
+    assert(seeds:size() <= domain:size(), "pattern.voronoi_relax: too many seeds for domain")
+    local current_seeds = seeds:clone()
+    for ite = 1, max_ite, 1 do
+        local tesselation = pattern.voronoi(current_seeds, domain, measure).subpatterns
+        local next_seeds  = pattern.new()
+        for iseg = 1, #tesselation, 1 do
+            if tesselation[iseg]:size() > 0 then
+                -- Mostly the centroid should be within the domain
+                -- If not, attempt the medoid. In either case if
+                -- there is a collision, drop the cell
+                local cent = tesselation[iseg]:centroid()
+                if domain:has_cell(cent.x, cent.y) then
+                    if not next_seeds:has_cell(cent.x, cent.y) then
+                        next_seeds:insert(cent.x, cent.y)
+                    end
+                else
+                    local med = tesselation[iseg]:medoid()
+                    if not next_seeds:has_cell(med.x, med.y) then
+                        next_seeds:insert(med.x, med.y)
+                    end
+                end
+            end
+        end
+        if current_seeds == next_seeds then
+            return multipattern.new(tesselation), current_seeds, true  -- converged
+        elseif ite == max_ite then
+            return multipattern.new(tesselation), current_seeds, false -- max ite
+        end
+        current_seeds = next_seeds
+    end
+    assert(false, "This should not be reachable")
+end
+
 
 --- Test methods
 -- @section Testing

@@ -4,7 +4,6 @@ local lu = require('luaunit')
 local cell          = require("forma.cell")
 local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
-local subpattern    = require("forma.subpattern")
 local neighbourhood = require("forma.neighbourhood")
 
 TestSubPatterns = {}
@@ -12,19 +11,19 @@ TestSubPatterns = {}
 function TestSubPatterns:setUp()
     -- Test patterns for Voronoi tesselation and random sampling tests
     self.square = primitives.square(10)
-    self.seeds = subpattern.random(self.square, 10)
+    self.seeds = pattern.random(self.square, 10)
 end
 
---  Masked subpattern  ---------------------------------------------------------------
-function TestSubPatterns:testMask()
-    -- Mask out all seed points from the square input pattern,
-    -- then check that the masked pattern is identical to
+--  Filter subpattern  ---------------------------------------------------------------
+function TestSubPatterns:testFilter()
+    -- Filter out all seed points from the square input pattern,
+    -- then check that the filtered pattern is identical to
     -- the input pattern minus the seeds.
-    local mask = function(icell)
+    local fn = function(icell)
         return self.seeds:has_cell(icell.x, icell.y) == false
     end
-    local masked_pattern = subpattern.mask(self.square, mask)
-    lu.assertEquals(masked_pattern, self.square - self.seeds)
+    local filtered_pattern = pattern.filter(self.square, fn)
+    lu.assertEquals(filtered_pattern, self.square - self.seeds)
 end
 
 --  FloodFill -------------------------------------------------------------------------
@@ -36,9 +35,9 @@ function TestSubPatterns:testFloodFill()
                                       {0,1,1,0,},
                                       {0,1,1,0,},
                                       {1,0,0,1,}}):translate(100,-100)
-    local floodfill = subpattern.floodfill(test_pattern,
-                                           test_pattern:rcell(),
-                                           neighbourhood.moore())
+    local floodfill = pattern.floodfill(test_pattern,
+                                        test_pattern:rcell(),
+                                        neighbourhood.moore())
     lu.assertEquals(floodfill, test_pattern)
 end
 
@@ -52,8 +51,8 @@ function TestSubPatterns:testConnectedComponents()
                                       {0,1,1,0,},
                                       {0,1,1,0,},
                                       {1,0,0,1,}}):translate(100,-100)
-    local moore_components = subpattern.connected_components(test_pattern, neighbourhood.moore())
-    local vn_components    = subpattern.connected_components(test_pattern, neighbourhood.von_neumann())
+    local moore_components = pattern.connected_components(test_pattern, neighbourhood.moore())
+    local vn_components    = pattern.connected_components(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(moore_components:n_subpatterns(), 1)
     lu.assertEquals(vn_components:n_subpatterns(), 5)
 end
@@ -70,14 +69,14 @@ function TestSubPatterns:testInteriorHoles()
                                       {1,0,0,1,0,0,1},
                                       {1,0,0,0,0,0,1},
                                       {1,1,1,1,1,1,1}}):translate(100,-100)
-    local moore_subpatterns = subpattern.interior_holes(test_pattern, neighbourhood.moore())
-    local vn_subpatterns    = subpattern.interior_holes(test_pattern, neighbourhood.von_neumann())
+    local moore_subpatterns = pattern.interior_holes(test_pattern, neighbourhood.moore())
+    local vn_subpatterns    = pattern.interior_holes(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(moore_subpatterns:n_subpatterns(), 1)
     lu.assertEquals(vn_subpatterns:n_subpatterns(), 2)
     lu.assertFalse(self:check_for_overlap(vn_subpatterns.subpatterns))
     -- Check that neighbourhood defaults to vN, and edge diagonal case
     local test_circle = primitives.circle(1)
-    lu.assertEquals(subpattern.interior_holes(test_circle):n_subpatterns(),1)
+    lu.assertEquals(pattern.interior_holes(test_circle):n_subpatterns(),1)
 end
 
 --  Perlin noise ----------------------------------------------------------------
@@ -86,7 +85,7 @@ function TestSubPatterns:testPerlin()
     local test_domain = primitives.square(80, 20)
     local frequency, depth = 0.2, 1
     local thresholds = {0, 0.5, 0.7, 1}
-    local noise  = subpattern.perlin(test_domain, frequency, depth, thresholds)
+    local noise  = pattern.perlin(test_domain, frequency, depth, thresholds)
     lu.assertEquals(test_domain, noise[1]) -- Lowest threshold is zero, should be identical to domain
     lu.assertEquals(noise[4]:size(), 0)    -- Lowest threshold is one, should be an empty pattern
 
@@ -108,7 +107,7 @@ function TestSubPatterns:testPoissonDisk()
     local r = 3
     local measure  = cell.chebyshev
     local domain = primitives.square(10)
-    local sample = subpattern.poisson_disc(domain, measure, r)
+    local sample = pattern.random_poisson(domain, measure, r)
     -- In a poisson disc sample, all sample points should be at least `r` from each other
     local cell_list = sample:cell_list()
     for i = 1, #cell_list, 1 do
@@ -127,7 +126,7 @@ function TestSubPatterns:testMitchellSampling()
     -- Approximate Poisson-disc by Mitchell's best-candidate algorithm
     local measure = cell.chebyshev
     local domain  = primitives.square(10)
-    local sample  = subpattern.mitchell_sample(domain, measure, 10, 10)
+    local sample  = pattern.random_mitchell(domain, measure, 10, 10)
     -- Check that domain is unmodified
     lu.assertEquals(domain:size(), 100)
     -- Check that the sample doesn't fall out of the domain
@@ -138,11 +137,11 @@ end
 function TestSubPatterns:testMaxRectangle()
     -- Basic test of the 'maximum rectangular area' subpattern finder.
     -- When run on a square pattern, it should return the input pattern.
-    local rect = subpattern.maxrectangle(self.square)
+    local rect = pattern.maxrectangle(self.square)
     lu.assertEquals(rect, self.square)
     -- Adding a single extra point far from the square pattern should not change anything
     local extra_point = self.square + pattern.new():insert(1000,1000)
-    local rect2 = subpattern.maxrectangle(extra_point)
+    local rect2 = pattern.maxrectangle(extra_point)
     lu.assertEquals(rect2, self.square)
 end
 
@@ -150,7 +149,7 @@ end
 function TestSubPatterns:testBinarySpacePartition()
     -- Testing on a square test pattern. The returned subpatterns should all
     -- have fewer than 10 active cells.
-    local partitions  = subpattern.bsp(self.square, 10).subpatterns
+    local partitions  = pattern.bsp(self.square, 10).subpatterns
     local total_points = 0
     local resum = pattern.new()
     for _, partition in ipairs(partitions) do
@@ -166,11 +165,11 @@ end
 -- Categorisation subpatterns --------------------------------------------------------
 function TestSubPatterns:testCategories()
     -- Compute a random sample of the square 10x10 pattern with 40 samples
-    local sample = subpattern.random(self.square, 40)
+    local sample = pattern.random(self.square, 40)
     -- Loop through a couple of example neighbourhoods
     local measures = {neighbourhood.moore(), neighbourhood.von_neumann()}
     for _, measure in ipairs(measures) do
-        local c_subpatterns = subpattern.neighbourhood_categories(sample, measure).subpatterns
+        local c_subpatterns = pattern.neighbourhood_categories(sample, measure).subpatterns
         -- Ensure each category pattern only contains correctly categorised points
         for cat, seg in ipairs(c_subpatterns) do
             for icell in seg:cells() do
@@ -182,24 +181,6 @@ function TestSubPatterns:testCategories()
 end
 
 --  Convex hull ---------------------------------------------------------------------
--- Tests the function returning all points on the convex hull
-function TestSubPatterns:testConvexHullPoints()
-    -- Pattern for running convex hull algorithm over
-    local test_pattern = pattern.new({{1,0,0,0,1},
-                                      {0,0,1,0,0},
-                                      {0,1,1,1,0},
-                                      {0,0,1,0,0},
-                                      {1,0,0,0,1}})
-    -- Actual points lying on the convex hull
-    local true_pattern = pattern.new({{1,0,0,0,1},
-                                      {0,0,0,0,0},
-                                      {0,0,0,0,0},
-                                      {0,0,0,0,0},
-                                      {1,0,0,0,1}})
-    local convex_hull  = subpattern.convex_hull_points(test_pattern)
-    local overlap = pattern.intersection(convex_hull, true_pattern)
-    lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
-end
 -- Test the function computing the convex hull
 function TestSubPatterns:testConvexHull()
     -- Pattern for running convex hull algorithm over
@@ -214,7 +195,7 @@ function TestSubPatterns:testConvexHull()
                                       {1,0,0,0,1},
                                       {1,0,0,0,1},
                                       {1,1,1,1,1}})
-    local convex_hull  = subpattern.convex_hull(test_pattern)
+    local convex_hull  = pattern.convex_hull(test_pattern)
     local overlap = pattern.intersection(convex_hull, true_pattern)
     lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
 end
@@ -227,7 +208,7 @@ function TestSubPatterns:testThinning()
         {1,1,1},
         {1,1,1},
     })
-    local block_thinned = subpattern.thin(block,neighbourhood.moore())
+    local block_thinned = pattern.thin(block,neighbourhood.moore())
     lu.assertEquals(block_thinned:size(), 3, "3x3 block should collapse to a single cell")
     lu.assertTrue(block_thinned:has_cell(2,2), "Center cell (2,2) should remain")
 
@@ -236,7 +217,7 @@ function TestSubPatterns:testThinning()
     local row = pattern.new({
         {1,1,1,1,1},  -- row of 5 active cells at y=0
     })
-    local row_thinned = subpattern.thin(row,neighbourhood.moore())
+    local row_thinned = pattern.thin(row,neighbourhood.moore())
     lu.assertEquals(row_thinned:size(), 5, "Row of length 5 should remain length 5")
     lu.assertEquals(row_thinned, row, "Row should be unchanged by thinning")
 end
@@ -272,22 +253,22 @@ end
 -- Test Voronoi tesselation with various distance measures
 function TestSubPatterns:testVoronoi_Manhattan()
     local measure = cell.manhattan
-    local voronoi_multipattern = subpattern.voronoi(self.seeds, self.square, measure)
+    local voronoi_multipattern = pattern.voronoi(self.seeds, self.square, measure)
     self:commonVoronoi(voronoi_multipattern, self.seeds, measure)
 end
 function TestSubPatterns:testVoronoi_Euclidean()
     local measure = cell.euclidean
-    local voronoi_multipattern = subpattern.voronoi(self.seeds, self.square, measure)
+    local voronoi_multipattern = pattern.voronoi(self.seeds, self.square, measure)
     self:commonVoronoi(voronoi_multipattern, self.seeds, measure)
 end
 function TestSubPatterns:testVoronoi_Chebyshev()
     local measure = cell.chebyshev
-    local voronoi_multipattern = subpattern.voronoi(self.seeds, self.square, measure)
+    local voronoi_multipattern = pattern.voronoi(self.seeds, self.square, measure)
     self:commonVoronoi(voronoi_multipattern, self.seeds, measure)
 end
 function TestSubPatterns:testLloydsAlgorithm()
     local measure = cell.chebyshev
-    local multipattern, centres, _ = subpattern.voronoi_relax(self.seeds, self.square, measure)
+    local multipattern, centres, _ = pattern.voronoi_relax(self.seeds, self.square, measure)
     self:commonVoronoi(multipattern, centres, measure)
 end
 -- Helper functions ------------------------------------------------------------------

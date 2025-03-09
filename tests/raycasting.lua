@@ -2,7 +2,6 @@
 local lu = require('luaunit')
 local pattern    = require("forma.pattern")
 local primitives = require("forma.primitives")
-local subpattern = require("forma.subpattern")
 local raycasting = require("forma.raycasting")
 
 TestRaycasting = {}
@@ -30,7 +29,7 @@ function TestRaycasting:test360()
         -- Most be contained within the domain
         lu.assertEquals(pattern.intersection(domain, traced), traced)
         -- Must consist of one contiguous area
-        local floodfill = subpattern.floodfill(traced, start)
+        local floodfill = pattern.floodfill(traced, start)
         lu.assertEquals(floodfill, traced)
     end
 end

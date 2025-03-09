@@ -3,7 +3,6 @@ local lu = require('luaunit')
 local cell       = require("forma.cell")
 local pattern    = require("forma.pattern")
 local primitives = require("forma.primitives")
-local subpattern = require("forma.subpattern")
 
 TestPrimitives = {}
 
@@ -12,7 +11,7 @@ function TestPrimitives:testCircle()
     for i=1,10,1 do
         local circle_raster = primitives.circle(i)
         -- Check that all holes are less than i from centre
-        local inside_circle = subpattern.interior_holes(circle_raster)
+        local inside_circle = pattern.interior_holes(circle_raster)
         lu.assertEquals(inside_circle:n_subpatterns(), 1) -- Should only be one hole
         for pt in inside_circle.subpatterns[1]:cells() do
             lu.assertTrue(cell.euclidean(pt, cell.new(0,0)) < i )
@@ -41,7 +40,7 @@ function TestPrimitives:testLine()
         lu.assertTrue(line:has_cell(start.x,  start.y))
         lu.assertTrue(line:has_cell(finish.x, finish.y))
         -- Must consist of one contiguous area
-        local floodfill = subpattern.floodfill(line, start)
+        local floodfill = pattern.floodfill(line, start)
         lu.assertEquals(floodfill, line)
     end
 end
@@ -58,7 +57,7 @@ function TestPrimitives:testBezier()
         lu.assertTrue(line:has_cell(start.x,  start.y))
         lu.assertTrue(line:has_cell(finish.x, finish.y))
         -- Must consist of one contiguous area
-        local floodfill = subpattern.floodfill(line, start)
+        local floodfill = pattern.floodfill(line, start)
         lu.assertEquals(floodfill, line)
     end
 end

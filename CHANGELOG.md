@@ -96,6 +96,8 @@ Initial release
  - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
  - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
  - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.
+ - Removed `subpattern.convex_hull_points` in favour of a utility function.
+ - Subpattern module merged into pattern module to enable more fluent chaining.
  - Many subpattern methods that used to return a table of subpatterns, now return a multipattern.
 
 ## Features
