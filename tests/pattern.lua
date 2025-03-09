@@ -80,12 +80,14 @@ function TestPattern:testUnion()
     local tp12 = primitives.square(5)
     local union  = pattern.union(tp1, tp2)
     local union_v2  = pattern.union({tp1, tp2})
+    local union_v3  = tp1:union(tp2)
     lu.assertEquals(tp1+tp2, tp12)
     lu.assertEquals(tp1+tp2, union)
     lu.assertEquals(tp12, union)
     lu.assertNotEquals(tp1, union)
     lu.assertNotEquals(tp2, union)
     lu.assertEquals(union, union_v2)
+    lu.assertEquals(union, union_v3)
 end
 
 -- Test insert methods

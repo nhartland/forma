@@ -270,6 +270,74 @@ function pattern.edit_distance(a, b)
     return edit_distance
 end
 
+--- Generate a pattern consisting of the overlapping intersection of existing patterns
+-- @param ... patterns for intersection calculation
+-- @return A pattern consisting of the overlapping cells of the input patterns
+function pattern.intersection(...)
+    local patterns = { ... }
+    assert(#patterns > 1, "pattern.intersection requires at least two patterns as arguments")
+    table.sort(patterns, pattern.size_sort)
+    -- Use smallest pattern as domain
+    local domain = patterns[#patterns]
+    local inter  = pattern.new()
+    for x, y in domain:cell_coordinates() do
+        local foundCell = true
+        for i = #patterns - 1, 1, -1 do
+            local tpattern = patterns[i]
+            assert(getmetatable(tpattern) == pattern,
+                "pattern.intersection requires a pattern as an argument")
+            if not tpattern:has_cell(x, y) then
+                foundCell = false
+                break
+            end
+        end
+        -- Cell exists in all patterns
+        if foundCell == true then
+            inter:insert(x, y)
+        end
+    end
+    return inter
+end
+
+--- Generate a pattern consisting of the union of a set of patterns
+-- @param ... patterns to union, can be either a table ({a,b}) or a list of arguments (a,b)
+-- @return A pattern consisting of the union of the input patterns
+function pattern.union(...)
+    local patterns = { ... }
+    -- Handle a single, table argument of patterns ({a,b,c}) rather than (a,b,c)
+    if #patterns == 1 then
+        if type(patterns[1]) == 'table' then
+            patterns = patterns[1]
+        end
+    end
+    -- Attempting to union list of a single pattern
+    if #patterns == 1 then
+        return patterns[1]
+    end
+    local total = pattern.clone(patterns[1])
+    for i = 2, #patterns, 1 do
+        local v = patterns[i]
+        assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
+        for x, y in v:cell_coordinates() do
+            if total:has_cell(x, y) == false then
+                total:insert(x, y)
+            end
+        end
+    end
+    return total
+end
+
+--- Symmetric difference of two patterns: cells in A or B, but not both.
+-- @param a first pattern
+-- @param b second pattern
+-- @return new pattern which is the symmetric difference of a and b
+function pattern.xor(a, b)
+    assert(getmetatable(a) == pattern, "pattern.xor requires a pattern as the first argument")
+    assert(getmetatable(b) == pattern, "pattern.xor requires a pattern as the second argument")
+    return (a+b) - (a*b)
+end
+
+
 -----------------------
 --- Iterators.
 -- @section Iterators
@@ -643,6 +711,10 @@ function pattern.hreflect(ip)
     return np
 end
 
+--- Morphological transformations.
+-- Morphological transformations of patterns.
+--@section morphology
+
 --- Erode a pattern according to a given neighborhood.
 -- Each cell remains active only if all of its neighbors in `nbh`
 -- are also active.
@@ -774,72 +846,6 @@ function pattern.exterior_hull(ip, nbh)
     return (pattern.dilate(ip, nbh) - ip)
 end
 
---- Generate a pattern consisting of the overlapping intersection of existing patterns
--- @param ... patterns for intersection calculation
--- @return A pattern consisting of the overlapping cells of the input patterns
-function pattern.intersection(...)
-    local patterns = { ... }
-    assert(#patterns > 1, "pattern.intersection requires at least two patterns as arguments")
-    table.sort(patterns, pattern.size_sort)
-    -- Use smallest pattern as domain
-    local domain = patterns[#patterns]
-    local inter  = pattern.new()
-    for x, y in domain:cell_coordinates() do
-        local foundCell = true
-        for i = #patterns - 1, 1, -1 do
-            local tpattern = patterns[i]
-            assert(getmetatable(tpattern) == pattern,
-                "pattern.intersection requires a pattern as an argument")
-            if not tpattern:has_cell(x, y) then
-                foundCell = false
-                break
-            end
-        end
-        -- Cell exists in all patterns
-        if foundCell == true then
-            inter:insert(x, y)
-        end
-    end
-    return inter
-end
-
---- Symmetric difference of two patterns: cells in A or B, but not both.
--- @param a first pattern
--- @param b second pattern
--- @return new pattern which is the symmetric difference of a and b
-function pattern.xor(a, b)
-    assert(getmetatable(a) == pattern, "pattern.xor requires a pattern as the first argument")
-    assert(getmetatable(b) == pattern, "pattern.xor requires a pattern as the second argument")
-    return (a+b) - (a*b)
-end
-
---- Generate a pattern consisting of the union of a set of patterns
--- @param ... patterns to union, can be either a table ({a,b}) or a list of arguments (a,b)
--- @return A pattern consisting of the union of the input patterns
-function pattern.union(...)
-    local patterns = { ... }
-    -- Handle a single, table argument of patterns ({a,b,c}) rather than (a,b,c)
-    if #patterns == 1 then
-        if type(patterns[1]) == 'table' then
-            patterns = patterns[1]
-        end
-    end
-    -- Attempting to union list of a single pattern
-    if #patterns == 1 then
-        return patterns[1]
-    end
-    local total = pattern.clone(patterns[1])
-    for i = 2, #patterns, 1 do
-        local v = patterns[i]
-        assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
-        for x, y in v:cell_coordinates() do
-            if total:has_cell(x, y) == false then
-                total:insert(x, y)
-            end
-        end
-    end
-    return total
-end
 
 ---------------------------------------------------------------------------
 --- Packing methods.

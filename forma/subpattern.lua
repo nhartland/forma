@@ -283,7 +283,7 @@ end
 --
 -- @param ip the pattern for which the BSP will be run over.
 -- @param th_volume the highest acceptable volume for each final partition.
--- @returns A multipattern consisting of the BSP subpatterns.
+-- @return A multipattern consisting of the BSP subpatterns.
 function subpattern.bsp(ip, th_volume)
     assert(getmetatable(ip) == pattern, "subpattern.bsp requires a pattern as an argument")
     assert(th_volume, "subpattern.bsp rules must specify a threshold volume for partitioning")
