@@ -19,7 +19,6 @@ local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local neighbourhood = require('forma.neighbourhood')
 local multipattern  = require('forma.multipattern')
-local rutils        = require('forma.utils.random')
 
 --- Sub-patterns
 -- @section subpatterns
@@ -140,46 +139,6 @@ function subpattern.mitchell_sample(ip, distance, n, k, rng)
     return sample
 end
 
--- Internal perlin noise function
--- Adapted from https://github.com/max1220/lua-perlin [MIT License]
--- Takes as arguments p: permutation vector, (x, y) coordinates, frequency and
--- sampling depth. Returns a noise value [0,1].
-local function perlin_noise(p, x, y, freq, depth)
-    local function permute(_x, _y) return p[(p[_y % 256] + _x) % 256]; end
-    local function lin_inter(_x, _y, s) return _x + s * (_y - _x) end
-    local function smooth_inter(_x, _y, s) return lin_inter(_x, _y, s * s * (3 - 2 * s)) end
-
-    local function noise2d(_x, _y)
-        local x_int = math.floor(_x);
-        local y_int = math.floor(_y);
-        local x_frac = _x - x_int;
-        local y_frac = _y - y_int;
-        local s = permute(x_int, y_int);
-        local t = permute(x_int + 1, y_int);
-        local u = permute(x_int, y_int + 1);
-        local v = permute(x_int + 1, y_int + 1);
-        local low = smooth_inter(s, t, x_frac);
-        local high = smooth_inter(u, v, x_frac);
-        return smooth_inter(low, high, y_frac);
-    end
-
-    local xa = x * freq;
-    local ya = y * freq;
-    local amp = 1.0;
-    local fin = 0;
-    local div = 0.0;
-
-    for _ = 1, depth, 1 do
-        div = div + 256 * amp;
-        fin = fin + noise2d(xa, ya) * amp;
-        amp = amp / 2;
-        xa = xa * 2;
-        ya = ya * 2;
-    end
-
-    return fin / div;
-end
-
 --- Perlin noise sampling.
 -- Samples an input pattern by thresholding a Perlin-noise pattern in the
 -- domain.  This function takes an initial sampling frequency, and computes
@@ -207,11 +166,6 @@ function subpattern.perlin(ip, freq, depth, thresholds, rng)
         assert(th >= 0 and th <= 1,
             "subpattern.perlin requires thresholds between 0 and 1.")
     end
-    --
-    -- Generate permutation vector
-    local p = {}
-    for i = 0, 255, 1 do p[i] = i end
-    rutils.shuffle(p, rng)
 
     -- Generate sample patterns
     local samples = {}
@@ -220,8 +174,10 @@ function subpattern.perlin(ip, freq, depth, thresholds, rng)
     end
 
     -- Fill sample patterns
+    local noise = require('forma.utils.noise')
+    local p = noise.init(rng)
     for ix, iy in ip:cell_coordinates() do
-        local nv = perlin_noise(p, ix, iy, freq, depth)
+        local nv = noise.perlin(p, ix, iy, freq, depth)
         for ith, th in ipairs(thresholds) do
             if nv >= th then
                 samples[ith]:insert(ix, iy)
@@ -257,79 +213,13 @@ function subpattern.floodfill(ip, ipt, nbh)
     return retpat
 end
 
--- Find the (lower-left and upper-right) coordinates of the maximal contiguous
--- rectangular area within a pattern.
--- @param ip the input pattern.
--- @return the minimum and maxium coordinates of the area.
-local function maxrectangle_coordinates(ip)
-    -- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529.
-    local best_ll = cell.new(0, 0)
-    local best_ur = cell.new(-1, -1)
-    local best_area = 0
-
-    local stack_w = {}
-    local stack_y = {}
-
-    local function push(y, w)
-        stack_y[#stack_y + 1] = y
-        stack_w[#stack_w + 1] = w
-    end
-
-    local function pop()
-        local y = stack_y[#stack_y]
-        local w = stack_w[#stack_w]
-        stack_y[#stack_y] = nil
-        stack_w[#stack_w] = nil
-        return y, w
-    end
-
-    local cache = {}
-    for y = ip.min.y, ip.max.y + 1, 1 do cache[y] = 0 end -- One extra element (closes all rectangles)
-
-    local function updateCache(x)
-        for y = ip.min.y, ip.max.y, 1 do
-            if ip:has_cell(x, y) then
-                cache[y] = cache[y] + 1
-            else
-                cache[y] = 0
-            end
-        end
-    end
-
-    for x = ip.max.x, ip.min.x, -1 do
-        updateCache(x)
-        local width = 0            -- Width of widest opened rectangle
-        for y = ip.min.y, ip.max.y + 1, 1 do
-            if cache[y] > width then -- Opening new rectangle(s)?
-                push(y, width)
-                width = cache[y]
-            end
-            if cache[y] < width then --// Closing rectangle(s)?
-                local y0, w0
-                repeat
-                    y0, w0 = pop()
-                    if width * (y - y0) > best_area then
-                        best_ll.x, best_ll.y = x, y0
-                        best_ur.x, best_ur.y = x + width - 1, y - 1
-                        best_area = width * (y - y0)
-                    end
-                    width = w0
-                until cache[y] >= width
-                width = cache[y]
-                if width ~= 0 then push(y0, w0) end
-            end
-        end
-    end
-
-    return best_ll, best_ur
-end
-
 --- Find the maximal contiguous rectangular area within a pattern.
 -- @param ip the input pattern.
 -- @return The subpattern of `ip` consisting of its largest contiguous rectangular area.
 function subpattern.maxrectangle(ip)
     assert(getmetatable(ip) == pattern, "subpattern.maxrectangle requires a pattern as an argument")
-    local min, max = maxrectangle_coordinates(ip)
+    local bsp = require('forma.utils.bsp')
+    local min, max = bsp.max_rectangle_coordinates(ip)
     local size = max - min + cell.new(1, 1)
     return primitives.square(size.x, size.y):translate(min.x, min.y)
 end
@@ -382,33 +272,6 @@ function subpattern.interior_holes(ip, nbh)
     return connected_components:filter(fn)
 end
 
--- Binary space partitioning - internal function
-local function bspSplit(min, max, th_volume, outpatterns)
-    local size = max - min + cell.new(1, 1)
-    local volume = size.x * size.y
-
-    if volume > th_volume then
-        local r1max, r2min
-        if size.x > size.y then
-            local xch = math.floor((size.x - 1) * 0.5)
-            r1max = min + cell.new(xch, size.y - 1)
-            r2min = min + cell.new(xch + 1, 0)
-        else
-            local ych = math.floor((size.y - 1) * 0.5)
-            r1max = min + cell.new(size.x - 1, ych)
-            r2min = min + cell.new(0, ych + 1)
-        end
-
-        -- Recurse on both new partitions
-        bspSplit(min, r1max, th_volume, outpatterns)
-        bspSplit(r2min, max, th_volume, outpatterns)
-    else -- Passes threshold volume
-        local np = primitives.square(size.x, size.y)
-        np = pattern.translate(np, min.x, min.y)
-        table.insert(outpatterns, np)
-    end
-end
-
 --- Generate subpatterns by binary space partition.
 -- This works by finding all the contiguous rectangular volumes in the input
 -- pattern and running a binary space partition on all of them. The partitions
@@ -425,16 +288,16 @@ function subpattern.bsp(ip, th_volume)
     assert(getmetatable(ip) == pattern, "subpattern.bsp requires a pattern as an argument")
     assert(th_volume, "subpattern.bsp rules must specify a threshold volume for partitioning")
     assert(th_volume > 0, "subpattern.bsp rules must specify positive threshold volume for partitioning")
-    local bsp_subpatterns = {}
     local available = ip
+    local mp = multipattern.new()
+    local bsp = require('forma.utils.bsp')
     while pattern.size(available) > 0 do -- Keep finding maxrectangles and BSP them
-        local min, max = maxrectangle_coordinates(available)
-        bspSplit(min, max, th_volume, bsp_subpatterns)
-        for i = 1, #bsp_subpatterns, 1 do
-            available = available - bsp_subpatterns[i]
-        end
+        local min, max = bsp.max_rectangle_coordinates(available)
+        bsp.split(min, max, th_volume, mp)
+        -- Remove split patterns from available space
+        available = available - mp:union_all()
     end
-    return multipattern.new(bsp_subpatterns)
+    return mp
 end
 
 --- Determine subpatterns for all `neighbourhood` categories.

@@ -42,7 +42,6 @@ end
 -- @return the new multipattern.
 function multipattern.insert(mp, ip)
     assert(getmetatable(mp) == multipattern, "multipattern.insert requires a multipattern as the first argument")
-    assert(getmetatable(ip) == pattern, "multipattern.insert requires a pattern as the second argument")
     table.insert(mp.subpatterns, ip)
 end
 
