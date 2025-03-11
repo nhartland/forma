@@ -96,6 +96,7 @@ Initial release
  - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
  - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
  - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.
+ - Renamed `pattern.intersection` to `pattern.intersect` to improve clarity.
  - Renamed `maxrectangle` to `max_rectangle` to improve consistency.
  - Renamed `packtile` to `find_packing_position` to improve clarity.
  - Renamed `packtile_centre` to `find_central_packing_position` to improve clarity.
