@@ -107,7 +107,7 @@ Generating the documentation requires
 
 Simply running 
 
-    ldoc --output contents --dir docs .
+    ldoc --style=./ --output contents --dir docs .
 
 in the root directory should generate all the required pages.
 
@@ -119,4 +119,4 @@ Unit tests and coverage reports are provided. The test suite requires
 
 To run the tests use
 
-    ./run_tests.sh
+    luarocks --lua-version=5.1 test

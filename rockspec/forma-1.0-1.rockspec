@@ -1,9 +1,9 @@
 package = "forma"
-version = "scm-1"
+version = "1.0-1"
 rockspec_format = "3.0"
 source = {
     url = "git://github.com/nhartland/forma",
-    branch = "dev",
+    tag = "v1.0",
 }
 
 description = {
@@ -25,9 +25,18 @@ dependencies = {
     "lua >= 5.1", "lua < 5.4"
 }
 build = {
-    type = "none",
+    type = "builtin",
+    modules = {
+        forma                   = "forma/init.lua",
+        ["forma.automata"]      = "forma/automata.lua",
+        ["forma.cell"]          = "forma/cell.lua",
+        ["forma.neighbourhood"] = "forma/neighbourhood.lua",
+        ["forma.pattern"]       = "forma/pattern.lua",
+        ["forma.primitives"]    = "forma/primitives.lua",
+        ["forma.multipattern"]  = "forma/multipattern.lua",
+        ["forma.raycasting"]    = "forma/raycasting.lua",
+    },
     copy_directories = {
-        "forma",
         "tests"
     }
 }
