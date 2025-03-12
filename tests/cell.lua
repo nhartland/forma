@@ -32,19 +32,19 @@ function TestCell:testManhattan()
     local d1 = cell.manhattan(self.test_cell_1, self.test_cell_2)
     local d2 = self.test_cell_1:manhattan(self.test_cell_2)
     lu.assertEquals(d1, 2)
-    lu.assertEquals(d1, d2)
+    lu.assertTrue(d1==d2)
 end
 
 function TestCell:testChebyshev()
     local d1 = cell.chebyshev(self.test_cell_1, self.test_cell_2)
     local d2 = self.test_cell_1:chebyshev(self.test_cell_2)
     lu.assertEquals(d1, 1)
-    lu.assertEquals(d1, d2)
+    lu.assertTrue(d1==d2)
 end
 
 function TestCell:testEuclidean2()
     local d1 = cell.euclidean2(self.test_cell_1, self.test_cell_2)
     local d2 = self.test_cell_1:euclidean2(self.test_cell_2)
     lu.assertEquals(d1, 2)
-    lu.assertEquals(d1, d2)
+    lu.assertTrue(d1==d2)
 end
