@@ -96,6 +96,15 @@ Initial release
  - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
  - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
  - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.
+ - Renamed `pattern.intersection` to `pattern.intersect` to improve clarity.
+ - Renamed `maxrectangle` to `max_rectangle` to improve consistency.
+ - Renamed `packtile` to `find_packing_position` to improve clarity.
+ - Renamed `packtile_centre` to `find_central_packing_position` to improve clarity.
+ - Subpattern module merged into pattern module to enable more fluent chaining.
+ - Renamed `subpattern.random` to `pattern.sample` to improve clarity.
+ - Renamed `subpattern.poisson_disc` to `pattern.sample_poisson` to improve clarity.
+ - Renamed `subpattern.mitchell_sample` to `pattern.sample_mitchell` to improve clarity.
+ - Removed `subpattern.convex_hull_points` in favour of a utility function.
  - Many subpattern methods that used to return a table of subpatterns, now return a multipattern.
 
 ## Features

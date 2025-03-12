@@ -27,9 +27,12 @@ end
 function TestMultipattern:testNew()
     -- Create a multipattern from a list of patterns
     local mp = multipattern.new({self.p1, self.p2})
-    lu.assertEquals(#mp.subpatterns, 2)
-    lu.assertEquals(mp.subpatterns[1], self.p1)
-    lu.assertEquals(mp.subpatterns[2], self.p2)
+    lu.assertEquals(#mp.components, 2)
+    lu.assertEquals(mp.components[1], self.p1)
+    lu.assertEquals(mp.components[2], self.p2)
+    -- Test indexing
+    lu.assertEquals(mp[1], mp.components[1])
+    lu.assertEquals(mp[2], mp.components[2])
 end
 
 function TestMultipattern:testMap()
@@ -39,16 +42,16 @@ function TestMultipattern:testMap()
         return p:enlarge(2)
     end)
     -- Check that each sub-pattern is now bigger
-    lu.assertEquals(mp_mapped.subpatterns[1]:size(), self.p1:size()*4)  -- enlarge(2) => factor^2
-    lu.assertEquals(mp_mapped.subpatterns[2]:size(), self.p2:size()*4)
+    lu.assertEquals(mp_mapped[1]:size(), self.p1:size()*4)  -- enlarge(2) => factor^2
+    lu.assertEquals(mp_mapped[2]:size(), self.p2:size()*4)
 end
 
 function TestMultipattern:testFilter()
     -- Suppose we only keep patterns with size == 3
     local mp = multipattern.new({self.p1, self.p2, self.p3})
     local filtered = mp:filter(function(pat) return pat:size() == 3 end)
-    lu.assertEquals(#filtered.subpatterns, 1)  -- only p3 has size=3
-    lu.assertEquals(filtered.subpatterns[1], self.p3)
+    lu.assertEquals(#filtered.components, 1)  -- only p3 has size=3
+    lu.assertEquals(filtered[1], self.p3)
 end
 
 function TestMultipattern:testApply()
@@ -56,12 +59,12 @@ function TestMultipattern:testApply()
     local mp = multipattern.new({self.p1, self.p2})
     local shifted = mp:apply("translate", 10, 10)
     -- Now p1 is at (10,10); p2 is from (10,10)..(11,11)
-    lu.assertTrue(shifted.subpatterns[1]:has_cell(10, 10))
-    lu.assertFalse(shifted.subpatterns[1]:has_cell(0, 0))
+    lu.assertTrue(shifted[1]:has_cell(10, 10))
+    lu.assertFalse(shifted[1]:has_cell(0, 0))
 
-    lu.assertTrue(shifted.subpatterns[2]:has_cell(10, 10))
-    lu.assertTrue(shifted.subpatterns[2]:has_cell(11, 11))
-    lu.assertFalse(shifted.subpatterns[2]:has_cell(0, 0))
+    lu.assertTrue(shifted[2]:has_cell(10, 10))
+    lu.assertTrue(shifted[2]:has_cell(11, 11))
+    lu.assertFalse(shifted[2]:has_cell(0, 0))
 end
 
 function TestMultipattern:testUnionAll()

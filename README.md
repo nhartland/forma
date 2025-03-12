@@ -1,9 +1,10 @@
-![Build Status](https://github.com/nhartland/forma/workflows/tests/badge.svg)
+forma
+=====
+
+[![Build Status](https://github.com/nhartland/forma/actions/workflows/tests.yaml/badge.svg)](https://github.com/nhartland/forma/actions/workflows/tests.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/nhartland/forma/badge.svg?branch=master)](https://coveralls.io/github/nhartland/forma?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-forma
-=====
 
 __2D grid shape generation in Lua__ 
 
@@ -50,7 +51,7 @@ Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
 local domain = primitives.square(80,20)
 
 -- CA initial condition: 800-point random sample of the domain
-local ca = subpattern.random(domain, 800)
+local ca = domain:sample(800)
 
 -- Moore (8-cell) neighbourhood 4-5 rule
 local moore = automata.rule(neighbourhood.moore(), "B5678/S45678")
@@ -62,7 +63,7 @@ while converged == false and ite < 1000 do
     ite = ite+1
 end
 
--- Access a subpattern's cell coordinates for external use
+-- Access cell coordinates for external use
 for icell in ca:cells() do
     -- local foo = bar(icell)
     -- or
@@ -70,12 +71,12 @@ for icell in ca:cells() do
 end
 
 -- Find all 4-contiguous connected components of the CA pattern
--- Uses the von-neumann neighbourhood to determine 'connectedness'
+-- Uses the von Neumann neighbourhood to determine 'connectedness'
 -- but any custom neighbourhood can be used.
-local connected_components = subpattern.connected_components(ca, neighbourhood.von_neumann())
+local connected_components = ca:connected_components(neighbourhood.von_neumann())
 
 -- Print a representation to io.output
-subpattern.print_patterns(domain, connected_components)
+connected_components:print(nil, domain)
 ```
 
 ## Installation

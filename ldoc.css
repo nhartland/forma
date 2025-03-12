@@ -1,0 +1,466 @@
+/* Light Theme (default) */
+:root {
+    /* Base Colors */
+    --primary-bg: #ffffff;
+    --secondary-bg: #fafafa;
+    --text-color: #333;
+    --heading-color: #444;
+    --link-color: #1a73e8;
+    --link-hover-color: #0c5dbb;
+    --border-color: #e0e0e0;
+    --legend-color: #000;
+
+    /* Additional Colors */
+    --blockquote-border: #ddd;
+    --blockquote-text: #555;
+    --pre-text: #111;
+    --navigation-header-bg: #f2f2f2;
+    --definition-border: #ccc;
+    --target-highlight: #fffbcc;
+
+    /* Syntax Highlighting */
+    --syntax-comment: #6a9955;
+    --syntax-constant: #b58900;
+    --syntax-escape: #cb4b16;
+    --syntax-keyword: #268bd2;
+    --syntax-library: #859900;
+    --syntax-marker: #d16969;
+    --syntax-marker-bg: #ffeef0;
+    --syntax-string: #2aa198;
+    --syntax-function-name: #d33682;
+    --syntax-operator: #586e75;
+    --syntax-global: #6c71c4;
+    --syntax-prompt: #859900;
+    --syntax-url: #268bd2;
+
+    /* Font Families */
+    --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --code-font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
+    /* Spacing for Headings */
+    --heading-top-margin: 0.6em;
+    --heading-bottom-margin: 0.4em;
+}
+
+/* Dark Mode Overrides (Everforest Dark Theme) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Base Colors */
+        --primary-bg: #2b3339;
+        --secondary-bg: #353f45;
+        --text-color: #d3c6aa;
+        --heading-color: #d3c6aa;
+        --link-color: #8fa1a3;
+        --link-hover-color: #a2b3b5;
+        --border-color: #3a4248;
+        --legend-color: #d3c6aa;
+
+        /* Additional Colors */
+        --blockquote-border: #4a524b;
+        --blockquote-text: #a3b1a0;
+        --pre-text: #d3c6aa;
+        --navigation-header-bg: #394047;
+        --definition-border: #3a4248;
+        --target-highlight: #5e6a4a;
+
+        /* Syntax Highlighting */
+        --syntax-comment: #7f9f7f;
+        --syntax-constant: #d7af87;
+        --syntax-escape: #d27b53;
+        --syntax-keyword: #8fa1a3;
+        --syntax-library: #8fb3a4;
+        /* --syntax-marker remains the same */
+        --syntax-marker-bg: #3a4248;
+        --syntax-string: #b8c0a9;
+        --syntax-function-name: #c594c5;
+        --syntax-operator: #8fa1a3;
+        --syntax-global: #a7c3b8;
+        --syntax-prompt: #8fb3a4;
+        --syntax-url: #8fa1a3;
+    }
+}
+
+/* BEGIN RESET
+   Minimal variant of the Yahoo! Reset (2010)
+*/
+html {
+    box-sizing: border-box;
+    color: var(--text-color);
+    background: var(--primary-bg);
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, code, form, fieldset, legend, input, button, textarea, p, blockquote, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+fieldset, img {
+    border: 0;
+}
+address, caption, cite, code, dfn, em, strong, th, var, optgroup {
+    font-style: inherit;
+    font-weight: inherit;
+}
+del, ins {
+    text-decoration: none;
+}
+li {
+    margin-left: 20px;
+}
+caption, th {
+    text-align: left;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-size: 100%;
+    font-weight: bold;
+}
+q:before, q:after {
+    content: '';
+}
+abbr, acronym {
+    border: 0;
+    font-variant: normal;
+}
+sup, sub {
+    vertical-align: baseline;
+}
+legend {
+    color: var(--legend-color);
+}
+input, button, textarea, select, optgroup, option {
+    font-family: inherit;
+    font-size: inherit;
+    font-style: inherit;
+    font-weight: inherit;
+}
+/* END RESET */
+
+/* Base Styles */
+body {
+    font-family: var(--font-family-base);
+    background-color: var(--secondary-bg);
+    color: var(--text-color);
+    line-height: 1.5;
+    font-size: 1rem;
+}
+
+code, tt {
+    font-family: var(--code-font-family);
+    font-size: 1em;
+}
+
+span.parameter {
+    font-family: var(--code-font-family);
+}
+span.parameter:after {
+    content: ":";
+}
+span.types:before {
+    content: "(";
+}
+span.types:after {
+    content: ")";
+}
+.type {
+    font-weight: bold;
+    font-style: italic;
+}
+
+body, p, td, th {
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+p, ul {
+    margin: 0.5em 0;
+}
+
+strong {
+    font-weight: 600;
+}
+
+em {
+    font-style: italic;
+}
+
+/* Headings: smaller margins, softer color */
+h1 {
+    font-size: 1.6em;
+    margin: 0 0 var(--heading-bottom-margin);
+    color: var(--heading-color);
+}
+h2 {
+    font-size: 1.3em;
+    margin: var(--heading-top-margin) 0 var(--heading-bottom-margin);
+    color: var(--heading-color);
+}
+h3 {
+    font-size: 1.15em;
+    margin: var(--heading-top-margin) 0 var(--heading-bottom-margin);
+    color: var(--heading-color);
+}
+h4 {
+    font-size: 1.05em;
+    margin: var(--heading-top-margin) 0 var(--heading-bottom-margin);
+    color: var(--heading-color);
+}
+
+a:link, a:visited {
+    color: var(--link-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+a:hover {
+    text-decoration: underline;
+    color: var(--link-hover-color);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1em 0;
+}
+
+/* Blockquote styling, subtle left border */
+blockquote {
+    margin: 0.5em 0 0.5em 1em;
+    padding-left: 1em;
+    border-left: 2px solid var(--blockquote-border);
+    color: var(--blockquote-text);
+}
+
+ul {
+    list-style-type: disc;
+}
+
+p.name {
+    font-family: var(--code-font-family);
+    padding-top: 1em;
+}
+
+/* Preformatted code block, softer background & borders */
+pre {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1em;
+    margin: 0.8em 0;
+    overflow-x: auto;
+    font-family: var(--code-font-family);
+    font-size: 0.9em;
+    color: var(--pre-text);
+}
+
+pre.example {
+    font-size: 0.85em;
+}
+
+/* Layout Containers */
+#container {
+    margin: 0.5em 1em;
+    background-color: var(--secondary-bg);
+    padding: 1em;
+    border-radius: 4px;
+}
+
+#product {
+    text-align: center;
+    background-color: var(--primary-bg);
+    padding: 0;
+}
+#product big {
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+#main {
+    background-color: var(--primary-bg);
+    padding: 1em;
+}
+
+#navigation {
+    float: left;
+    width: 14em;
+    background-color: var(--secondary-bg);
+    padding: 1em;
+    border-radius: 4px; 
+}
+#navigation h2 {
+    background-color: var(--navigation-header-bg);
+    font-size: 1.1em;
+    color: var(--heading-color);
+    text-align: left;
+    padding: 0.4em 0.6em;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.5em;
+}
+#navigation ul {
+    font-size: 1em;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+#navigation li {
+    margin: 0.5em 0 0.5em 1em;
+}
+#navigation li li a {
+    margin-left: 0.5em;
+}
+
+#content {
+    margin-left: 16em;
+    padding: 1em;
+    background-color: var(--primary-bg);
+    border-radius: 4px;
+    min-width: 300px;
+    max-width: 800px;
+}
+#about {
+    clear: both;
+    padding: 1em;
+    background-color: var(--primary-bg);
+}
+
+/* Print Styles */
+@media print {
+    body {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12pt;
+    }
+    a {
+        font-weight: bold;
+        color: var(--link-color);
+        text-decoration: underline;
+    }
+    #main {
+        background-color: var(--primary-bg);
+    }
+    #container {
+        margin: 2%;
+        background-color: var(--primary-bg);
+    }
+    #content {
+        padding: 1em;
+        background-color: var(--primary-bg);
+    }
+    #navigation {
+        display: none;
+    }
+    pre.example {
+        font-family: var(--code-font-family);
+        font-size: 10pt;
+        page-break-inside: avoid;
+    }
+}
+
+/* Tables */
+table.module_list,
+table.function_list {
+    border: 1px solid var(--border-color);
+    border-collapse: collapse;
+}
+table.module_list td,
+table.function_list td {
+    border: 1px solid var(--border-color);
+    padding: 0.5em;
+}
+table.module_list td.name,
+table.function_list td.name {
+    background-color: var(--secondary-bg);
+    min-width: 200px;
+}
+table.module_list td.summary,
+table.function_list td.summary {
+    width: 100%;
+}
+
+ul.nowrap {
+    overflow: auto;
+    white-space: nowrap;
+}
+
+/* Definition Lists */
+dl.table dt, dl.function dt {
+    border-top: 1px solid var(--definition-border);
+    padding-top: 1em;
+}
+dl.table dd, dl.function dd {
+    padding-bottom: 1em;
+    margin: 0.5em 0 0 1em;
+}
+dl.table h3, dl.function h3 {
+    font-size: 0.95em;
+}
+
+/* Remove extra top margin on nested lists */
+ul ul, ol ul, ol ol, ul ol {
+    margin-top: 0;
+}
+
+/* Highlight target elements */
+a:target + * {
+    background-color: var(--target-highlight);
+}
+
+/* Syntax Highlighting */
+pre .comment {
+    color: var(--syntax-comment);
+}
+pre .constant {
+    color: var(--syntax-constant);
+}
+pre .escape {
+    color: var(--syntax-escape);
+}
+pre .keyword {
+    color: var(--syntax-keyword);
+    font-weight: bold;
+}
+pre .library {
+    color: var(--syntax-library);
+}
+pre .marker {
+    color: var(--syntax-marker);
+    background: var(--syntax-marker-bg);
+    font-weight: bold;
+}
+pre .string {
+    color: var(--syntax-string);
+}
+pre .number {
+    color: var(--syntax-constant);
+}
+pre .function-name {
+    color: var(--syntax-function-name);
+}
+pre .operator {
+    color: var(--syntax-operator);
+    font-weight: bold;
+}
+pre .preprocessor, pre .prepro {
+    color: var(--syntax-escape);
+}
+pre .global, pre .user-keyword {
+    color: var(--syntax-global);
+}
+pre .prompt {
+    color: var(--syntax-library);
+}
+pre .url {
+    color: var(--syntax-keyword);
+    text-decoration: underline;
+}
+

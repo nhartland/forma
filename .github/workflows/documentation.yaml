@@ -14,7 +14,7 @@ jobs:
       - name: Install ldoc
         run: luarocks install ldoc
       - name: Generate documentation 
-        run: ldoc --output contents --dir docs .
+        run: ldoc --output contents --style=./ --dir docs .
       - name: Publish GitHub Pages
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: crazy-max/ghaction-github-pages@v4.1.0

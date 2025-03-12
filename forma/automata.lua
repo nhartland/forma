@@ -137,7 +137,7 @@ end
 -- @usage
 --  -- Domain and initial state (500 seed points) for the CA
 --  local domain = primitives.square(100)
---  local ca_pat = subpattern.random(domain, 500)
+--  local ca_pat = pattern.sample(domain, 500)
 --  -- Repeat iteration until convergence is reached
 --  local converged = false
 --  repeat
@@ -169,7 +169,7 @@ end
 -- @usage
 --  -- Domain and initial state (10 seed points) for the CA
 --  local domain = primitives.square(10)
---  local ca_pat = subpattern.random(domain, 10)
+--  local ca_pat = pattern.sample(domain, 10)
 --  local rng    = math.random
 --  -- Repeat iteration until convergence is reached
 --  local converged = false
