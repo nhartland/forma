@@ -11,7 +11,8 @@ function TestPattern:setUp()
     self.pattern_2 = primitives.square(5)
     self.pattern_3 = primitives.square(1)
     self.pattern_4 = pattern.new({ { 1 } })
-    self.pattern_5 = pattern.new({ { 1, 1, 1, 1, 1 },
+    self.pattern_5 = pattern.new({
+        { 1, 1, 1, 1, 1 },
         { 1, 1, 1, 1, 1 },
         { 1, 1, 1, 1, 1 },
         { 1, 1, 1, 1, 1 },
@@ -34,13 +35,10 @@ end
 
 -- Test eq, add, sub operators
 function TestPattern:testOperators()
-    lu.assertEquals(self.pattern_1, self.pattern_1)
-    lu.assertEquals(self.pattern_1 + self.pattern_2,
-        self.pattern_2)
-    lu.assertEquals(self.pattern_2 - self.pattern_2,
-        self.pattern_1)
-    lu.assertEquals(self.pattern_2 - self.pattern_1,
-        self.pattern_2)
+    lu.assertTrue(self.pattern_1 == self.pattern_1)
+    lu.assertTrue((self.pattern_1 + self.pattern_2) == self.pattern_2)
+    lu.assertTrue((self.pattern_2 - self.pattern_2) == self.pattern_1)
+    lu.assertTrue((self.pattern_2 - self.pattern_1) == self.pattern_2)
 end
 
 function TestPattern:testConstructor()
@@ -48,15 +46,15 @@ function TestPattern:testConstructor()
     lu.assertEquals(pattern.size(self.pattern_2), 25)
     lu.assertEquals(pattern.size(self.pattern_2), 25)
     -- Test that both methods of generating patterns work
-    lu.assertEquals(self.pattern_4, self.pattern_3)
-    lu.assertEquals(self.pattern_5, self.pattern_2)
+    lu.assertTrue(self.pattern_4 == self.pattern_3)
+    lu.assertTrue(self.pattern_5 == self.pattern_2)
 end
 
 function TestPattern:testClone()
     -- Test pattern cloning
     local pattern_5_clone = self.pattern_5:clone()
-    lu.assertEquals(pattern_5_clone, self.pattern_5)
-    lu.assertNotEquals(pattern_5_clone, self.pattern_4)
+    lu.assertTrue(pattern_5_clone == self.pattern_5)
+    lu.assertFalse(pattern_5_clone == self.pattern_4)
 end
 
 function TestPattern:testToString()
@@ -67,12 +65,14 @@ end
 
 function TestPattern:testUnion()
     -- Test pattern.union() helper function
-    local tp1      = pattern.new({ { 1, 1, 1, 1, 1 },
+    local tp1      = pattern.new({
+        { 1, 1, 1, 1, 1 },
         { 1, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 1 },
         { 1, 1, 1, 1, 1 } })
-    local tp2      = pattern.new({ { 0, 0, 0, 0, 0 },
+    local tp2      = pattern.new({
+        { 0, 0, 0, 0, 0 },
         { 0, 1, 1, 1, 0 },
         { 0, 1, 1, 1, 0 },
         { 0, 1, 1, 1, 0 },
@@ -81,13 +81,13 @@ function TestPattern:testUnion()
     local union    = pattern.union(tp1, tp2)
     local union_v2 = pattern.union({ tp1, tp2 })
     local union_v3 = tp1:union(tp2)
-    lu.assertEquals(tp1 + tp2, tp12)
-    lu.assertEquals(tp1 + tp2, union)
-    lu.assertEquals(tp12, union)
-    lu.assertNotEquals(tp1, union)
-    lu.assertNotEquals(tp2, union)
-    lu.assertEquals(union, union_v2)
-    lu.assertEquals(union, union_v3)
+    lu.assertTrue((tp1 + tp2) == tp12)
+    lu.assertTrue((tp1 + tp2) == union)
+    lu.assertTrue(tp12 == union)
+    lu.assertFalse(tp1 == union)
+    lu.assertFalse(tp2 == union)
+    lu.assertTrue(union == union_v2)
+    lu.assertTrue(union == union_v3)
 end
 
 -- Test insert methods
@@ -139,94 +139,111 @@ end
 function TestPattern:testCentroid()
     -- Test five patterns which should have the same
     -- centroid, and one which should not
-    local centroid1 = pattern.new({ { 1, 1, 1 },
+    local centroid1 = pattern.new({
+        { 1, 1, 1 },
         { 1, 0, 1 },
         { 1, 1, 1 } }):centroid()
-    local centroid2 = pattern.new({ { 1, 0, 1 },
+    local centroid2 = pattern.new({
+        { 1, 0, 1 },
         { 0, 0, 0 },
         { 1, 0, 1 } }):centroid()
-    local centroid3 = pattern.new({ { 0, 1, 0 },
+    local centroid3 = pattern.new({
+        { 0, 1, 0 },
         { 0, 0, 0 },
         { 0, 1, 0 } }):centroid()
-    local centroid4 = pattern.new({ { 0, 0, 0 },
+    local centroid4 = pattern.new({
+        { 0, 0, 0 },
         { 1, 0, 1 },
         { 0, 0, 0 } }):centroid()
-    local centroid5 = pattern.new({ { 0, 0, 0 },
+    local centroid5 = pattern.new({
+        { 0, 0, 0 },
         { 0, 1, 0 },
         { 0, 0, 0 } }):centroid()
     -- This should not be the same as the others
-    local centroid6 = pattern.new({ { 1, 1, 1 },
+    local centroid6 = pattern.new({
+        { 1, 1, 1 },
         { 0, 0, 0 },
         { 0, 0, 0 } }):centroid()
-    lu.assertEquals(centroid1, centroid2)
-    lu.assertEquals(centroid2, centroid3)
-    lu.assertEquals(centroid3, centroid4)
-    lu.assertEquals(centroid4, centroid5)
-    lu.assertNotEquals(centroid5, centroid6)
+    lu.assertTrue(centroid1 == centroid2)
+    lu.assertTrue(centroid2 == centroid3)
+    lu.assertTrue(centroid3 == centroid4)
+    lu.assertTrue(centroid4 == centroid5)
+    lu.assertFalse(centroid5 == centroid6)
 end
 
 function TestPattern:testMedoid()
     -- Test five patterns which should have the same
     -- medoid, and one which should not
-    local medoid1 = pattern.new({ { 1, 1, 1 },
+    local medoid1 = pattern.new({
+        { 1, 1, 1 },
         { 1, 1, 1 },
         { 1, 1, 1 } }):medoid()
-    local medoid2 = pattern.new({ { 1, 0, 1 },
+    local medoid2 = pattern.new({
+        { 1, 0, 1 },
         { 0, 1, 0 },
         { 1, 0, 1 } }):medoid()
-    local medoid3 = pattern.new({ { 0, 1, 0 },
+    local medoid3 = pattern.new({
+        { 0, 1, 0 },
         { 0, 1, 0 },
         { 0, 1, 0 } }):medoid()
-    local medoid4 = pattern.new({ { 0, 0, 0 },
+    local medoid4 = pattern.new({
+        { 0, 0, 0 },
         { 1, 1, 1 },
         { 0, 0, 0 } }):medoid()
-    local medoid5 = pattern.new({ { 0, 0, 0 },
+    local medoid5 = pattern.new({
+        { 0, 0, 0 },
         { 0, 1, 0 },
         { 0, 0, 0 } }):medoid()
     -- This should not be the same as the others
-    local medoid6 = pattern.new({ { 0, 1, 0 },
+    local medoid6 = pattern.new({
+        { 0, 1, 0 },
         { 1, 0, 1 },
         { 0, 1, 0 } }):medoid()
-    lu.assertEquals(medoid1, medoid2)
-    lu.assertEquals(medoid2, medoid3)
-    lu.assertEquals(medoid3, medoid4)
-    lu.assertEquals(medoid4, medoid5)
-    lu.assertNotEquals(medoid5, medoid6)
+    lu.assertTrue(medoid1 == medoid2)
+    lu.assertTrue(medoid2 == medoid3)
+    lu.assertTrue(medoid3 == medoid4)
+    lu.assertTrue(medoid4 == medoid5)
+    lu.assertFalse(medoid5 == medoid6)
 end
 
 function TestPattern:testExteriorHull()
     -- Test pattern for exterior_hull determination
-    local test                = pattern.new({ { 0, 0, 0 },
+    local test                = pattern.new({
+        { 0, 0, 0 },
         { 0, 1, 0 },
         { 0, 0, 0 } })
     -- Moore neighbourhood exterior_hull
-    local moore_exterior_hull = pattern.new({ { 1, 1, 1 },
+    local moore_exterior_hull = pattern.new({
+        { 1, 1, 1 },
         { 1, 0, 1 },
         { 1, 1, 1 } })
     -- Von Neumann neighbourhood exterior_hull
-    local vn_exterior_hull    = pattern.new({ { 0, 1, 0 },
+    local vn_exterior_hull    = pattern.new({
+        { 0, 1, 0 },
         { 1, 0, 1 },
         { 0, 1, 0 } })
     -- Diagonal neighbourhood exterior_hull
-    local d_exterior_hull     = pattern.new({ { 1, 0, 1 },
+    local d_exterior_hull     = pattern.new({
+        { 1, 0, 1 },
         { 0, 0, 0 },
         { 1, 0, 1 } })
 
     -- Moore neighbourhood exterior_hull: default case
-    lu.assertEquals(test:exterior_hull(), moore_exterior_hull)
+    lu.assertTrue(test:exterior_hull() == moore_exterior_hull)
     -- Von Neumann exterior_hull test
-    lu.assertEquals(test:exterior_hull(neighbourhood.von_neumann()), vn_exterior_hull)
+    lu.assertTrue(test:exterior_hull(neighbourhood.von_neumann()) == vn_exterior_hull)
     -- Diagonal exterior_hull test
-    lu.assertEquals(test:exterior_hull(neighbourhood.diagonal()), d_exterior_hull)
+    lu.assertTrue(test:exterior_hull(neighbourhood.diagonal()) == d_exterior_hull)
 end
 
 function TestPattern:testInteriorHull()
     -- IHull of a single point should just return that point back
     local interior_hull_pattern_3 = self.pattern_3:interior_hull()
-    lu.assertEquals(interior_hull_pattern_3, self.pattern_3)
+    lu.assertTrue(interior_hull_pattern_3 == self.pattern_3)
 
     -- Test pattern for interior_hull determination
-    local test = pattern.new({ { 1, 1, 1, 1, 1 },
+    local test = pattern.new({
+        { 1, 1, 1, 1, 1 },
         { 1, 0, 1, 0, 1 },
         { 1, 1, 1, 1, 1 },
         { 1, 0, 1, 0, 1 },
@@ -234,16 +251,17 @@ function TestPattern:testInteriorHull()
 
     -- Moore neighbourhood interior_hull - should be the same pattern
     local moore_interior_hull = test:interior_hull()
-    lu.assertEquals(moore_interior_hull, test)
+    lu.assertTrue(moore_interior_hull == test)
 
     -- von Neumann neighbourhood interior_hull - centre tile should be zero
     local vn_interior_hull = test:interior_hull(neighbourhood.von_neumann())
-    local vn_check = pattern.new({ { 1, 1, 1, 1, 1 },
+    local vn_check = pattern.new({
+        { 1, 1, 1, 1, 1 },
         { 1, 0, 1, 0, 1 },
         { 1, 1, 0, 1, 1 },
         { 1, 0, 1, 0, 1 },
         { 1, 1, 1, 1, 1 } })
-    lu.assertEquals(vn_interior_hull, vn_check)
+    lu.assertTrue(vn_interior_hull == vn_check)
 end
 
 function TestPattern:testNormalise()
@@ -252,9 +270,9 @@ function TestPattern:testNormalise()
     local test_pattern_1 = primitives.square(5)
     local test_pattern_2 = test_pattern_1:translate(100, 100)
     local test_pattern_3 = test_pattern_2:normalise()
-    lu.assertNotEquals(test_pattern_1, test_pattern_2)
-    lu.assertNotEquals(test_pattern_2, test_pattern_3)
-    lu.assertEquals(test_pattern_1, test_pattern_3)
+    lu.assertFalse(test_pattern_1 == test_pattern_2)
+    lu.assertFalse(test_pattern_2 == test_pattern_3)
+    lu.assertTrue(test_pattern_1 == test_pattern_3)
     -- Test that doesn't depend on :translate
     local test_pattern_4 = pattern.new():insert(5, 5)
     local test_pattern_5 = test_pattern_4:normalise()
@@ -276,19 +294,21 @@ function TestPattern:testReflect()
     local test_square_4 = primitives.square(4)
     local test_square_8 = primitives.square(8)
     local test_reflect = test_square_4:vreflect():hreflect()
-    lu.assertEquals(test_square_8, test_reflect)
+    lu.assertTrue(test_square_8 == test_reflect)
     -- Test for reflections on a more irregular pattern
-    local test_irreg = pattern.new({ { 1, 0 },
+    local test_irreg = pattern.new({
+        { 1, 0 },
         { 0, 1 } }):hreflect()
-    local test_irreg_reflect = pattern.new({ { 1, 0, 0, 1 },
+    local test_irreg_reflect = pattern.new({
+        { 1, 0, 0, 1 },
         { 0, 1, 1, 0 } })
-    lu.assertEquals(test_irreg, test_irreg_reflect)
+    lu.assertTrue(test_irreg == test_irreg_reflect)
 end
 
 function TestPattern:testRotate()
     -- Test that radially symmetric pattern is unchanged after rotation
     local rotate_pattern_2 = self.pattern_2:rotate():normalise()
-    lu.assertEquals(rotate_pattern_2, self.pattern_2)
+    lu.assertTrue(rotate_pattern_2 == self.pattern_2)
     -- Test non-radially symmetric pattern
     -- This expectation might be a bit counter-intuitive, but remember
     -- that the coordinate system is 'terminal-like' i.e
@@ -299,10 +319,10 @@ function TestPattern:testRotate()
     --       +y
     local test = pattern.new({ { 1, 0 }, { 1, 1 } }):rotate():normalise()
     local expectation = pattern.new({ { 0, 1 }, { 1, 1 } })
-    lu.assertEquals(test, expectation)
+    lu.assertTrue(test == expectation)
     -- Test 2pi rotation
     local test2 = test:rotate():rotate():rotate():rotate()
-    lu.assertEquals(test, test2)
+    lu.assertTrue(test == test2)
 end
 
 -- Common tests for find_packing_position and find_packing_position_centre
@@ -337,7 +357,8 @@ function TestPattern:testFind_central_packing_position()
     test_generic_packing_function(pattern.find_central_packing_position)
     -- Test centre-packing
     local test_point = primitives.square(1)
-    local test_pattern = pattern.new({ { 0, 1, 0, },
+    local test_pattern = pattern.new({
+        { 0, 1, 0, },
         { 1, 1, 1, },
         { 0, 1, 0, } })
     local pp = test_point:find_central_packing_position(test_pattern)
@@ -351,9 +372,11 @@ function TestPattern:testEditDistance()
     lu.assertEquals(self.pattern_2:edit_distance(self.pattern_2), 0)
     lu.assertEquals(self.pattern_3:edit_distance(self.pattern_3), 0)
     -- Non-overlapping
-    local p1 = pattern.new({ { 1, 0 },
+    local p1 = pattern.new({
+        { 1, 0 },
         { 0, 1 } })
-    local p2 = pattern.new({ { 0, 1 },
+    local p2 = pattern.new({
+        { 0, 1 },
         { 1, 0 } })
     lu.assertEquals(p1:edit_distance(p2), 4)
     -- Overlapping
@@ -365,7 +388,6 @@ function TestPattern:testDilation()
     -- Single-cell pattern
     local single = pattern.new({ { 1 } }) -- 1 at (0,0)
     -- Dilation with a Moore neighborhood (8 directions, plus center).
-    -- Make sure your code or your 'nbh' includes (0,0) if you want the original cell to remain.
     local dil = single:dilate(neighbourhood.moore())
     -- A single cell with Moore dilation => center plus 8 neighbors => total 9 cells.
     lu.assertEquals(dil:size(), 9)
@@ -442,7 +464,7 @@ end
 
 function TestPattern:testOpening()
     -- This pattern is a 3x3 block plus a single "finger" cell on the top row.
-    -- The table rows go from top to bottom in your code, so:
+    -- The table rows go from top to bottom, so:
     --   row 0 => y=0
     --   row 1 => y=1
     --   row 2 => y=2
@@ -474,7 +496,7 @@ function TestPattern:testOpening()
     })
 
     local opened = p:opening(neighbourhood.moore())
-    lu.assertEquals(opened, p_open)
+    lu.assertTrue(opened == p_open)
 end
 
 function TestPattern:testClosing()
@@ -498,7 +520,7 @@ function TestPattern:testClosing()
     })
 
     local closed = c:closing(neighbourhood.moore())
-    lu.assertEquals(closed, c_closed)
+    lu.assertTrue(closed == c_closed)
 end
 
 function TestPattern:testGradientSingleCell()
@@ -518,3 +540,4 @@ function TestPattern:testGradient3x3Block()
     local grad = block3:gradient(neighbourhood.moore())
     lu.assertEquals(grad:size(), 24, "3×3 block morphological gradient (Moore+center) should be 24")
 end
+

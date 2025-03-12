@@ -67,7 +67,7 @@ function TestAutomata:testStillLifes()
     for _, still in ipairs(self.stills) do
         local newstill, converged = automata.iterate(still, self.sixbysix, {self.life_rule})
         lu.assertTrue(converged)
-        lu.assertEquals(newstill, still)
+        lu.assertTrue(newstill==still)
     end
 end
 
@@ -77,7 +77,7 @@ function TestAutomata:testOscillators()
         local newoscillator, converged = automata.iterate(oscillator, self.sixbysix, {self.life_rule})
         newoscillator, converged = automata.iterate(newoscillator, self.sixbysix, {self.life_rule})
         lu.assertFalse(converged)
-        lu.assertEquals(newoscillator, oscillator)
+        lu.assertTrue(newoscillator==oscillator)
     end
 end
 

@@ -27,9 +27,9 @@ function TestRaycasting:test360()
         -- Must have start cells
         lu.assertTrue(traced:has_cell(start.x, start.y))
         -- Most be contained within the domain
-        lu.assertEquals(pattern.intersect(domain, traced), traced)
+        lu.assertTrue(pattern.intersect(domain, traced) == traced)
         -- Must consist of one contiguous area
         local floodfill = pattern.floodfill(traced, start)
-        lu.assertEquals(floodfill, traced)
+        lu.assertTrue(floodfill==traced)
     end
 end

@@ -26,7 +26,7 @@ function TestPrimitives:testSquare()
         lu.assertEquals(square_raster:size(), i*i)
     end
     local test_pattern = pattern.new( {{1,1},{1,1}} )
-    lu.assertEquals(test_pattern, primitives.square(2))
+    lu.assertTrue(test_pattern==primitives.square(2))
 end
 -- Test line raster ------------------------------------------------
 function TestPrimitives:testLine()
@@ -41,7 +41,7 @@ function TestPrimitives:testLine()
         lu.assertTrue(line:has_cell(finish.x, finish.y))
         -- Must consist of one contiguous area
         local floodfill = pattern.floodfill(line, start)
-        lu.assertEquals(floodfill, line)
+        lu.assertTrue(floodfill==line)
     end
 end
 -- Test Bezier raster ------------------------------------------------
@@ -58,6 +58,6 @@ function TestPrimitives:testBezier()
         lu.assertTrue(line:has_cell(finish.x, finish.y))
         -- Must consist of one contiguous area
         local floodfill = pattern.floodfill(line, start)
-        lu.assertEquals(floodfill, line)
+        lu.assertTrue(floodfill==line)
     end
 end

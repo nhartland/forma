@@ -28,11 +28,11 @@ function TestMultipattern:testNew()
     -- Create a multipattern from a list of patterns
     local mp = multipattern.new({self.p1, self.p2})
     lu.assertEquals(#mp.components, 2)
-    lu.assertEquals(mp.components[1], self.p1)
-    lu.assertEquals(mp.components[2], self.p2)
+    lu.assertTrue(mp.components[1]==self.p1)
+    lu.assertTrue(mp.components[2]==self.p2)
     -- Test indexing
-    lu.assertEquals(mp[1], mp.components[1])
-    lu.assertEquals(mp[2], mp.components[2])
+    lu.assertTrue(mp[1]==mp.components[1])
+    lu.assertTrue(mp[2]==mp.components[2])
 end
 
 function TestMultipattern:testMap()
@@ -51,7 +51,7 @@ function TestMultipattern:testFilter()
     local mp = multipattern.new({self.p1, self.p2, self.p3})
     local filtered = mp:filter(function(pat) return pat:size() == 3 end)
     lu.assertEquals(#filtered.components, 1)  -- only p3 has size=3
-    lu.assertEquals(filtered[1], self.p3)
+    lu.assertTrue(filtered[1]==self.p3)
 end
 
 function TestMultipattern:testApply()
@@ -74,7 +74,7 @@ function TestMultipattern:testUnionAll()
     local mp = multipattern.new({self.p1, self.p2})
     local unioned = mp:union_all()
     lu.assertEquals(unioned:size(), self.p2:size())  -- p2 covers p1 anyway
-    lu.assertEquals(unioned, self.p2)
+    lu.assertTrue(unioned==self.p2)
 
     -- Add p3 => (0,0),(1,0),(2,0)
     -- union of p2 + p3 => total 5 cells:
