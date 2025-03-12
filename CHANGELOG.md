@@ -86,7 +86,7 @@ Initial release
  - Slightly improved example gallery generation
  - Changed to using LuaRocks as test runner
 
-# 1.0 (WIP)
+# 1.0
 
 ## Breaking
  - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
@@ -128,3 +128,5 @@ Initial release
    an argument (pattern.union_all({a,b,c}) instead of just pattern.union_all(a,b,c)).
  - Relaxed the assertions on the nature of distance measures in Mitchell
    sampling / Poisson disc sampling.
+ - Slightly nicer ldoc theme.
+
