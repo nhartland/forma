@@ -5,7 +5,6 @@
 local pattern       = require('forma.pattern')
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
-local subpattern    = require('forma.subpattern')
 local neighbourhood = require('forma.neighbourhood')
 
 -- Domain for CA to operate in
@@ -32,5 +31,5 @@ symmetrised_pattern = symmetrised_pattern:hreflect():hreflect()
 -- Categorise the pattern according to possible vN neighbours and print to screen
 -- This turns the basic pattern into standard 'box-drawing' characters
 local vn = neighbourhood.von_neumann()
-local segments = subpattern.neighbourhood_categories(symmetrised_pattern, vn)
-subpattern.print_patterns(symmetrised_pattern, segments, vn:category_label())
+symmetrised_pattern:neighbourhood_categories(vn)
+                   :print(vn:category_label())

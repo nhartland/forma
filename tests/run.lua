@@ -1,10 +1,12 @@
 local lu = require('luaunit')
 require('tests.cell')
 require('tests.pattern')
+require('tests.multipattern')
 require('tests.primitives')
 require('tests.neighbourhood')
 require('tests.subpattern')
 require('tests.automata')
+require('tests.raycasting')
 
 math.randomseed(0)
 

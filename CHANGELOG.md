@@ -85,3 +85,48 @@ Initial release
  - Improved error messages on some subpattern methods
  - Slightly improved example gallery generation
  - Changed to using LuaRocks as test runner
+
+# 1.0
+
+## Breaking
+ - Renamed `pattern.sum` to `pattern.union` to avoid confusion with the
+   `+` operator.
+ - Renamed `pattern.shift` to `pattern.translate` to improve clarity.
+ - Renamed `pattern.edge` to `pattern.exterior_hull` to improve clarity.
+ - Renamed `pattern.surface` to `pattern.interior_hull` to improve clarity.
+ - Renamed `pattern.segments` to `pattern.connected_components` to improve clarity.
+ - Renamed `pattern.enclosed` to `pattern.interior_holes` to improve clarity.
+ - Renamed `pattern.intersection` to `pattern.intersect` to improve clarity.
+ - Renamed `maxrectangle` to `max_rectangle` to improve consistency.
+ - Renamed `packtile` to `find_packing_position` to improve clarity.
+ - Renamed `packtile_centre` to `find_central_packing_position` to improve clarity.
+ - Subpattern module merged into pattern module to enable more fluent chaining.
+ - Renamed `subpattern.random` to `pattern.sample` to improve clarity.
+ - Renamed `subpattern.poisson_disc` to `pattern.sample_poisson` to improve clarity.
+ - Renamed `subpattern.mitchell_sample` to `pattern.sample_mitchell` to improve clarity.
+ - Removed `subpattern.convex_hull_points` in favour of a utility function.
+ - Many subpattern methods that used to return a table of subpatterns, now return a multipattern.
+
+## Features
+ - A multipattern class for handling collections of patterns.
+ - A raycasting tool for determining 'visible' areas of a pattern
+   from a source cell.
+ - A knight neighbourhood for knight-piece moves.
+ - Pattern methods `dilate` and `erode` for morphological operations.
+ - Pattern morphological operations `opening`, `closing`, `gradient`.
+ - A pattern XOR method and a^b operator.
+ - A pattern metamethod for intersection (a*b)
+ - A naive pattern thinning/skeletonisation operation
+
+## Bugfix
+ - Fixed GitHub actions workflows by bumping `gh-action-lua` and
+   `gh-action-luarocks` versions.
+ - Fixed luaunit at v3.3 
+
+## Misc
+ - Adjust `pattern.union_all` so that it can also take a single table of patterns as
+   an argument (pattern.union_all({a,b,c}) instead of just pattern.union_all(a,b,c)).
+ - Relaxed the assertions on the nature of distance measures in Mitchell
+   sampling / Poisson disc sampling.
+ - Slightly nicer ldoc theme.
+

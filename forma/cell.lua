@@ -10,12 +10,12 @@
 -- and Euclidean distances.
 --
 -- @module forma.cell
-local cell = {}
+local cell   = {}
 
-local abs   = math.abs
-local max   = math.max
-local sqrt  = math.sqrt
-local floor = math.floor
+local abs    = math.abs
+local max    = math.max
+local sqrt   = math.sqrt
+local floor  = math.floor
 
 -- Cell indexing
 -- For enabling syntax sugar cell:method
@@ -28,7 +28,7 @@ cell.__index = cell
 -- @param x first coordinate
 -- @param y second coordinate
 -- @return new forma.cell
-function cell.new(x,y)
+function cell.new(x, y)
     assert(x == floor(x), "cell.new requires two integer inputs")
     assert(y == floor(y), "cell.new requires two integer inputs")
     local newcell = { x = x, y = y }
@@ -89,7 +89,7 @@ end
 -- @param icell the forma.cell being rendered as a string
 -- @return string of the form `(icell.x, icell.y)`
 function cell.__tostring(icell)
-    return '('..icell.x..','..icell.y..')'
+    return '(' .. icell.x .. ',' .. icell.y .. ')'
 end
 
 --- Manhattan distance between cells.
@@ -99,7 +99,7 @@ end
 -- @param a first cell
 -- @param b second cell
 -- @return L1(a,b) = |a.x-b.x| + |a.y-b.y|
-function cell.manhattan(a,b)
+function cell.manhattan(a, b)
     return (abs(a.x - b.x) + abs(a.y - b.y))
 end
 
@@ -110,8 +110,8 @@ end
 -- @param a first cell
 -- @param b second cell
 -- @return L_inf(a,b) = max(|a.x-b.x|, |a.y-b.y|)
-function cell.chebyshev(a,b)
-    return (max(abs(a.x-b.x), abs(a.y-b.y)))
+function cell.chebyshev(a, b)
+    return (max(abs(a.x - b.x), abs(a.y - b.y)))
 end
 
 --- Euclidean distance between cells.
@@ -121,8 +121,8 @@ end
 -- @param a first cell
 -- @param b second cell
 -- @return L_2(a,b) = sqrt((a-b)^2)
-function cell.euclidean(a,b)
-    return sqrt(cell.euclidean2(a,b))
+function cell.euclidean(a, b)
+    return sqrt(cell.euclidean2(a, b))
 end
 
 --- Squared Euclidean distance between cells.
@@ -133,12 +133,10 @@ end
 -- @param a first cell
 -- @param b second cell
 -- @return L_2(a,b)^2 = (a-b)^2
-function cell.euclidean2(a,b)
+function cell.euclidean2(a, b)
     local dx = a.x - b.x
     local dy = a.y - b.y
-    return (dx*dx+dy*dy)
+    return (dx * dx + dy * dy)
 end
 
 return cell
-
-

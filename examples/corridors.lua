@@ -5,12 +5,11 @@
 
 local primitives    = require('forma.primitives')
 local automata      = require('forma.automata')
-local subpattern    = require('forma.subpattern')
 local neighbourhood = require('forma.neighbourhood')
 
 -- Generate a domain, and an initial state ca with one random seed cell
 local domain = primitives.square(80,20)
-local ca = subpattern.random(domain, 1)
+local ca = domain:sample(1)
 
 -- Complicated ruleset, try leaving out or adding more rules
 local moore = automata.rule(neighbourhood.moore(),      "B12/S012345678")
@@ -23,6 +22,7 @@ repeat
     ca, converged = automata.async_iterate(ca, domain, ruleset)
 until converged
 
+-- Print corridors to screen using box-building characters
 local nbh = neighbourhood.von_neumann()
-local segments = subpattern.neighbourhood_categories(ca, nbh)
-subpattern.print_patterns(domain, segments, nbh:category_label())
+ca:neighbourhood_categories(nbh)
+  :print(nbh:category_label(), domain)
