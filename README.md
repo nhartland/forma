@@ -1,9 +1,10 @@
-![Build Status](https://github.com/nhartland/forma/workflows/tests/badge.svg)
+forma
+=====
+
+[![Build Status](https://github.com/nhartland/forma/actions/workflows/tests.yaml/badge.svg)](https://github.com/nhartland/forma/actions/workflows/tests.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/nhartland/forma/badge.svg?branch=master)](https://coveralls.io/github/nhartland/forma?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-forma
-=====
 
 __2D grid shape generation in Lua__ 
 
