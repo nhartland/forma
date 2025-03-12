@@ -1,0 +1,4 @@
+# stylua.toml
+
+indent_width = 4         # Number of spaces per indent level
+indent_type = "Spaces"   # Use spaces for indentation
