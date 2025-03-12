@@ -1,0 +1,2289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>forma Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>forma</h1>
+
+
+<ul>
+  <li><a href="../contents.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Basic_pattern_functions">Basic pattern functions </a></li>
+<li><a href="#General_pattern_utilites">General pattern utilites </a></li>
+<li><a href="#Set_operations">Set operations </a></li>
+<li><a href="#Iterators">Iterators </a></li>
+<li><a href="#Metamethods">Metamethods </a></li>
+<li><a href="#Cell_accessors">Cell accessors </a></li>
+<li><a href="#Transformations">Transformations </a></li>
+<li><a href="#Random_subpatterns">Random subpatterns </a></li>
+<li><a href="#Deterministic_subpatterns">Deterministic subpatterns </a></li>
+<li><a href="#Morphological_operations">Morphological operations </a></li>
+<li><a href="#Packing_methods">Packing methods </a></li>
+<li><a href="#Multipattern_methods">Multipattern methods </a></li>
+<li><a href="#Test_components">Test components </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/forma.cell.html">forma.cell</a></li>
+  <li><strong>forma.pattern</strong></li>
+  <li><a href="../modules/forma.primitives.html">forma.primitives</a></li>
+  <li><a href="../modules/forma.automata.html">forma.automata</a></li>
+  <li><a href="../modules/forma.multipattern.html">forma.multipattern</a></li>
+  <li><a href="../modules/forma.neighbourhood.html">forma.neighbourhood</a></li>
+  <li><a href="../modules/forma.raycasting.html">forma.raycasting</a></li>
+</ul>
+<h2>Readme</h2>
+<ul class="nowrap">
+  <li><a href="../readme/README.md.html">README</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
+  <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
+  <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
+  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
+  <li><a href="../examples/convex_hull.lua.html">convex_hull.lua</a></li>
+  <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
+  <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
+  <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
+  <li><a href="../examples/perlin.lua.html">perlin.lua</a></li>
+  <li><a href="../examples/raycasting.lua.html">raycasting.lua</a></li>
+  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
+  <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
+  <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>forma.pattern</code></h1>
+<p>A class containing a set (or <em>pattern</em>) of cells.</p>
+<p>
+
+
+<p> The <strong>pattern</strong> class is the central class of <code>forma</code>, representing a set of
+ points or <em>cells</em>. It can be initialized empty or using a prototype (an N×M
+ matrix of 1's and 0's). Helper methods for initialization are provided in the
+ <a href="../modules/forma.primitives.html">primitives</a> module. Once created, a pattern is modified only via the <a href="../modules/forma.pattern.html#insert">insert</a>
+ method—other manipulations return new patterns.</p>
+
+<p> Pattern manipulators include methods like <a href="../modules/forma.pattern.html#translate">translate</a>, <a href="../modules/forma.pattern.html#enlarge">enlarge</a>, <a href="../modules/forma.pattern.html#rotate">rotate</a>,
+ <a href="../modules/forma.pattern.html#hreflect">hreflect</a>, and <a href="../modules/forma.pattern.html#vreflect">vreflect</a>. Other operations, such as computing the <a href="../modules/forma.pattern.html#exterior_hull">exterior_hull</a>
+ or <a href="../modules/forma.pattern.html#interior_hull">interior_hull</a>, help determine the boundaries of a pattern.
+ Coordinates are maintained reliably in the range [-65536, 65536], which can be
+ adjusted via the <code>MAX_COORDINATE</code> constant.</p>
+
+<p> Functions can be invoked either procedurally:</p>
+
+<pre>
+pattern.<span class="function-name">method</span>(input_pattern, ... )
+</pre>
+
+<p> or as methods:</p>
+
+<pre>
+input_pattern:<span class="function-name">method</span>(... )
+</pre>
+
+</p>
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">-- Procedural style:
+local p1 = pattern.new()
+pattern.insert(p1, 1, 1)
+
+-- Method chaining:
+local p2 = pattern.new():insert(1, 1)
+
+-- Prototype style:
+local p3 = pattern.new({{1,1,1}, {1,0,1}, {1,1,1}})
+
+-- Retrieve a random cell and the medoid cell:
+local random_cell = p1:rcell()
+local medoid_cell = p1:medoid()
+
+-- Compute the exterior hull using the Moore neighbourhood:
+local outer_hull = p1:exterior_hull(neighbourhood.moore())
+-- or equivalently:
+outer_hull = pattern.exterior_hull(p1, neighbourhood.moore())
+</pre>
+    </ul>
+
+
+<h2><a href="#Basic_pattern_functions">Basic pattern functions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#new">new (prototype)</a></td>
+	<td class="summary">Pattern constructor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#clone">clone (ip)</a></td>
+	<td class="summary">Creates a copy of an existing pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#insert">insert (ip, x, y)</a></td>
+	<td class="summary">Inserts a new cell into the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#has_cell">has_cell (ip, x, y)</a></td>
+	<td class="summary">Checks if a cell at (x, y) is active in the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter">filter (ip, fn)</a></td>
+	<td class="summary">Filters the pattern using a boolean callback, returning a subpattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#size">size (ip)</a></td>
+	<td class="summary">Returns the number of active cells in the pattern.</td>
+	</tr>
+</table>
+<h2><a href="#General_pattern_utilites">General pattern utilites </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#size_sort">size_sort (pa, pb)</a></td>
+	<td class="summary">Comparator function to sort patterns by their size (number of cells).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#count_neighbors">count_neighbors (p, nbh, arg1, arg2)</a></td>
+	<td class="summary">Counts active neighbors around a specified cell within the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#cell_list">cell_list (ip)</a></td>
+	<td class="summary">Returns a list (table) of active cells in the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#edit_distance">edit_distance (a, b)</a></td>
+	<td class="summary">Computes the edit distance between two patterns (the total number of differing cells).</td>
+	</tr>
+</table>
+<h2><a href="#Set_operations">Set operations </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#union">union (...)</a></td>
+	<td class="summary">Returns the union of a set of patterns.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#intersect">intersect (...)</a></td>
+	<td class="summary">Returns the intersection of multiple patterns (cells common to all).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#xor">xor (a, b)</a></td>
+	<td class="summary">Returns the symmetric difference (XOR) of two patterns.</td>
+	</tr>
+</table>
+<h2><a href="#Iterators">Iterators </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#cells">cells (ip)</a></td>
+	<td class="summary">Iterator over active cells in the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#cell_coordinates">cell_coordinates (ip)</a></td>
+	<td class="summary">Iterator over active cell coordinates (x, y) in the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#shuffled_cells">shuffled_cells (ip, rng)</a></td>
+	<td class="summary">Returns an iterator over active cells in randomized order.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#shuffled_coordinates">shuffled_coordinates (ip, rng)</a></td>
+	<td class="summary">Returns an iterator over active cell coordinates in randomized order.</td>
+	</tr>
+</table>
+<h2><a href="#Metamethods">Metamethods </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#__tostring">__tostring (ip)</a></td>
+	<td class="summary">Renders the pattern as a string.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__add">__add (a, b)</a></td>
+	<td class="summary">Adds two patterns using the '+' operator (i.e.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__sub">__sub (a, b)</a></td>
+	<td class="summary">Subtracts one pattern from another using the '-' operator.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__mul">__mul (a, b)</a></td>
+	<td class="summary">Computes the intersection of two patterns using the '*' operator.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__pow">__pow (a, b)</a></td>
+	<td class="summary">Computes the symmetric difference (XOR) of two patterns using the '^' operator.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__eq">__eq (a, b)</a></td>
+	<td class="summary">Tests whether two patterns are identical.</td>
+	</tr>
+</table>
+<h2><a href="#Cell_accessors">Cell accessors </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#centroid">centroid (ip)</a></td>
+	<td class="summary">Computes the centroid (arithmetic mean) of all cells in the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#medoid">medoid (ip, measure)</a></td>
+	<td class="summary">Computes the medoid cell of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#rcell">rcell (ip, rng)</a></td>
+	<td class="summary">Returns a random cell from the pattern.</td>
+	</tr>
+</table>
+<h2><a href="#Transformations">Transformations </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#translate">translate (ip, sx, sy)</a></td>
+	<td class="summary">Returns a new pattern translated by a vector (sx, sy).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#normalise">normalise (ip)</a></td>
+	<td class="summary">Normalizes the pattern by translating it so that its minimum coordinate is (0,0).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#enlarge">enlarge (ip, f)</a></td>
+	<td class="summary">Returns an enlarged version of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#rotate">rotate (ip)</a></td>
+	<td class="summary">Returns a new pattern rotated 90° clockwise about the origin.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#vreflect">vreflect (ip)</a></td>
+	<td class="summary">Returns a new pattern that is a vertical reflection of the original.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#hreflect">hreflect (ip)</a></td>
+	<td class="summary">Returns a new pattern that is a horizontal reflection of the original.</td>
+	</tr>
+</table>
+<h2><a href="#Random_subpatterns">Random subpatterns </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#sample">sample (ip, ncells, rng)</a></td>
+	<td class="summary">Returns a random subpattern containing a fixed number of cells.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#sample_poisson">sample_poisson (ip, distance, radius, rng)</a></td>
+	<td class="summary">Returns a Poisson-disc sampled subpattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#sample_mitchell">sample_mitchell (ip, distance, n, k, rng)</a></td>
+	<td class="summary">Returns an approximate Poisson-disc sample using Mitchell's best candidate algorithm.</td>
+	</tr>
+</table>
+<h2><a href="#Deterministic_subpatterns">Deterministic subpatterns </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#floodfill">floodfill (ip, icell, nbh)</a></td>
+	<td class="summary">Returns the contiguous subpattern (connected component) starting from a given cell.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#max_rectangle">max_rectangle (ip)</a></td>
+	<td class="summary">Finds the largest contiguous rectangular subpattern within the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#convex_hull">convex_hull (ip)</a></td>
+	<td class="summary">Computes the convex hull of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#thin">thin (ip, nbh)</a></td>
+	<td class="summary">Returns a thinned (skeletonized) version of the pattern.</td>
+	</tr>
+</table>
+<h2><a href="#Morphological_operations">Morphological operations </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#erode">erode (ip, nbh)</a></td>
+	<td class="summary">Returns the erosion of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#dilate">dilate (ip, nbh)</a></td>
+	<td class="summary">Returns the dilation of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#gradient">gradient (ip, nbh)</a></td>
+	<td class="summary">Returns the morphological gradient of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#opening">opening (ip, nbh)</a></td>
+	<td class="summary">Returns the morphological opening of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#closing">closing (ip, nbh)</a></td>
+	<td class="summary">Returns the morphological closing of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#interior_hull">interior_hull (ip, nbh)</a></td>
+	<td class="summary">Returns a pattern of cells that form the interior hull.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#exterior_hull">exterior_hull (ip, nbh)</a></td>
+	<td class="summary">Returns a pattern of cells that form the exterior hull.</td>
+	</tr>
+</table>
+<h2><a href="#Packing_methods">Packing methods </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#find_packing_position">find_packing_position (a, b, rng)</a></td>
+	<td class="summary">Finds a packing offset where pattern a fits entirely within domain b.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#find_central_packing_position">find_central_packing_position (a, b)</a></td>
+	<td class="summary">Finds a center-weighted packing offset to place pattern a as close as possible to the center of domain b.</td>
+	</tr>
+</table>
+<h2><a href="#Multipattern_methods">Multipattern methods </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#connected_components">connected_components (ip, nbh)</a></td>
+	<td class="summary">Returns a multipattern of the connected components within the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#interior_holes">interior_holes (ip, nbh)</a></td>
+	<td class="summary">Returns a multipattern of the interior holes of the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#bsp">bsp (ip, th_volume)</a></td>
+	<td class="summary">Partitions the pattern using binary space partitioning (BSP).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#neighbourhood_categories">neighbourhood_categories (ip, nbh)</a></td>
+	<td class="summary">Categorizes cells in the pattern based on neighbourhood configurations.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#perlin">perlin (ip, freq, depth, thresholds, rng)</a></td>
+	<td class="summary">Applies Perlin noise sampling to the pattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#voronoi">voronoi (seeds, domain, measure)</a></td>
+	<td class="summary">Generates Voronoi tessellation segments for a domain based on seed points.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#voronoi_relax">voronoi_relax (seeds, domain, measure, max_ite)</a></td>
+	<td class="summary">Performs centroidal Voronoi tessellation (Lloyd's algorithm) on a set of seeds.</td>
+	</tr>
+</table>
+<h2><a href="#Test_components">Test components </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#get_max_coordinate">get_max_coordinate ()</a></td>
+	<td class="summary">Returns the maximum allowed coordinate for spatial hashing.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#test_coordinate_map">test_coordinate_map (x, y)</a></td>
+	<td class="summary">Tests the conversion between (x, y) coordinates and the spatial hash key.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header has-description"><a name="Basic_pattern_functions"></a>Basic pattern functions </h2>
+
+          <div class="section-description">
+           Here are the basic functions for creating and manipulating patterns.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "new"></a>
+    <strong>new (prototype)</strong>
+    </dt>
+    <dd>
+    Pattern constructor.
+ Returns a new pattern. If a prototype is provided (an N×M table of 1's and 0's),
+ the corresponding active cells are inserted.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prototype</span>
+         (optional) an N×M table of ones and zeros.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern according to the prototype.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "clone"></a>
+    <strong>clone (ip)</strong>
+    </dt>
+    <dd>
+    Creates a copy of an existing pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         input pattern to clone.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern that is a duplicate of ip.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "insert"></a>
+    <strong>insert (ip, x, y)</strong>
+    </dt>
+    <dd>
+    Inserts a new cell into the pattern.
+ Returns the modified pattern to allow for method chaining.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to modify.
+        </li>
+        <li><span class="parameter">x</span>
+         x-coordinate (integer) of the new cell.
+        </li>
+        <li><span class="parameter">y</span>
+         y-coordinate (integer) of the new cell.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the updated pattern (for cascading calls).
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "has_cell"></a>
+    <strong>has_cell (ip, x, y)</strong>
+    </dt>
+    <dd>
+    Checks if a cell at (x, y) is active in the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to check.
+        </li>
+        <li><span class="parameter">x</span>
+         x-coordinate (integer).
+        </li>
+        <li><span class="parameter">y</span>
+         y-coordinate (integer).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean true if the cell is active, false otherwise.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter"></a>
+    <strong>filter (ip, fn)</strong>
+    </dt>
+    <dd>
+    Filters the pattern using a boolean callback, returning a subpattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         the original pattern.
+        </li>
+        <li><span class="parameter">fn</span>
+         a function(cell) -> boolean that determines if a cell is kept.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern containing only the cells that pass the filter.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "size"></a>
+    <strong>size (ip)</strong>
+    </dt>
+    <dd>
+    Returns the number of active cells in the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to measure.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        integer count of active cells.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="General_pattern_utilites"></a>General pattern utilites </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "size_sort"></a>
+    <strong>size_sort (pa, pb)</strong>
+    </dt>
+    <dd>
+    Comparator function to sort patterns by their size (number of cells).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pa</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">pb</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean true if pa's size is greater than pb's.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "count_neighbors"></a>
+    <strong>count_neighbors (p, nbh, arg1, arg2)</strong>
+    </dt>
+    <dd>
+    Counts active neighbors around a specified cell within the pattern.
+ Can be invoked with either a cell object or with x and y coordinates.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">p</span>
+         a pattern.
+        </li>
+        <li><span class="parameter">nbh</span>
+         a neighbourhood (e.g., neighbourhood.moore()).
+        </li>
+        <li><span class="parameter">arg1</span>
+         either a cell (with x and y fields) or the x-coordinate (integer).
+        </li>
+        <li><span class="parameter">arg2</span>
+         (optional) the y-coordinate (integer) if arg1 is not a cell.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        integer count of active neighbouring cells.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "cell_list"></a>
+    <strong>cell_list (ip)</strong>
+    </dt>
+    <dd>
+    Returns a list (table) of active cells in the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to list cells from.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table of cell objects.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "edit_distance"></a>
+    <strong>edit_distance (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the edit distance between two patterns (the total number of differing cells).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        integer representing the edit distance.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Set_operations"></a>Set operations </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "union"></a>
+    <strong>union (...)</strong>
+    </dt>
+    <dd>
+    Returns the union of a set of patterns.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         a table of patterns or a list of pattern arguments.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern that is the union of the provided patterns.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "intersect"></a>
+    <strong>intersect (...)</strong>
+    </dt>
+    <dd>
+    Returns the intersection of multiple patterns (cells common to all).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         two or more patterns to intersect.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern of cells that exist in every input pattern.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "xor"></a>
+    <strong>xor (a, b)</strong>
+    </dt>
+    <dd>
+    Returns the symmetric difference (XOR) of two patterns.
+ Cells are included if they exist in either pattern but not in both.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern representing the symmetric difference.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Iterators"></a>Iterators </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "cells"></a>
+    <strong>cells (ip)</strong>
+    </dt>
+    <dd>
+    Iterator over active cells in the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to iterate over.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        iterator that returns each active cell as a cell object.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">for</span> cell <span class="keyword">in</span> p:<span class="function-name">cells</span>() <span class="keyword">do</span>
+    <span class="global">print</span>(cell.x, cell.y)
+<span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "cell_coordinates"></a>
+    <strong>cell_coordinates (ip)</strong>
+    </dt>
+    <dd>
+    Iterator over active cell coordinates (x, y) in the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to iterate over.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        iterator that returns the x and y coordinates of each active cell.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">for</span> x, y <span class="keyword">in</span> p:<span class="function-name">cell_coordinates</span>() <span class="keyword">do</span>
+    <span class="global">print</span>(x, y)
+<span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "shuffled_cells"></a>
+    <strong>shuffled_cells (ip, rng)</strong>
+    </dt>
+    <dd>
+    Returns an iterator over active cells in randomized order.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to iterate over.
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        iterator that yields each active cell (cell object) in a random order.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">for</span> cell <span class="keyword">in</span> pattern.<span class="function-name">shuffled_cells</span>(p) <span class="keyword">do</span>
+    <span class="global">print</span>(cell.x, cell.y)
+<span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "shuffled_coordinates"></a>
+    <strong>shuffled_coordinates (ip, rng)</strong>
+    </dt>
+    <dd>
+    Returns an iterator over active cell coordinates in randomized order.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to iterate over.
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        iterator that yields x and y coordinates in random order.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">for</span> x, y <span class="keyword">in</span> pattern.<span class="function-name">shuffled_coordinates</span>(p) <span class="keyword">do</span>
+    <span class="global">print</span>(x, y)
+<span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Metamethods"></a>Metamethods </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "__tostring"></a>
+    <strong>__tostring (ip)</strong>
+    </dt>
+    <dd>
+    Renders the pattern as a string.
+ Active cells are shown with pattern.onchar and inactive cells with pattern.offchar.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to render.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string representation of the pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">print</span>(p)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__add"></a>
+    <strong>__add (a, b)</strong>
+    </dt>
+    <dd>
+    Adds two patterns using the '+' operator (i.e.  returns their union).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern representing the union of a and b.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> combined = p1 + p2</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__sub"></a>
+    <strong>__sub (a, b)</strong>
+    </dt>
+    <dd>
+    Subtracts one pattern from another using the '-' operator.
+ Returns a new pattern with cells in a that are not in b.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         base pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         pattern to subtract from a.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern with the difference.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> diff = p1 - p2</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__mul"></a>
+    <strong>__mul (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the intersection of two patterns using the '*' operator.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern containing only the cells common to both.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> common = p1 * p2</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__pow"></a>
+    <strong>__pow (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the symmetric difference (XOR) of two patterns using the '^' operator.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern with cells present in either a or b, but not both.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> xor_pattern = p1 ^ p2</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__eq"></a>
+    <strong>__eq (a, b)</strong>
+    </dt>
+    <dd>
+    Tests whether two patterns are identical.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first pattern.
+        </li>
+        <li><span class="parameter">b</span>
+         second pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean true if the patterns are equal, false otherwise.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> p1 == p2 <span class="keyword">then</span>
+    <span class="comment">-- patterns are identical
+</span><span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Cell_accessors"></a>Cell accessors </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "centroid"></a>
+    <strong>centroid (ip)</strong>
+    </dt>
+    <dd>
+    Computes the centroid (arithmetic mean) of all cells in the pattern.
+ The result is rounded to the nearest integer coordinate.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a cell representing the centroid (which may not be active).
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> center = p:<span class="function-name">centroid</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "medoid"></a>
+    <strong>medoid (ip, measure)</strong>
+    </dt>
+    <dd>
+    Computes the medoid cell of the pattern.
+ The medoid minimizes the total distance to all other cells (using Euclidean distance by default).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+        <li><span class="parameter">measure</span>
+         (optional) distance function (default: Euclidean).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the medoid cell of the pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> medoid = p:<span class="function-name">medoid</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "rcell"></a>
+    <strong>rcell (ip, rng)</strong>
+    </dt>
+    <dd>
+    Returns a random cell from the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to sample from.
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a random cell from the pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> random_cell = p:<span class="function-name">rcell</span>()</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Transformations"></a>Transformations </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "translate"></a>
+    <strong>translate (ip, sx, sy)</strong>
+    </dt>
+    <dd>
+    Returns a new pattern translated by a vector (sx, sy).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to translate.
+        </li>
+        <li><span class="parameter">sx</span>
+         translation along the x-axis (integer).
+        </li>
+        <li><span class="parameter">sy</span>
+         translation along the y-axis (integer).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern shifted by (sx, sy).
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> p_translated = p:<span class="function-name">translate</span>(<span class="number">2</span>, <span class="number">3</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "normalise"></a>
+    <strong>normalise (ip)</strong>
+    </dt>
+    <dd>
+    Normalizes the pattern by translating it so that its minimum coordinate is (0,0).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to normalize.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new normalized pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> p_norm = p:<span class="function-name">normalise</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "enlarge"></a>
+    <strong>enlarge (ip, f)</strong>
+    </dt>
+    <dd>
+    Returns an enlarged version of the pattern.
+ Each active cell is replaced by an f×f block.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to enlarge.
+        </li>
+        <li><span class="parameter">f</span>
+         enlargement factor (number).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new enlarged pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> p_big = p:<span class="function-name">enlarge</span>(<span class="number">2</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "rotate"></a>
+    <strong>rotate (ip)</strong>
+    </dt>
+    <dd>
+    Returns a new pattern rotated 90° clockwise about the origin.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to rotate.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a rotated pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> p_rotated = p:<span class="function-name">rotate</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "vreflect"></a>
+    <strong>vreflect (ip)</strong>
+    </dt>
+    <dd>
+    Returns a new pattern that is a vertical reflection of the original.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to reflect vertically.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a vertically reflected pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> p_vreflected = p:<span class="function-name">vreflect</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "hreflect"></a>
+    <strong>hreflect (ip)</strong>
+    </dt>
+    <dd>
+    Returns a new pattern that is a horizontal reflection of the original.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to reflect horizontally.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a horizontally reflected pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> p_hreflected = p:<span class="function-name">hreflect</span>()</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Random_subpatterns"></a>Random subpatterns </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "sample"></a>
+    <strong>sample (ip, ncells, rng)</strong>
+    </dt>
+    <dd>
+    Returns a random subpattern containing a fixed number of cells.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern (domain) to sample from.
+        </li>
+        <li><span class="parameter">ncells</span>
+         number of cells to sample (integer).
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern with ncells randomly selected cells.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> sample = p:<span class="function-name">sample</span>(<span class="number">10</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "sample_poisson"></a>
+    <strong>sample_poisson (ip, distance, radius, rng)</strong>
+    </dt>
+    <dd>
+    Returns a Poisson-disc sampled subpattern.
+ Ensures that no two sampled cells are closer than the given radius.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern (domain) to sample from.
+        </li>
+        <li><span class="parameter">distance</span>
+         distance function (e.g., cell.euclidean).
+        </li>
+        <li><span class="parameter">radius</span>
+         minimum separation (number).
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern sampled with Poisson-disc criteria.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> poisson_sample = p:<span class="function-name">sample_poisson</span>(cell.euclidean, <span class="number">5</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "sample_mitchell"></a>
+    <strong>sample_mitchell (ip, distance, n, k, rng)</strong>
+    </dt>
+    <dd>
+    Returns an approximate Poisson-disc sample using Mitchell's best candidate algorithm.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern (domain) to sample from.
+        </li>
+        <li><span class="parameter">distance</span>
+         distance function (e.g., cell.euclidean).
+        </li>
+        <li><span class="parameter">n</span>
+         number of samples (integer).
+        </li>
+        <li><span class="parameter">k</span>
+         number of candidate attempts per iteration (integer).
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern with n samples chosen via the algorithm.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> mitchell_sample = p:<span class="function-name">sample_mitchell</span>(cell.euclidean, <span class="number">10</span>, <span class="number">5</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Deterministic_subpatterns"></a>Deterministic subpatterns </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "floodfill"></a>
+    <strong>floodfill (ip, icell, nbh)</strong>
+    </dt>
+    <dd>
+    Returns the contiguous subpattern (connected component) starting from a given cell.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern upon which the flood fill is to be performed.
+        </li>
+        <li><span class="parameter">icell</span>
+         a cell specifying the origin of the flood fill.
+        </li>
+        <li><span class="parameter">nbh</span>
+         (optional) neighbourhood to use (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern containing the connected component.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> component = p:<span class="function-name">floodfill</span>(cell.<span class="function-name">new</span>(<span class="number">2</span>, <span class="number">3</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "max_rectangle"></a>
+    <strong>max_rectangle (ip)</strong>
+    </dt>
+    <dd>
+    Finds the largest contiguous rectangular subpattern within the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to analyze.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a subpattern representing the maximal rectangle.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> rect = p:<span class="function-name">max_rectangle</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "convex_hull"></a>
+    <strong>convex_hull (ip)</strong>
+    </dt>
+    <dd>
+    Computes the convex hull of the pattern.
+ The hull points are connected using line rasterization.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern representing the convex hull.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> hull = p:<span class="function-name">convex_hull</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "thin"></a>
+    <strong>thin (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns a thinned (skeletonized) version of the pattern.
+ Repeatedly removes boundary cells (while preserving connectivity) until no
+ further safe removals can be made.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to thin.
+        </li>
+        <li><span class="parameter">nbh</span>
+         (optional) neighbourhood for connectivity (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new, thinned pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> thin_p = p:<span class="function-name">thin</span>()</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Morphological_operations"></a>Morphological operations </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "erode"></a>
+    <strong>erode (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns the erosion of the pattern.
+ A cell is retained only if all of its neighbours (as defined by nbh) are active.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to erode.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new, eroded pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> eroded = p:<span class="function-name">erode</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "dilate"></a>
+    <strong>dilate (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns the dilation of the pattern.
+ Each active cell contributes its neighbours (as defined by nbh) to the result.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to dilate.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new, dilated pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> dilated = p:<span class="function-name">dilate</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "gradient"></a>
+    <strong>gradient (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns the morphological gradient of the pattern.
+ Computes the difference between the dilation and erosion.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood for dilation/erosion (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern representing the gradient.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> grad = p:<span class="function-name">gradient</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "opening"></a>
+    <strong>opening (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns the morphological opening of the pattern.
+ Performs erosion followed by dilation to remove small artifacts.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new, opened pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> opened = p:<span class="function-name">opening</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "closing"></a>
+    <strong>closing (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns the morphological closing of the pattern.
+ Performs dilation followed by erosion to fill small holes.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new, closed pattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> closed = p:<span class="function-name">closing</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "interior_hull"></a>
+    <strong>interior_hull (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns a pattern of cells that form the interior hull.
+ These are cells that neighbor inactive cells while still belonging to the pattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern representing the interior hull.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> interior = p:<span class="function-name">interior_hull</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "exterior_hull"></a>
+    <strong>exterior_hull (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns a pattern of cells that form the exterior hull.
+ This consists of inactive neighbours of the pattern, useful for enlarging or
+ determining non-overlapping borders.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to process.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new pattern representing the exterior hull.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> exterior = p:<span class="function-name">exterior_hull</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Packing_methods"></a>Packing methods </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "find_packing_position"></a>
+    <strong>find_packing_position (a, b, rng)</strong>
+    </dt>
+    <dd>
+    Finds a packing offset where pattern a fits entirely within domain b.
+ Returns a coordinate shift that, when applied to a, makes it tile inside b.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         pattern to pack.
+        </li>
+        <li><span class="parameter">b</span>
+         domain pattern in which to pack a.
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a cell (as a coordinate shift) if a valid position is found; nil otherwise.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> offset = pattern.<span class="function-name">find_packing_position</span>(p, domain)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "find_central_packing_position"></a>
+    <strong>find_central_packing_position (a, b)</strong>
+    </dt>
+    <dd>
+    Finds a center-weighted packing offset to place pattern a as close as possible to the center of domain b.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         pattern to pack.
+        </li>
+        <li><span class="parameter">b</span>
+         domain pattern.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a coordinate shift if a valid position is found; nil otherwise.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> central_offset = pattern.<span class="function-name">find_central_packing_position</span>(p, domain)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Multipattern_methods"></a>Multipattern methods </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "connected_components"></a>
+    <strong>connected_components (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns a multipattern of the connected components within the pattern.
+ Uses flood-fill to extract contiguous subpatterns.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to analyze.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.moore()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern containing each connected component as a subpattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> components = p:<span class="function-name">connected_components</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "interior_holes"></a>
+    <strong>interior_holes (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Returns a multipattern of the interior holes of the pattern.
+ Interior holes are inactive regions completely surrounded by active cells.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to analyze.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood (default: neighbourhood.von_neumann()).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern of interior hole subpatterns.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> holes = p:<span class="function-name">interior_holes</span>(neighbourhood.<span class="function-name">von_neumann</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "bsp"></a>
+    <strong>bsp (ip, th_volume)</strong>
+    </dt>
+    <dd>
+    Partitions the pattern using binary space partitioning (BSP).
+ Recursively subdivides contiguous rectangular areas until each partition's volume is below th_volume.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern to partition.
+        </li>
+        <li><span class="parameter">th_volume</span>
+         threshold volume (number) for final partitions.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern of BSP subpatterns.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> partitions = p:<span class="function-name">bsp</span>(<span class="number">50</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "neighbourhood_categories"></a>
+    <strong>neighbourhood_categories (ip, nbh)</strong>
+    </dt>
+    <dd>
+    Categorizes cells in the pattern based on neighbourhood configurations.
+ Returns a multipattern with one subpattern per neighbourhood category.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern whose cells are to be categorized.
+        </li>
+        <li><span class="parameter">nbh</span>
+         neighbourhood used for categorization.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern with each category represented as a subpattern.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> categories = p:<span class="function-name">neighbourhood_categories</span>(neighbourhood.<span class="function-name">moore</span>())</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "perlin"></a>
+    <strong>perlin (ip, freq, depth, thresholds, rng)</strong>
+    </dt>
+    <dd>
+    Applies Perlin noise sampling to the pattern.
+ Generates a multipattern by thresholding Perlin noise values at multiple levels.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ip</span>
+         pattern (domain) to sample from.
+        </li>
+        <li><span class="parameter">freq</span>
+         frequency for Perlin noise (number).
+        </li>
+        <li><span class="parameter">depth</span>
+         sampling depth (integer).
+        </li>
+        <li><span class="parameter">thresholds</span>
+         table of threshold values (each between 0 and 1).
+        </li>
+        <li><span class="parameter">rng</span>
+         (optional) random number generator (e.g., math.random).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern with one component per threshold level.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> noise_samples = p:<span class="function-name">perlin</span>(<span class="number">0.1</span>, <span class="number">4</span>, {<span class="number">0.3</span>, <span class="number">0.5</span>, <span class="number">0.7</span>})</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "voronoi"></a>
+    <strong>voronoi (seeds, domain, measure)</strong>
+    </dt>
+    <dd>
+    Generates Voronoi tessellation segments for a domain based on seed points.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">seeds</span>
+         pattern containing seed cells.
+        </li>
+        <li><span class="parameter">domain</span>
+         pattern defining the tessellation domain.
+        </li>
+        <li><span class="parameter">measure</span>
+         distance function (e.g., cell.euclidean).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern of Voronoi segments.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> segments = pattern.<span class="function-name">voronoi</span>(seeds, domain, cell.euclidean)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "voronoi_relax"></a>
+    <strong>voronoi_relax (seeds, domain, measure, max_ite)</strong>
+    </dt>
+    <dd>
+    Performs centroidal Voronoi tessellation (Lloyd's algorithm) on a set of seeds.
+ Iteratively relaxes seed positions until convergence or a maximum number of iterations.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">seeds</span>
+         initial seed pattern.
+        </li>
+        <li><span class="parameter">domain</span>
+         tessellation domain pattern.
+        </li>
+        <li><span class="parameter">measure</span>
+         distance function (e.g., cell.euclidean).
+        </li>
+        <li><span class="parameter">max_ite</span>
+         (optional) maximum iterations (default: 30).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a multipattern of Voronoi segments, a pattern of relaxed seed positions, and a boolean convergence flag.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> segments, relaxed_seeds, converged = pattern.<span class="function-name">voronoi_relax</span>(seeds, domain, cell.euclidean)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Test_components"></a>Test components </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "get_max_coordinate"></a>
+    <strong>get_max_coordinate ()</strong>
+    </dt>
+    <dd>
+    Returns the maximum allowed coordinate for spatial hashing.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        maximum coordinate value (number).
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> max_coord = pattern.<span class="function-name">get_max_coordinate</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "test_coordinate_map"></a>
+    <strong>test_coordinate_map (x, y)</strong>
+    </dt>
+    <dd>
+    Tests the conversion between (x, y) coordinates and the spatial hash key.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+         test x-coordinate (number).
+        </li>
+        <li><span class="parameter">y</span>
+         test y-coordinate (number).
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean true if the conversion is correct, false otherwise.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> valid = pattern.<span class="function-name">test_coordinate_map</span>(<span class="number">10</span>, <span class="number">20</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-03-12 19:36:11 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

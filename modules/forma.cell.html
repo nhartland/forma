@@ -1,0 +1,483 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>forma Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>forma</h1>
+
+
+<ul>
+  <li><a href="../contents.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Metamethods">Metamethods</a></li>
+<li><a href="#Distance_measures">Distance measures</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>forma.cell</strong></li>
+  <li><a href="../modules/forma.pattern.html">forma.pattern</a></li>
+  <li><a href="../modules/forma.primitives.html">forma.primitives</a></li>
+  <li><a href="../modules/forma.automata.html">forma.automata</a></li>
+  <li><a href="../modules/forma.multipattern.html">forma.multipattern</a></li>
+  <li><a href="../modules/forma.neighbourhood.html">forma.neighbourhood</a></li>
+  <li><a href="../modules/forma.raycasting.html">forma.raycasting</a></li>
+</ul>
+<h2>Readme</h2>
+<ul class="nowrap">
+  <li><a href="../readme/README.md.html">README</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
+  <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
+  <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
+  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
+  <li><a href="../examples/convex_hull.lua.html">convex_hull.lua</a></li>
+  <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
+  <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
+  <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
+  <li><a href="../examples/perlin.lua.html">perlin.lua</a></li>
+  <li><a href="../examples/raycasting.lua.html">raycasting.lua</a></li>
+  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
+  <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
+  <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>forma.cell</code></h1>
+<p>Integer point/vector class defining the position of a cell.</p>
+<p> The <strong>cell</strong> class behaves much as a normal 2D vector class, with the
+ restriction that its components must be integer-valued. A subset of normal
+ vector operations are available, namely a vector addition and subtraction,
+ along with a vector equality check.</p>
+
+<p> Along with the <a href="../modules/forma.cell.html">cell</a> class definition, a number of distance measures
+ between cell positions are provided. Specifically, the Manhattan, Chebyshev
+ and Euclidean distances.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#new">new (x, y)</a></td>
+	<td class="summary">Initialise a new forma.cell.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#clone">clone (icell)</a></td>
+	<td class="summary">Perform a copy of a cell.</td>
+	</tr>
+</table>
+<h2><a href="#Metamethods">Metamethods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#__add">__add (a, b)</a></td>
+	<td class="summary">Add two cell positions</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__sub">__sub (a, b)</a></td>
+	<td class="summary">Subtract two cell positions</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__eq">__eq (a, b)</a></td>
+	<td class="summary">Test for equality of two cell vectors.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#__tostring">__tostring (icell)</a></td>
+	<td class="summary">Render a cell as a string.</td>
+	</tr>
+</table>
+<h2><a href="#Distance_measures">Distance measures</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#manhattan">manhattan (a, b)</a></td>
+	<td class="summary">Manhattan distance between cells.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#chebyshev">chebyshev (a, b)</a></td>
+	<td class="summary">Chebyshev distance between cells.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#euclidean">euclidean (a, b)</a></td>
+	<td class="summary">Euclidean distance between cells.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#euclidean2">euclidean2 (a, b)</a></td>
+	<td class="summary">Squared Euclidean distance between cells.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "new"></a>
+    <strong>new (x, y)</strong>
+    </dt>
+    <dd>
+    Initialise a new forma.cell.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+         first coordinate
+        </li>
+        <li><span class="parameter">y</span>
+         second coordinate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        new forma.cell
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> x, y = <span class="number">1</span>, <span class="number">5</span>
+<span class="keyword">local</span> new_cell = cell.<span class="function-name">new</span>(x,y)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "clone"></a>
+    <strong>clone (icell)</strong>
+    </dt>
+    <dd>
+    Perform a copy of a cell.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">icell</span>
+         to be copied
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        copy of <code>icell</code>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> old_cell = cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">1</span>)
+<span class="keyword">local</span> new_cell = old_cell:<span class="function-name">clone</span>()</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Metamethods"></a>Metamethods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "__add"></a>
+    <strong>__add (a, b)</strong>
+    </dt>
+    <dd>
+    Add two cell positions
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        c = a + b
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> c1, c2 = cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">1</span>), cell.<span class="function-name">new</span>(<span class="number">0</span>,<span class="number">0</span>)
+<span class="keyword">local</span> c3 = c2 + c1
+<span class="global">assert</span>(c3 == c1)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__sub"></a>
+    <strong>__sub (a, b)</strong>
+    </dt>
+    <dd>
+    Subtract two cell positions
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        c = a - b
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> c1, c2 = cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">1</span>), cell.<span class="function-name">new</span>(<span class="number">2</span>,<span class="number">2</span>)
+<span class="keyword">local</span> c3 = c2 - c1
+<span class="global">assert</span>(c3 == c1)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "__eq"></a>
+    <strong>__eq (a, b)</strong>
+    </dt>
+    <dd>
+    Test for equality of two cell vectors.
+ assert(cell.new(0,1) == cell.new(0,1)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a == b
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "__tostring"></a>
+    <strong>__tostring (icell)</strong>
+    </dt>
+    <dd>
+    Render a cell as a string.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">icell</span>
+         the forma.cell being rendered as a string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string of the form <code>(icell.x, icell.y)</code>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">print</span>(cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">1</span>))</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Distance_measures"></a>Distance measures</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "manhattan"></a>
+    <strong>manhattan (a, b)</strong>
+    </dt>
+    <dd>
+    Manhattan distance between cells.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        L1(a,b) = |a.x-b.x| + |a.y-b.y|
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> distance = cell.<span class="function-name">manhattan</span>(cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">2</span>), cell.<span class="function-name">new</span>(<span class="number">3</span>,<span class="number">4</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "chebyshev"></a>
+    <strong>chebyshev (a, b)</strong>
+    </dt>
+    <dd>
+    Chebyshev distance between cells.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        L_inf(a,b) = max(|a.x-b.x|, |a.y-b.y|)
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> distance = cell.<span class="function-name">chebyshev</span>(cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">2</span>), cell.<span class="function-name">new</span>(<span class="number">3</span>,<span class="number">4</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "euclidean"></a>
+    <strong>euclidean (a, b)</strong>
+    </dt>
+    <dd>
+    Euclidean distance between cells.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        L_2(a,b) = sqrt((a-b)^2)
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> distance = cell.<span class="function-name">euclidean</span>(cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">2</span>), cell.<span class="function-name">new</span>(<span class="number">3</span>,<span class="number">4</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "euclidean2"></a>
+    <strong>euclidean2 (a, b)</strong>
+    </dt>
+    <dd>
+    Squared Euclidean distance between cells.
+ A little faster than <a href="../modules/forma.cell.html#euclidean">cell.euclidean</a> as it avoids the sqrt.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         first cell
+        </li>
+        <li><span class="parameter">b</span>
+         second cell
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        L_2(a,b)^2 = (a-b)^2
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> distance = cell.<span class="function-name">euclidean2</span>(cell.<span class="function-name">new</span>(<span class="number">1</span>,<span class="number">2</span>), cell.<span class="function-name">new</span>(<span class="number">3</span>,<span class="number">4</span>))</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-03-12 19:36:11 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

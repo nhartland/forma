@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>forma Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>forma</h1>
+
+
+<ul>
+  <li><a href="../contents.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
+  <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
+  <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
+  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
+  <li><a href="../examples/convex_hull.lua.html">convex_hull.lua</a></li>
+  <li><strong>corridors.lua</strong></li>
+  <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
+  <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
+  <li><a href="../examples/perlin.lua.html">perlin.lua</a></li>
+  <li><a href="../examples/raycasting.lua.html">raycasting.lua</a></li>
+  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
+  <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
+  <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/forma.cell.html">forma.cell</a></li>
+  <li><a href="../modules/forma.pattern.html">forma.pattern</a></li>
+  <li><a href="../modules/forma.primitives.html">forma.primitives</a></li>
+  <li><a href="../modules/forma.automata.html">forma.automata</a></li>
+  <li><a href="../modules/forma.multipattern.html">forma.multipattern</a></li>
+  <li><a href="../modules/forma.neighbourhood.html">forma.neighbourhood</a></li>
+  <li><a href="../modules/forma.raycasting.html">forma.raycasting</a></li>
+</ul>
+<h2>Readme</h2>
+<ul class="nowrap">
+  <li><a href="../readme/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>corridors.lua</h2>
+<pre>
+<span class="comment">-- Combining cellular automata rules
+</span><span class="comment">-- Here the way multiple CA rules can be combined into a single ruleset is
+</span><span class="comment">-- demonstrated. A asynchronous cellular automata with a complicated ruleset
+</span><span class="comment">-- generates an interesting 'corridor' like pattern.
+</span>
+<span class="keyword">local</span> primitives    = <span class="global">require</span>(<span class="string">'forma.primitives'</span>)
+<span class="keyword">local</span> automata      = <span class="global">require</span>(<span class="string">'forma.automata'</span>)
+<span class="keyword">local</span> neighbourhood = <span class="global">require</span>(<span class="string">'forma.neighbourhood'</span>)
+
+<span class="comment">-- Generate a domain, and an initial state ca with one random seed cell
+</span><span class="keyword">local</span> domain = primitives.<span class="function-name">square</span>(<span class="number">80</span>,<span class="number">20</span>)
+<span class="keyword">local</span> ca = domain:<span class="function-name">sample</span>(<span class="number">1</span>)
+
+<span class="comment">-- Complicated ruleset, try leaving out or adding more rules
+</span><span class="keyword">local</span> moore = automata.<span class="function-name">rule</span>(neighbourhood.<span class="function-name">moore</span>(),      <span class="string">"B12/S012345678"</span>)
+<span class="keyword">local</span> diag  = automata.<span class="function-name">rule</span>(neighbourhood.<span class="function-name">diagonal_2</span>(), <span class="string">"B01/S01234"</span>)
+<span class="keyword">local</span> vn    = automata.<span class="function-name">rule</span>(neighbourhood.<span class="function-name">von_neumann</span>(),<span class="string">"B12/S01234"</span>)
+<span class="keyword">local</span> ruleset = {vn, moore, diag}
+
+<span class="keyword">repeat</span>
+    <span class="keyword">local</span> converged
+    ca, converged = automata.<span class="function-name">async_iterate</span>(ca, domain, ruleset)
+<span class="keyword">until</span> converged
+
+<span class="comment">-- Print corridors to screen using box-building characters
+</span><span class="keyword">local</span> nbh = neighbourhood.<span class="function-name">von_neumann</span>()
+ca:<span class="function-name">neighbourhood_categories</span>(nbh)
+  :<span class="global">print</span>(nbh:<span class="function-name">category_label</span>(), domain)</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-03-12 19:36:11 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

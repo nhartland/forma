@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>forma Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>forma</h1>
+
+
+<ul>
+  <li><a href="../contents.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/forma.cell.html">forma.cell</a></li>
+  <li><a href="../modules/forma.pattern.html">forma.pattern</a></li>
+  <li><a href="../modules/forma.primitives.html">forma.primitives</a></li>
+  <li><a href="../modules/forma.automata.html">forma.automata</a></li>
+  <li><a href="../modules/forma.multipattern.html">forma.multipattern</a></li>
+  <li><a href="../modules/forma.neighbourhood.html">forma.neighbourhood</a></li>
+  <li><strong>forma.raycasting</strong></li>
+</ul>
+<h2>Readme</h2>
+<ul class="nowrap">
+  <li><a href="../readme/README.md.html">README</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
+  <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
+  <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
+  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
+  <li><a href="../examples/convex_hull.lua.html">convex_hull.lua</a></li>
+  <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
+  <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
+  <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
+  <li><a href="../examples/perlin.lua.html">perlin.lua</a></li>
+  <li><a href="../examples/raycasting.lua.html">raycasting.lua</a></li>
+  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
+  <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
+  <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>forma.raycasting</code></h1>
+<p>Ray tracing algorithms
+ Algorithms for identifying visible segments of a pattern from a single cell.</p>
+<p> This can be used for 'field of view' applications.</p>
+
+<p> Sources:</p>
+
+<p> <code>http://www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html</code>
+ <code>http://www.roguebasin.com/index.php?title=LOS_using_strict_definition</code></p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ray.cast">ray.cast (v0, v1, domain)</a></td>
+	<td class="summary">Casts a ray from a start to an end cell.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ray.cast_octant">ray.cast_octant (v0, domain, oct, ray_length)</a></td>
+	<td class="summary">Casts rays from a start cell across an octant.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ray.cast_360">ray.cast_360 (v0, domain, ray_length)</a></td>
+	<td class="summary">Casts rays from a starting cell in all directions</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ray.cast"></a>
+    <strong>ray.cast (v0, v1, domain)</strong>
+    </dt>
+    <dd>
+    Casts a ray from a start to an end cell.
+ Returns {true/false} if the cast is successful/blocked.
+ Adapted from:</p>
+
+<p> <code>http://www.roguebasin.com/index.php?title=LOS_using_strict_definition</code>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v0</span>
+         starting cell of ray
+        </li>
+        <li><span class="parameter">v1</span>
+         end cell of ray
+        </li>
+        <li><span class="parameter">domain</span>
+         the domain in which we are casting
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true or false depending on whether the ray was successfully cast
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ray.cast_octant"></a>
+    <strong>ray.cast_octant (v0, domain, oct, ray_length)</strong>
+    </dt>
+    <dd>
+    Casts rays from a start cell across an octant.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v0</span>
+         starting cell of ray
+        </li>
+        <li><span class="parameter">domain</span>
+         the domain in which we are casting
+        </li>
+        <li><span class="parameter">oct</span>
+         the octant identifier (integer between 1 and 8)
+        </li>
+        <li><span class="parameter">ray_length</span>
+         the maximum length of the ray
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the pattern illuminated by the ray casting
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ray.cast_360"></a>
+    <strong>ray.cast_360 (v0, domain, ray_length)</strong>
+    </dt>
+    <dd>
+    Casts rays from a starting cell in all directions
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v0</span>
+         starting cell of ray
+        </li>
+        <li><span class="parameter">domain</span>
+         the domain in which we are casting
+        </li>
+        <li><span class="parameter">ray_length</span>
+         the maximum length of the ray
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the pattern illuminated by the ray casting
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-03-12 19:36:11 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

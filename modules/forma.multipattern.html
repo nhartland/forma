@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>forma Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>forma</h1>
+
+
+<ul>
+  <li><a href="../contents.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Utilities">Utilities </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/forma.cell.html">forma.cell</a></li>
+  <li><a href="../modules/forma.pattern.html">forma.pattern</a></li>
+  <li><a href="../modules/forma.primitives.html">forma.primitives</a></li>
+  <li><a href="../modules/forma.automata.html">forma.automata</a></li>
+  <li><strong>forma.multipattern</strong></li>
+  <li><a href="../modules/forma.neighbourhood.html">forma.neighbourhood</a></li>
+  <li><a href="../modules/forma.raycasting.html">forma.raycasting</a></li>
+</ul>
+<h2>Readme</h2>
+<ul class="nowrap">
+  <li><a href="../readme/README.md.html">README</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/async_automata.lua.html">async_automata.lua</a></li>
+  <li><a href="../examples/binary_space_partition.lua.html">binary_space_partition.lua</a></li>
+  <li><a href="../examples/bubbles.lua.html">bubbles.lua</a></li>
+  <li><a href="../examples/cellular_automata.lua.html">cellular_automata.lua</a></li>
+  <li><a href="../examples/convex_hull.lua.html">convex_hull.lua</a></li>
+  <li><a href="../examples/corridors.lua.html">corridors.lua</a></li>
+  <li><a href="../examples/isolines.lua.html">isolines.lua</a></li>
+  <li><a href="../examples/maxrectangle.lua.html">maxrectangle.lua</a></li>
+  <li><a href="../examples/perlin.lua.html">perlin.lua</a></li>
+  <li><a href="../examples/raycasting.lua.html">raycasting.lua</a></li>
+  <li><a href="../examples/readme.lua.html">readme.lua</a></li>
+  <li><a href="../examples/sampling.lua.html">sampling.lua</a></li>
+  <li><a href="../examples/voronoi.lua.html">voronoi.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>forma.multipattern</code></h1>
+<p>A class contain a collection of <a href="../modules/forma.pattern.html">pattern</a> objects.</p>
+<p> Many pattern operations generate a set of patterns. This
+ class aims to provide a convenient collection with some
+ common methods for handling them.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#__len">__len (mp)</a></td>
+	<td class="summary">Multipattern length.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#new">new (components)</a></td>
+	<td class="summary">Create a new multipattern from a list of patterns.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#clone">clone (mp)</a></td>
+	<td class="summary">Clone the multipattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#insert">insert (mp, ip)</a></td>
+	<td class="summary">Insert a pattern into the multipattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#n_components">n_components (mp)</a></td>
+	<td class="summary">Count the number of components in a multipattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#map">map (mp, fn)</a></td>
+	<td class="summary">Map a function over all patterns in this multipattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter">filter (mp, fn)</a></td>
+	<td class="summary">Filter out sub-patterns according to a predicate.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#apply">apply (mp, method, ...)</a></td>
+	<td class="summary">Apply a named method to each pattern, returning a new multipattern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#union_all">union_all (mp)</a></td>
+	<td class="summary">Union all sub-patterns into a single pattern.</td>
+	</tr>
+</table>
+<h2><a href="#Utilities">Utilities </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#print">print (mp, chars, domain)</a></td>
+	<td class="summary">Print a multipattern.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "__len"></a>
+    <strong>__len (mp)</strong>
+    </dt>
+    <dd>
+    Multipattern length.
+ Returns the number of components in the multipattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "new"></a>
+    <strong>new (components)</strong>
+    </dt>
+    <dd>
+    Create a new multipattern from a list of patterns.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">components</span>
+         an array of <a href="../modules/forma.pattern.html">pattern</a> objects.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new multipattern containing those patterns.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "clone"></a>
+    <strong>clone (mp)</strong>
+    </dt>
+    <dd>
+    Clone the multipattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         multipattern to clone.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the cloned multipattern.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "insert"></a>
+    <strong>insert (mp, ip)</strong>
+    </dt>
+    <dd>
+    Insert a pattern into the multipattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         multipattern to be operated upon.
+        </li>
+        <li><span class="parameter">ip</span>
+         the new pattern to insert.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the new multipattern.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "n_components"></a>
+    <strong>n_components (mp)</strong>
+    </dt>
+    <dd>
+    Count the number of components in a multipattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         the multipattern to count.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the number of components.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "map"></a>
+    <strong>map (mp, fn)</strong>
+    </dt>
+    <dd>
+    Map a function over all patterns in this multipattern.
+ Calls <code>fn(pattern, index)</code> for each sub-pattern, returning a new multipattern
+ of their results.</p>
+
+<p> <strong>Example</strong>:
+  ``<code>
+  local bigger = mp:map(function(p) return p:enlarge(2) end)
+  </code>``
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         the multipattern upon which to map the function.
+        </li>
+        <li><span class="parameter">fn</span>
+         a function taking <code>(pattern, index)</code> and returning a new <a href="../modules/forma.pattern.html">pattern</a>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new multipattern of the mapped results.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter"></a>
+    <strong>filter (mp, fn)</strong>
+    </dt>
+    <dd>
+    Filter out sub-patterns according to a predicate.
+ Keeps only those patterns for which <code>predicate(pattern) == true</code>.</p>
+
+<p> <strong>Example</strong>:
+  ``<code>
+  local bigSegs = mp:filter(function(p) return p:size() &gt;= 10 end)
+  </code>``
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         the multipattern upon which to filter.
+        </li>
+        <li><span class="parameter">fn</span>
+         a function <code>(pattern) -&gt; boolean</code>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new multipattern containing only the sub-patterns passing the test.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "apply"></a>
+    <strong>apply (mp, method, ...)</strong>
+    </dt>
+    <dd>
+    Apply a named method to each pattern, returning a new multipattern.
+ This is an alternative to <code>:map(...)</code> for calling an <em>existing</em> pattern method
+ by name on all sub-patterns. You may also supply arguments to that method.</p>
+
+<p> <strong>Example</strong>:
+   ``<code>
+   local translated = mp:apply(&quot;translate&quot;, 10, 5)
+   -- calls p:translate(10,5) on each pattern p
+   </code>``
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         the multipattern upon which to apply the method.
+        </li>
+        <li><span class="parameter">method</span>
+         the name of a function in <a href="../modules/forma.pattern.html">pattern</a>.
+        </li>
+        <li><span class="parameter">...</span>
+         additional arguments to pass to that method.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new multipattern of the method's results.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "union_all"></a>
+    <strong>union_all (mp)</strong>
+    </dt>
+    <dd>
+    Union all sub-patterns into a single pattern.
+ Folds over the sub-patterns with the union (<code>+</code>) operator,
+ returning a single <a href="../modules/forma.pattern.html">pattern</a>.</p>
+
+<p> <strong>Example</strong>:
+   ``<code>
+   local combined = mp:union_all()
+   </code>``
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         the multipattern to union over.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a single pattern combining all sub-patterns.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Utilities"></a>Utilities </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "print"></a>
+    <strong>print (mp, chars, domain)</strong>
+    </dt>
+    <dd>
+    Print a multipattern.
+ Prints a multipattern to <a href="https://www.lua.org/manual/5.4/manual.html#pdf-io.output">io.output</a>. If provided, a table of subpattern labels
+ can be used, with one entry per subpattern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mp</span>
+         the multipattern to be drawn.
+        </li>
+        <li><span class="parameter">chars</span>
+         the characters to be printed for each subpattern (optional).
+        </li>
+        <li><span class="parameter">domain</span>
+         the domain in which to print (optional).
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-03-12 19:36:11 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
