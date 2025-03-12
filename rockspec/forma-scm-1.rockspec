@@ -41,7 +41,7 @@ build = {
         ["forma.utils.bsp"]         = "forma/utils/bsp.lua",
     },
     copy_directories = {
-        "doc",
+        "docs",
         "tests"
     }
 }
