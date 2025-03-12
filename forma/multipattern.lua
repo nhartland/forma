@@ -106,7 +106,7 @@ function multipattern.filter(mp, fn)
     local new_components = {}
     for _, pat in ipairs(mp.components) do
         if fn(pat) then
-            new_components[#new_components+1] = pat
+            new_components[#new_components + 1] = pat
         end
     end
     return multipattern.new(new_components)
@@ -118,8 +118,8 @@ end
 --
 -- **Example**:
 --   ```
---   local shifted = mp:apply("shift", 10, 5)
---   -- calls p:shift(10,5) on each pattern p
+--   local translated = mp:apply("translate", 10, 5)
+--   -- calls p:translate(10,5) on each pattern p
 --   ```
 -- @param mp the multipattern upon which to apply the method.
 -- @param method the name of a function in `pattern`.
@@ -130,7 +130,7 @@ function multipattern.apply(mp, method, ...)
     local new_components = {}
     for i, pat in ipairs(mp.components) do
         local m = pat[method]
-        assert(type(m) == "function", "No method named '"..tostring(method).."' on pattern")
+        assert(type(m) == "function", "No method named '" .. tostring(method) .. "' on pattern")
         new_components[i] = m(pat, ...)
     end
     return multipattern.new(new_components)

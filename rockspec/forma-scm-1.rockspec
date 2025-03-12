@@ -25,9 +25,23 @@ dependencies = {
     "lua >= 5.1", "lua < 5.4"
 }
 build = {
-    type = "none",
+    type = "builtin",
+    modules = {
+        forma                       = "forma/init.lua",
+        ["forma.automata"]          = "forma/automata.lua",
+        ["forma.cell"]              = "forma/cell.lua",
+        ["forma.neighbourhood"]     = "forma/neighbourhood.lua",
+        ["forma.pattern"]           = "forma/pattern.lua",
+        ["forma.primitives"]        = "forma/primitives.lua",
+        ["forma.multipattern"]      = "forma/multipattern.lua",
+        ["forma.raycasting"]        = "forma/raycasting.lua",
+        ["forma.utils.random"]      = "forma/utils/random.lua",
+        ["forma.utils.noise"]       = "forma/utils/noise.lua",
+        ["forma.utils.convex_hull"] = "forma/utils/convex_hull.lua",
+        ["forma.utils.bsp"]         = "forma/utils/bsp.lua",
+    },
     copy_directories = {
-        "forma",
+        "doc",
         "tests"
     }
 }
