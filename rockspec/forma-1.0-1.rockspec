@@ -51,5 +51,5 @@ test = {
     flags = { "-v" }
 }
 test_dependencies = {
-    "luaunit ==3.3"
+    "luaunit ==3.4"
 }
