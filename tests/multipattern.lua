@@ -29,6 +29,7 @@ function TestMultipattern:testNew()
     -- Create a multipattern from a list of patterns
     local mp = multipattern.new({self.p1, self.p2})
     lu.assertEquals(#mp.components, 2)
+    lu.assertEquals(#mp.components, mp:n_components())
     lu.assertTrue(mp.components[1]==self.p1)
     lu.assertTrue(mp.components[2]==self.p2)
     -- Test indexing
