@@ -1,5 +1,6 @@
 local lu = require('luaunit')
 local pattern = require('forma.pattern')
+local primitives = require('forma.primitives')
 local multipattern = require('forma.multipattern')
 
 TestMultipattern = {}
@@ -84,6 +85,16 @@ function TestMultipattern:testUnionAll()
     local unioned2 = mp2:union_all()
     lu.assertEquals(unioned2:size(), 5)
     lu.assertTrue(unioned2:has_cell(2,0))
+end
+
+function TestMultipattern:testClone()
+    local domain = primitives.square(100)
+    local m1 = domain:bsp(10)
+    local m2 = m1:clone()
+
+    lu.assertEquals(m1:n_components(), m2:n_components())
+    lu.assertTrue(m1:union_all() == m2:union_all())
+    lu.assertTrue(domain == m2:union_all())
 end
 
 

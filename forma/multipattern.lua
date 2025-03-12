@@ -32,7 +32,6 @@ function multipattern.new(components)
     local mp = {
         components = components or {}
     }
-
     mp = setmetatable(mp, multipattern)
     return mp
 end
@@ -45,7 +44,6 @@ function multipattern.clone(mp)
     for i, p in ipairs(mp.components) do
         components[i] = p:clone()
     end
-
     return multipattern.new(components)
 end
 
