@@ -1,15 +1,13 @@
-forma
-=====
+# forma
 
 [![Build Status](https://github.com/nhartland/forma/actions/workflows/tests.yaml/badge.svg)](https://github.com/nhartland/forma/actions/workflows/tests.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/nhartland/forma/badge.svg?branch=master)](https://coveralls.io/github/nhartland/forma?branch=master)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-
-__2D grid shape generation in Lua__ 
+**2D grid shape generation in Lua**
 
 <p align="center">
-  <img width="650" height="320" src="https://i.imgur.com/si0FhKN.png">
+  <img width="650" height="320" src="https://i.imgur.com/ldSiOqH.png">
 </p>
 
 **forma** is a utility library for the procedural generation and manipulation of
@@ -17,26 +15,25 @@ shapes on a two dimensional grid or lattice. It came about as part of
 experiments in making roguelike games. **forma** is therefore particularly
 suited (but not limited) to the generation of roguelike environments.
 
-
 ## Features
 
 - **A spatial-hashing pattern** class for fast lookup of active cells.
 - **Pattern manipulators** such as the addition, subtraction, rotation and reflection of patterns.
 - **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares and Bezier curves.
 - A very flexible **cellular automata** implementation with
-    - Synchronous and asynchronous updates
-    - Combination of multiple rule sets
+  - Synchronous and asynchronous updates
+  - Combination of multiple rule sets
 - **Pattern sampling** algorithms including
-    - Random (white noise) sampling
-    - Perlin noise sampling
-    - Poisson-disc sampling
-    - Mitchell's best-candidate sampling
+  - Random (white noise) sampling
+  - Perlin noise sampling
+  - Poisson-disc sampling
+  - Mitchell's best-candidate sampling
 - **Algorithms for subpattern finding** including
-    - Flood-fill contiguous segment finding
-    - Convex hull finding
-    - Pattern edge and surface finding
-    - Binary space partitioning
-    - Voronoi tessellation / Lloyd's algorithm
+  - Flood-fill contiguous segment finding
+  - Convex hull finding
+  - Pattern edge and surface finding
+  - Binary space partitioning
+  - Voronoi tessellation / Lloyd's algorithm
 
 Results can be nested to produce complex patterns, and all of these methods are
 able to use custom distance measures and definitions of the cellular
@@ -45,7 +42,9 @@ able to use custom distance measures and definitions of the cellular
 Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
 
 ## Examples
-* [Example Gallery](examples/)
+
+- [Example Gallery](examples/)
+
 ```lua
 -- Generate a square box to run the CA inside
 local domain = primitives.square(80,20)
@@ -103,9 +102,10 @@ Alternatively you can try the dev branch with:
 Documentation is hosted [here](https://nhartland.github.io/forma/).
 
 Generating the documentation requires
- - [LDoc](https://github.com/stevedonovan/LDoc)
 
-Simply running 
+- [LDoc](https://github.com/stevedonovan/LDoc)
+
+Simply running
 
     ldoc --style=./ --output contents --dir docs .
 
@@ -114,8 +114,9 @@ in the root directory should generate all the required pages.
 ## Testing
 
 Unit tests and coverage reports are provided. The test suite requires
- - [LuaCov](https://keplerproject.github.io/luacov/)
- - [luaunit](https://github.com/bluebird75/luaunit)
+
+- [LuaCov](https://keplerproject.github.io/luacov/)
+- [luaunit](https://github.com/bluebird75/luaunit)
 
 To run the tests use
 

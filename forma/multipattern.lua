@@ -148,7 +148,11 @@ end
 function multipattern.union_all(mp)
     -- Require here to avoid circular dependency.
     local pattern = require('forma.pattern')
-    return pattern.union(mp.components)
+    if mp:n_components() == 0 then
+        return pattern.new()
+    else
+        return pattern.union(mp.components)
+    end
 end
 
 --- Utilities
