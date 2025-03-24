@@ -48,13 +48,37 @@ function multipattern.clone(mp)
     return multipattern.new(components)
 end
 
+--- Merge multipatterns.
+-- @param ... a table of multipatterns or a list of pattern arguments.
+-- @return a new multipattern that is consists of the set of all input components
+function multipattern.merge(...)
+    local multipatterns = { ... }
+    if #multipatterns == 1 then
+        if type(multipatterns[1]) == 'table' then
+            multipatterns = multipatterns[1]
+        end
+    end
+    if #multipatterns == 1 then
+        return multipatterns[1]
+    end
+    local total = multipattern.new()
+    for _, v in ipairs(multipatterns) do
+        assert(getmetatable(v) == multipattern, "multipattern.merge requires multipatterns as arguments")
+        for _, p in ipairs(v.components) do
+            total:insert(p)
+        end
+    end
+    return total
+end
+
 --- Insert a pattern into the multipattern.
 -- @param mp multipattern to be operated upon.
 -- @param ip the new pattern to insert.
--- @return the new multipattern.
+-- @return the multipattern.
 function multipattern.insert(mp, ip)
     assert(getmetatable(mp) == multipattern, "multipattern.insert requires a multipattern as the first argument")
     table.insert(mp.components, ip)
+    return mp
 end
 
 --- Count the number of components in a multipattern.
@@ -115,6 +139,9 @@ end
 -- This is an alternative to `:map(...)` for calling an *existing* pattern method
 -- by name on all sub-patterns. You may also supply arguments to that method.
 --
+-- Note that when used with a method that generates multipatterns (e.g. `connected_components`),
+-- the results will be 'flattened' into a single multipattern.
+--
 -- **Example**:
 --   ```
 --   local translated = mp:apply("translate", 10, 5)
@@ -130,7 +157,16 @@ function multipattern.apply(mp, method, ...)
     for i, pat in ipairs(mp.components) do
         local m = pat[method]
         assert(type(m) == "function", "No method named '" .. tostring(method) .. "' on pattern")
-        new_components[i] = m(pat, ...)
+        local return_value = m(pat, ...)
+        if getmetatable(return_value) == multipattern then
+            for _, v in ipairs(return_value.components) do
+                table.insert(new_components, v)
+            end
+        elseif getmetatable(return_value) == require('forma.pattern') then
+            new_components[i] = return_value
+        else
+            assert(false, "Method must return a pattern or multipattern")
+        end
     end
     return multipattern.new(new_components)
 end
