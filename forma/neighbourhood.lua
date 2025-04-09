@@ -61,18 +61,19 @@ end
 -- [Wikipedia entry](https://en.wikipedia.org/wiki/Moore_neighborhood).
 --
 -- Contains all cells with Chebyshev distance 1 from origin. Used in Conway's
--- Game of Life. Ordered clockwise assuming an upwards y-axis and rightwards
+-- Game of Life. Ordered clockwise assuming an downwards y-axis and rightwards
 -- x-axis
 function neighbourhood.moore()
     local nbh = {}
-    table.insert(nbh, cell.new(0, 1))
-    table.insert(nbh, cell.new(1, 1))
-    table.insert(nbh, cell.new(1, 0))
-    table.insert(nbh, cell.new(1, -1))
-    table.insert(nbh, cell.new(0, -1))
-    table.insert(nbh, cell.new(-1, -1))
-    table.insert(nbh, cell.new(-1, 0))
-    table.insert(nbh, cell.new(-1, 1))
+    table.insert(nbh, cell.new(0, -1))  -- top
+    table.insert(nbh, cell.new(1, -1))  -- top-right
+    table.insert(nbh, cell.new(1, 0))   -- right
+    table.insert(nbh, cell.new(1, 1))   -- bottom-right
+    table.insert(nbh, cell.new(0, 1))   -- bottom
+    table.insert(nbh, cell.new(-1, 1))  -- bottom-left
+    table.insert(nbh, cell.new(-1, 0))  -- left
+    table.insert(nbh, cell.new(-1, -1)) -- top-left
+
     nbh = neighbourhood.new(nbh)
     nbh.category_label = nil
     return nbh
@@ -131,10 +132,10 @@ end
 -- Contains all cells that are a knight piece chess move away from the origin.
 function neighbourhood.knight()
     local nbh = {
-        cell.new( 2,  1), cell.new( 2, -1),
-        cell.new(-2,  1), cell.new(-2, -1),
-        cell.new( 1,  2), cell.new( 1, -2),
-        cell.new(-1,  2), cell.new(-1, -2),
+        cell.new(2, 1), cell.new(2, -1),
+        cell.new(-2, 1), cell.new(-2, -1),
+        cell.new(1, 2), cell.new(1, -2),
+        cell.new(-1, 2), cell.new(-1, -2),
     }
     nbh = neighbourhood.new(nbh)
     nbh._category_label = nil -- TODO

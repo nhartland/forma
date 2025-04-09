@@ -778,7 +778,7 @@ end
 
 --- Returns an approximate Poisson-disc sample using Mitchell's best candidate algorithm.
 --
--- @param ip pattern (domain) to sample from.
+-- @param ip the input pattern to sample from.
 -- @param distance distance function (e.g., cell.euclidean).
 -- @param n number of samples (integer).
 -- @param k number of candidate attempts per iteration (integer).
@@ -799,7 +799,7 @@ function pattern.sample_mitchell(ip, distance, n, k, rng)
     local sample = pattern.new():insert(seed.x, seed.y)
     for _ = 2, n, 1 do
         local min_distance = 0
-        local min_sample   = nil
+        local min_sample = nil
         for _ = 1, k, 1 do
             local jcell = ip:rcell(rng)
             while sample:has_cell(jcell.x, jcell.y) do
@@ -810,11 +810,13 @@ function pattern.sample_mitchell(ip, distance, n, k, rng)
                 jdistance = math.min(jdistance, distance(jcell, vcell))
             end
             if jdistance > min_distance then
-                min_sample   = jcell
+                min_sample = jcell
                 min_distance = jdistance
             end
         end
-        sample:insert(min_sample.x, min_sample.y)
+        if min_sample then
+            sample:insert(min_sample.x, min_sample.y)
+        end
     end
     return sample
 end
@@ -888,40 +890,38 @@ function pattern.convex_hull(ip)
 end
 
 --- Returns a thinned (skeletonized) version of the pattern.
--- Repeatedly removes boundary cells (while preserving connectivity) until no
--- further safe removals can be made.
---
+-- This uses the Zhang-Suen algorithm thinning algorithm assumes that the
+-- neighbourhood is 8-connected (moore), but it is very efficient.
 -- @param ip pattern to thin.
--- @param nbh (optional) neighbourhood for connectivity (default: neighbourhood.moore()).
 -- @return a new, thinned pattern.
 -- @usage
 -- local thin_p = p:thin()
-function pattern.thin(ip, nbh)
-    nbh = nbh or neighbourhood.moore()
+function pattern.thin(ip)
     assert(getmetatable(ip) == pattern, "pattern.thin requires a pattern as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "pattern.thin requires a neighbourhood as the second argument")
-    local current = pattern.clone(ip)
-    local function num_components(pat)
-        return pattern.connected_components(pat, nbh):n_components()
-    end
-    local changed = true
-    while changed do
-        changed = false
-        local comp_count = num_components(current)
-        local boundary = current:interior_hull(nbh)
-        for c in boundary:cells() do
-            local ncount = pattern.count_neighbors(current, nbh, c.x, c.y)
-            if ncount > 1 then
-                local candidate = current - pattern.new():insert(c.x, c.y)
-                if num_components(candidate) == comp_count then
-                    current = candidate
-                    changed = true
+    local p = pattern.clone(ip)
+    -- Utility callback to remove cells from the pattern
+    local function process_changes(to_remove)
+        for _, c in ipairs(to_remove) do
+            p.cellmap[coordinates_to_key(c[1], c[2])] = nil
+            for k = 1, #p.cellkey do
+                if p.cellkey[k] == coordinates_to_key(c[1], c[2]) then
+                    table.remove(p.cellkey, k)
                     break
                 end
             end
         end
     end
-    return current
+    -- Main Zhang-Suen thinning loop
+    local zs = require('forma.utils.zhang_suen')
+    local changed = true
+    while changed do
+        changed = false
+        -- Perform pass A
+        changed = changed or zs.pass(p, zs.passA_conditions, process_changes)
+        -- Perform pass B
+        changed = changed or zs.pass(p, zs.passB_conditions, process_changes)
+    end
+    return p
 end
 
 --- Morphological operations

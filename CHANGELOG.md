@@ -151,6 +151,7 @@ Initial release
 
 - Added a multipattern method `multipattern.merge` to combine multiple multipatterns
   into a single multipattern.
+- Improved the pattern.thin method with the Zhang-Suen algorithm.
 
 ## Bugfix
 

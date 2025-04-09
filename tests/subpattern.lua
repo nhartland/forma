@@ -23,7 +23,7 @@ function TestSubPatterns:testFilter()
         return self.seeds:has_cell(icell.x, icell.y) == false
     end
     local filtered_pattern = pattern.filter(self.square, fn)
-    lu.assertTrue(filtered_pattern ==(self.square - self.seeds))
+    lu.assertTrue(filtered_pattern == (self.square - self.seeds))
 end
 
 --  FloodFill -------------------------------------------------------------------------
@@ -38,7 +38,7 @@ function TestSubPatterns:testFloodFill()
     local floodfill = pattern.floodfill(test_pattern,
         test_pattern:rcell(),
         neighbourhood.moore())
-    lu.assertTrue(floodfill==test_pattern)
+    lu.assertTrue(floodfill == test_pattern)
 end
 
 --  Connected Components --------------------------------------------------------------
@@ -86,7 +86,7 @@ function TestSubPatterns:testPerlin()
     local frequency, depth = 0.2, 1
     local thresholds       = { 0, 0.5, 0.7, 1 }
     local noise            = pattern.perlin(test_domain, frequency, depth, thresholds)
-    lu.assertTrue(test_domain==noise[1]) -- Lowest threshold is zero, should be identical to domain
+    lu.assertTrue(test_domain == noise[1]) -- Lowest threshold is zero, should be identical to domain
     lu.assertEquals(noise[4]:size(), 0)    -- Lowest threshold is one, should be an empty pattern
 
     -- Patterns should be progressively smaller as we move up the thresholds
@@ -138,11 +138,11 @@ function TestSubPatterns:testMaxRectangle()
     -- Basic test of the 'maximum rectangular area' subpattern finder.
     -- When run on a square pattern, it should return the input pattern.
     local rect = pattern.max_rectangle(self.square)
-    lu.assertTrue(rect==self.square)
+    lu.assertTrue(rect == self.square)
     -- Adding a single extra point far from the square pattern should not change anything
     local extra_point = self.square + pattern.new():insert(1000, 1000)
     local rect2 = pattern.max_rectangle(extra_point)
-    lu.assertTrue(rect2==self.square)
+    lu.assertTrue(rect2 == self.square)
 end
 
 --  Binary space partitioning  -------------------------------------------------------
@@ -158,7 +158,7 @@ function TestSubPatterns:testBinarySpacePartition()
         lu.assertTrue(partition:size() <= 10)
     end
     lu.assertEquals(total_points, self.square:size())
-    lu.assertTrue(resum==self.square)
+    lu.assertTrue(resum == self.square)
     lu.assertFalse(self:check_for_overlap(partitions))
 end
 
@@ -174,7 +174,7 @@ function TestSubPatterns:testCategories()
         for cat, seg in ipairs(c_subpatterns) do
             for icell in seg:cells() do
                 local test_cat = measure:categorise(sample, icell)
-                lu.assertTrue(cat==test_cat)
+                lu.assertTrue(cat == test_cat)
             end
         end
     end
@@ -202,6 +202,7 @@ end
 
 -- Thinning --------------------------------------------------------------------------
 function TestSubPatterns:testThinning()
+    -- Testing the Zhang-Suen thinning algorithm on a couple of simple patterns.
     -- Test 1: Thinning a 3x3 block
     -- Expectation: only the center (1,1) remains.
     local block = pattern.new({
@@ -209,16 +210,16 @@ function TestSubPatterns:testThinning()
         { 1, 1, 1 },
         { 1, 1, 1 },
     })
-    local block_thinned = pattern.thin(block, neighbourhood.moore())
-    lu.assertEquals(block_thinned:size(), 3, "3x3 block should collapse to a single cell")
-    lu.assertTrue(block_thinned:has_cell(2, 2), "Center cell (2,2) should remain")
+    local block_thinned = pattern.thin(block)
+    lu.assertEquals(block_thinned:size(), 1, "3x3 block should collapse to a single cell")
+    lu.assertTrue(block_thinned:has_cell(1, 1), "Center cell (1,1) should remain")
 
     -- Test 2: Thinning a single 5-wide row
     -- A one-dimensional line is already minimal, so it should remain unchanged.
     local row = pattern.new({
         { 1, 1, 1, 1, 1 }, -- row of 5 active cells at y=0
     })
-    local row_thinned = pattern.thin(row, neighbourhood.moore())
+    local row_thinned = pattern.thin(row)
     lu.assertEquals(row_thinned:size(), 5, "Row of length 5 should remain length 5")
     lu.assertTrue(row_thinned == row, "Row should be unchanged by thinning")
 end
