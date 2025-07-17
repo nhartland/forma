@@ -4,7 +4,7 @@ local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local neighbourhood = require("forma.neighbourhood")
 
-TestPattern         = {}
+TestPattern = {}
 
 function TestPattern:setUp()
     self.pattern_1 = pattern.new()
@@ -327,10 +327,11 @@ end
 
 -- Common tests for find_packing_position and find_packing_position_centre
 local function test_generic_packing_function(fn)
-    -- Should be able to pack 25 single cells into a 5x5 square
+    -- Should be able to pack n*n single cells into a nxn square
+    local n = 10
     local test_point = primitives.square(1)
-    local test_pattern = primitives.square(5)
-    for _ = 1, 25 do
+    local test_pattern = primitives.square(n)
+    for _ = 1, n * n do
         -- Location where the test point can fit into the test pattern
         local pp = fn(test_point, test_pattern)
         lu.assertTrue(test_pattern:has_cell(pp.x, pp.y))
@@ -361,7 +362,7 @@ function TestPattern:testFind_central_packing_position()
         { 0, 1, 0, },
         { 1, 1, 1, },
         { 0, 1, 0, } })
-    local pp = test_point:find_central_packing_position(test_pattern)
+    local pp = test_point:find_central_packing_position(test_pattern, test_pattern:centroid())
     lu.assertEquals(pp.x, 1)
     lu.assertEquals(pp.y, 1)
 end
@@ -541,3 +542,16 @@ function TestPattern:testGradient3x3Block()
     lu.assertEquals(grad:size(), 24, "3×3 block morphological gradient (Moore+center) should be 24")
 end
 
+--- Test pattern.print method
+function TestPattern:testPrint()
+    -- Capture output via custom printer
+    local out = {}
+    local printer = function(line)
+        table.insert(out, line)
+    end
+    -- pattern_3 is a single‐cell domain at (0,0), using '*' as the on‐char
+    self.pattern_2:print('*', self.pattern_3, printer)
+    -- we expect exactly one line, and that line must be "*"
+    lu.assertEquals(#out, 1)
+    lu.assertEquals(out[1], '*')
+end

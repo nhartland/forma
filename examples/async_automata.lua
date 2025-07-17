@@ -8,7 +8,7 @@ local automata      = require('forma.automata')
 local neighbourhood = require('forma.neighbourhood')
 
 -- Domain for CA to operate in
-local sq = primitives.square(10,5)
+local sq = primitives.square(10, 5)
 
 -- Make a new pattern consisting of a single random cell from the domain
 local start_point = sq:rcell() -- Select a random point
@@ -20,7 +20,7 @@ local moore = automata.rule(neighbourhood.moore(), "B12/S012345678")
 -- Perform asynchronous CA update until convergence
 local converged = false
 while converged == false do
-    ca_pattern, converged = automata.async_iterate(ca_pattern, sq, {moore})
+    ca_pattern, converged = automata.async_iterate(ca_pattern, sq, { moore })
 end
 
 -- Add some symmetry by mirroring the basic pattern a couple of times
@@ -32,4 +32,4 @@ symmetrised_pattern = symmetrised_pattern:hreflect():hreflect()
 -- This turns the basic pattern into standard 'box-drawing' characters
 local vn = neighbourhood.von_neumann()
 symmetrised_pattern:neighbourhood_categories(vn)
-                   :print(vn:category_label())
+    :print(vn:category_label())

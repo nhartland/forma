@@ -152,6 +152,8 @@ Initial release
 - Added a multipattern method `multipattern.merge` to combine multiple multipatterns
   into a single multipattern.
 - Improved the pattern.thin method with the Zhang-Suen algorithm.
+- Introduced a pattern.print method along the lines of multipattern.print
+- Adjusted `pattern.find_central_packing_position` to accept a custom center.
 
 ## Bugfix
 

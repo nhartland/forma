@@ -39,20 +39,20 @@
 --
 -- @module forma.pattern
 
-local pattern         = {}
+local pattern = {}
 
-local min             = math.min
-local max             = math.max
-local floor           = math.floor
+local min   = math.min
+local max   = math.max
+local floor = math.floor
 
-local cell            = require('forma.cell')
-local neighbourhood   = require('forma.neighbourhood')
-local rutils          = require('forma.utils.random')
-local multipattern    = require('forma.multipattern')
+local cell          = require('forma.cell')
+local neighbourhood = require('forma.neighbourhood')
+local rutils        = require('forma.utils.random')
+local multipattern  = require('forma.multipattern')
 
 -- Pattern indexing.
 -- Enables the syntax sugar pattern:method.
-pattern.__index       = pattern
+pattern.__index = pattern
 
 -- Pattern coordinates (either x or y) must be within ± MAX_COORDINATE.
 local MAX_COORDINATE  = 65536
@@ -86,10 +86,10 @@ end
 -- @param prototype (optional) an N×M table of ones and zeros.
 -- @return a new pattern according to the prototype.
 function pattern.new(prototype)
-    local np   = {}
+    local np = {}
 
-    np.max     = cell.new(-math.huge, -math.huge)
-    np.min     = cell.new(math.huge, math.huge)
+    np.max = cell.new(-math.huge, -math.huge)
+    np.min = cell.new(math.huge, math.huge)
 
     -- Characters to be used with tostring metamethod.
     np.offchar = '0'
@@ -98,7 +98,7 @@ function pattern.new(prototype)
     np.cellkey = {} -- Table consisting of a list of coordinate keys.
     np.cellmap = {} -- Spatial hash of coordinate key to bool (active/inactive cell).
 
-    np         = setmetatable(np, pattern)
+    np = setmetatable(np, pattern)
 
     if prototype ~= nil then
         assert(type(prototype) == 'table',
@@ -1096,27 +1096,30 @@ function pattern.find_packing_position(a, b, rng)
     return nil
 end
 
---- Finds a center-weighted packing offset to place pattern a as close as possible to the center of domain b.
+--- Finds a center-weighted packing offset to place pattern a within pattern
+--- b as close as possible to the cell c. If no `c` is provided, then the centroid
+--- of pattern b is used.
 --
 -- @param a pattern to pack.
 -- @param b domain pattern.
+-- @param c (optional) cell to act as a center for packing.
 -- @return a coordinate shift if a valid position is found; nil otherwise.
 -- @usage
--- local central_offset = pattern.find_central_packing_position(p, domain)
-function pattern.find_central_packing_position(a, b)
+-- local central_offset = pattern.find_central_packing_position(p, domain, c)
+function pattern.find_central_packing_position(a, b, c)
     assert(getmetatable(a) == pattern, "pattern.find_central_packing_position requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.find_central_packing_position requires a pattern as a second argument")
     assert(a:size() > 0, "pattern.find_central_packing_position requires a non-empty pattern as the first argument")
-    if b:size() == 0 then return nil end
+    if b:size() == 0 or a:size() > b:size() then return nil end
+    if c == nil then c = b:centroid() end
     local hinge    = a:medoid()
-    local com      = b:centroid()
     local allcells = b:cell_list()
-    local function distance_to_com(k, j)
-        local adist = (k.x - com.x) * (k.x - com.x) + (k.y - com.y) * (k.y - com.y)
-        local bdist = (j.x - com.x) * (j.x - com.x) + (j.y - com.y) * (j.y - com.y)
+    local function distance_to_c(k, j)
+        local adist = (k.x - c.x) * (k.x - c.x) + (k.y - c.y) * (k.y - c.y)
+        local bdist = (j.x - c.x) * (j.x - c.x) + (j.y - c.y) * (j.y - c.y)
         return adist < bdist
     end
-    table.sort(allcells, distance_to_com)
+    table.sort(allcells, distance_to_c)
     for i = 1, #allcells, 1 do
         local coordshift = allcells[i] - hinge
         local tiles = true
@@ -1374,6 +1377,30 @@ function pattern.test_coordinate_map(x, y)
     local key = coordinates_to_key(x, y)
     local tx, ty = key_to_coordinates(key)
     return (x == tx) and (y == ty)
+end
+
+--- Prints the pattern within an optional domain, line-by-line.
+-- @param ip      pattern to render.
+-- @param char    (optional) single-character to draw “on” cells.
+-- @param domain  (optional) pattern defining the bounding box.
+-- @param printer (optional) function(line:string); defaults to io.write(line.."\n").
+function pattern.print(ip, char, domain, printer)
+    assert(getmetatable(ip) == pattern, "pattern.print requires a pattern as the first argument")
+    local onchar  = char or ip.onchar
+    local offchar = ip.offchar
+    domain        = domain or ip
+    assert(getmetatable(domain) == pattern, "pattern.print requires a pattern as the domain argument")
+
+    local print_line = printer
+        or function(line) io.write(line .. "\n") end
+
+    for y = domain.min.y, domain.max.y, 1 do
+        local line = ""
+        for x = domain.min.x, domain.max.x, 1 do
+            line = line .. (ip:has_cell(x, y) and onchar or offchar)
+        end
+        print_line(line)
+    end
 end
 
 return pattern
