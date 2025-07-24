@@ -136,6 +136,23 @@ function TestPattern:testShuffledIterators()
     end
 end
 
+-- Test bounding box methods
+function TestPattern:testBoundingBoxMethods()
+    local sqpat = primitives.square(20)
+    lu.assertTrue(sqpat:bounding_box_density() == 1.0)
+    lu.assertTrue(sqpat:bounding_box_asymmetry() == 1.0)
+
+    local recpat = primitives.square(5, 20)
+    lu.assertTrue(recpat:bounding_box_density() == 1.0)
+    lu.assertTrue(recpat:bounding_box_asymmetry() == 4.0)
+
+    local lower_density = pattern.new({
+        { 1, 1, 1 },
+        { 1, 0, 1 },
+        { 1, 1, 1 } }):bounding_box_density()
+    lu.assertTrue(lower_density < 1.0)
+end
+
 function TestPattern:testCentroid()
     -- Test five patterns which should have the same
     -- centroid, and one which should not

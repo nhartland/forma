@@ -39,6 +39,7 @@
 --
 -- @module forma.pattern
 
+---@class forma.pattern
 local pattern = {}
 
 local min   = math.min
@@ -211,13 +212,50 @@ end
 --- General pattern utilites.
 -- @section utils
 
---- Comparator function to sort patterns by their size (number of cells).
+--- Comparator function to sort patterns by their size (descending).
 --
 -- @param pa first pattern.
 -- @param pb second pattern.
 -- @return boolean true if pa's size is greater than pb's.
 function pattern.size_sort(pa, pb)
     return pa:size() > pb:size()
+end
+
+--- Comparator function to sort patterns by their size (ascending).
+--
+-- @param pa first pattern.
+-- @param pb second pattern.
+-- @return boolean true if pa's size is less than pb's.
+function pattern.inverse_size_sort(pa, pb)
+    return pa:size() < pb:size()
+end
+
+--- Computes how densely the bounding box is filled.
+-- Returns zero for an empty pattern.
+--
+-- @param ip input pattern
+-- @return float the fraction of the bounding box that is occupied
+function pattern.bounding_box_density(ip)
+    assert(getmetatable(ip) == pattern,
+        "bounding_box_density: first argument must be a forma.pattern")
+    if ip:size() == 0 then return 0 end
+    local bb_area = (ip.max.x - ip.min.x + 1) * (ip.max.y - ip.min.y + 1)
+    return ip:size() / bb_area
+end
+
+--- Computes the asymmetry of the pattern's bounding box.
+-- Returns zero in the case of an empty pattern.
+--
+-- @param ip input pattern
+-- @return float the ratio of the bounding box's longest to shortest edge
+function pattern.bounding_box_asymmetry(ip)
+    assert(getmetatable(ip) == pattern,
+        "bounding_box_asymmetry: first argument must be a forma.pattern")
+    if ip:size() == 0 then return 0 end
+    return (
+        (max((ip.max.x - ip.min.x), (ip.max.y - ip.min.y)) + 1)
+        / (min((ip.max.x - ip.min.x), (ip.max.y - ip.min.y)) + 1)
+    )
 end
 
 --- Counts active neighbors around a specified cell within the pattern.
@@ -856,14 +894,15 @@ end
 --- Finds the largest contiguous rectangular subpattern within the pattern.
 --
 -- @param ip pattern to analyze.
+-- @param alpha 'squareness' parameter. 0 for max rectangle, 1 for max square.
 -- @return a subpattern representing the maximal rectangle.
 -- @usage
 -- local rect = p:max_rectangle()
-function pattern.max_rectangle(ip)
+function pattern.max_rectangle(ip, alpha)
     assert(getmetatable(ip) == pattern, "pattern.max_rectangle requires a pattern as an argument")
     local primitives = require('forma.primitives')
     local bsp = require('forma.utils.bsp')
-    local min_rect, max_rect = bsp.max_rectangle_coordinates(ip)
+    local min_rect, max_rect = bsp.max_rectangle_coordinates(ip, alpha)
     local size = max_rect - min_rect + cell.new(1, 1)
     return primitives.square(size.x, size.y):translate(min_rect.x, min_rect.y)
 end
@@ -1195,10 +1234,11 @@ end
 --
 -- @param ip pattern to partition.
 -- @param th_volume threshold volume (number) for final partitions.
+-- @param alpha (optional) parameter for squareness of BSP.
 -- @return a multipattern of BSP subpatterns.
 -- @usage
 -- local partitions = p:bsp(50)
-function pattern.bsp(ip, th_volume)
+function pattern.bsp(ip, th_volume, alpha)
     assert(getmetatable(ip) == pattern, "pattern.bsp requires a pattern as an argument")
     assert(th_volume, "pattern.bsp rules must specify a threshold volume for partitioning")
     assert(th_volume > 0, "pattern.bsp rules must specify positive threshold volume for partitioning")
@@ -1206,7 +1246,7 @@ function pattern.bsp(ip, th_volume)
     local mp = multipattern.new()
     local bsp = require('forma.utils.bsp')
     while pattern.size(available) > 0 do
-        local min_rect, max_rect = bsp.max_rectangle_coordinates(available)
+        local min_rect, max_rect = bsp.max_rectangle_coordinates(available, alpha)
         bsp.split(min_rect, max_rect, th_volume, mp)
         available = available - mp:union_all()
     end
