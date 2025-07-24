@@ -35,7 +35,7 @@ neighbourhood.__index = neighbourhood
 -- neighbourhoods?
 local function generate_categories(neighbour_cells)
     assert(#neighbour_cells > 0, "categories.generate requires a non-empty neighbourhood")
-    local categories = { cell.new(0, 0) }
+    local categories = { {} } -- The empty set is the first category
 
     for i = 1, #neighbour_cells, 1 do
         local target_cell = neighbour_cells[i]
@@ -171,19 +171,17 @@ end
 -- @param icell the cell in `ip` of interest
 -- @return the category index of `nbh` that 'cell' belongs to
 function neighbourhood.categorise(nbh, ip, icell)
-    local ncategories = nbh:get_ncategories() -- Generates the categorisation if needed
-    for i = 1, ncategories, 1 do
-        local category = nbh.categories[i]
-        local match_cells = true
-        for j = 1, #category, 1 do
-            local np = icell + category[j]
-            if ip:has_cell(np.x, np.y) == false then
-                match_cells = false
-            end
+    nbh:get_ncategories() -- Generates the categorisation and lookup if needed
+    local bitmask = 0
+    for i, nbh_cell in ipairs(nbh) do
+        local np = icell + nbh_cell
+        if ip:has_cell(np.x, np.y) then
+            bitmask = bitmask + 2 ^ (i - 1)
         end
-        if match_cells then return i end
     end
-    assert(false, "neighbourhood.categorise cannot find a valid category")
+    local category_index = nbh.category_lookup[bitmask]
+    assert(category_index, "neighbourhood.categorise cannot find a valid category for bitmask " .. bitmask)
+    return category_index
 end
 
 --- Returns the category labelling (if it exists) for a neighbourhood.
@@ -200,6 +198,20 @@ function neighbourhood.get_ncategories(nbh)
     -- Generate categories if needed
     if nbh.categories == nil then
         nbh.categories = generate_categories(nbh)
+        -- Generate bitmask-to-category_index lookup table for performance
+        nbh.category_lookup = {}
+        for i, category in ipairs(nbh.categories) do
+            local bitmask = 0
+            for _, cat_cell in ipairs(category) do
+                for nbh_idx, nbh_cell in ipairs(nbh) do
+                    if cat_cell == nbh_cell then
+                        bitmask = bitmask + 2 ^ (nbh_idx - 1)
+                        break
+                    end
+                end
+            end
+            nbh.category_lookup[bitmask] = i
+        end
     end
     return #nbh.categories
 end

@@ -8,12 +8,9 @@ function rutils.shuffled_copy(tbl, rng)
     if rng == nil then rng = math.random end
     local shuffled_tbl = {}
     for i = 1, #tbl do
-        local j = rng(1, i)
-        if j ~= i then
-            shuffled_tbl[i] = shuffled_tbl[j]
-        end
-        shuffled_tbl[j] = tbl[i]
+        shuffled_tbl[i] = tbl[i]
     end
+    rutils.shuffle(shuffled_tbl, rng)
     return shuffled_tbl
 end
 

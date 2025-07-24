@@ -54,18 +54,18 @@ function primitives.line(start, finish)
     assert(getmetatable(start) == cell, "primitives.line requires a cell as the first argument")
     assert(getmetatable(finish) == cell, "primitives.line requires a cell as the second argument")
     local deltax = finish.x - start.x
-    local sx = deltax / math.abs(deltax)
-    deltax = math.abs(deltax) * 2.
+    local sx = (deltax > 0 and 1) or (deltax < 0 and -1) or 0
+    deltax = math.abs(deltax) * 2
 
     local deltay = finish.y - start.y
-    local sy = deltay / math.abs(deltay)
-    deltay = math.abs(deltay) * 2.
+    local sy = (deltay > 0 and 1) or (deltay < 0 and -1) or 0
+    deltay = math.abs(deltay) * 2
 
     local x, y = start.x, start.y
     local line = pattern.new():insert(x, y)
 
     if deltax >= deltay then
-        local err = deltay - deltax / 2.
+        local err = deltay - deltax / 2
         while x ~= finish.x do
             if err > 0 or (err == 0 and sx > 0) then
                 err = err - deltax
@@ -76,7 +76,7 @@ function primitives.line(start, finish)
             line:insert(x, y)
         end
     else
-        local err = deltax - deltay / 2.
+        local err = deltax - deltay / 2
         while y ~= finish.y do
             if err > 0 or (err == 0 and sy > 0) then
                 err = err - deltay
@@ -132,7 +132,11 @@ function primitives.quad_bezier(start, control, finish, N)
     local bezier = pattern.new()
     for i = 1, #line_points - 1, 1 do
         local line = primitives.line(line_points[i], line_points[i + 1])
-        bezier = bezier + line
+        for x, y in line:cell_coordinates() do
+            if not bezier:has_cell(x, y) then
+                bezier:insert(x, y)
+            end
+        end
     end
     return bezier, line_points
 end

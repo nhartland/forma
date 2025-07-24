@@ -213,6 +213,11 @@ function TestSubPatterns:testThinning()
     local block_thinned = pattern.thin(block)
     lu.assertEquals(block_thinned:size(), 1, "3x3 block should collapse to a single cell")
     lu.assertTrue(block_thinned:has_cell(1, 1), "Center cell (1,1) should remain")
+    -- Check bounding box
+    lu.assertEquals(block_thinned.min.x, 1)
+    lu.assertEquals(block_thinned.min.y, 1)
+    lu.assertEquals(block_thinned.max.x, 1)
+    lu.assertEquals(block_thinned.max.y, 1)
 
     -- Test 2: Thinning a single 5-wide row
     -- A one-dimensional line is already minimal, so it should remain unchanged.

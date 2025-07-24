@@ -106,7 +106,11 @@ function ray.cast_360(v0, domain, ray_length)
     local lit_pattern = pattern.new():insert(v0.x, v0.y)
     for ioct = 1, 8, 1 do
         local np = ray.cast_octant(v0, domain, ioct, ray_length)
-        lit_pattern = lit_pattern + np
+        for x, y in np:cell_coordinates() do
+            if not lit_pattern:has_cell(x, y) then
+                lit_pattern:insert(x, y)
+            end
+        end
     end
     return lit_pattern
 end

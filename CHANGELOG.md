@@ -149,6 +149,9 @@ Initial release
 
 ## Features
 
+- Modified underlying `pattern` data structure to that of a Sparse Set, to enable O(1) cell removal.
+- New `pattern.remove` method to remove a cell.
+- Performance enhancement on various `pattern` methods to take advantage of new data structure.
 - Added a multipattern method `multipattern.merge` to combine multiple multipatterns
   into a single multipattern.
 - Improved the pattern.thin method with the Zhang-Suen algorithm.
@@ -159,9 +162,14 @@ Initial release
 ## Bugfix
 
 - Fixed multipattern:insert so that it returns the multipattern, allowing for chaining.
+- Fixed a bug in Bresenham line drawing where a crash would occour for perfectly vertical or horizontal lines.
+- Fixed bug in sorting in convex hull finding.
 
 ## Misc
 
+- Improved speed of neighbourhood categorisation.
 - Changed `multipattern.apply` such that when used with a method that itself
   returns multipatterns on each component, the resulting patterns are flattened
   into a single multipattern.
+- `pattern.vreflect` and `pattern.hreflect` now return only the reflected pattern, not the union of pattern and reflection.
+- Improved `pattern.floodfill`, no longer operates recursively for greater stability.

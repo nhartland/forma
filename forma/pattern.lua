@@ -97,7 +97,7 @@ function pattern.new(prototype)
     np.onchar  = '1'
 
     np.cellkey = {} -- Table consisting of a list of coordinate keys.
-    np.cellmap = {} -- Spatial hash of coordinate key to bool (active/inactive cell).
+    np.cellmap = {} -- Spatial hash of coordinate key to its index in cellkey.
 
     np = setmetatable(np, pattern)
 
@@ -137,9 +137,14 @@ function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local newpat = pattern.new()
 
-    for x, y in ip:cell_coordinates() do
-        newpat:insert(x, y)
+    for i = 1, #ip.cellkey, 1 do
+        local key = ip.cellkey[i]
+        newpat.cellkey[i] = key
+        newpat.cellmap[key] = i
     end
+
+    newpat.min = ip.min:clone()
+    newpat.max = ip.max:clone()
 
     newpat.offchar = ip.offchar
     newpat.onchar  = ip.onchar
@@ -160,14 +165,44 @@ function pattern.insert(ip, x, y)
 
     local key = coordinates_to_key(x, y)
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
-    ip.cellmap[key] = true
-    ip.cellkey[#ip.cellkey + 1] = key
+    local new_index = #ip.cellkey + 1
+    ip.cellkey[new_index] = key
+    ip.cellmap[key] = new_index
 
     -- Reset pattern extent.
     ip.max.x = max(ip.max.x, x)
     ip.max.y = max(ip.max.y, y)
     ip.min.x = min(ip.min.x, x)
     ip.min.y = min(ip.min.y, y)
+
+    return ip
+end
+
+--- Removes a cell from the pattern.
+-- Returns the modified pattern to allow for method chaining.
+-- Note: This does NOT update the bounding box for performance reasons.
+-- Call `recalculate_bounding_box` manually if needed.
+--
+-- @param ip pattern to modify.
+-- @param x x-coordinate (integer) of the cell to remove.
+-- @param y y-coordinate (integer) of the cell to remove.
+-- @return the updated pattern (for cascading calls).
+function pattern.remove(ip, x, y)
+    local key_to_remove = coordinates_to_key(x, y)
+    local index_to_remove = ip.cellmap[key_to_remove]
+
+    if index_to_remove then
+        local last_index = #ip.cellkey
+        local last_key = ip.cellkey[last_index]
+
+        -- Swap
+        ip.cellkey[index_to_remove] = last_key
+        ip.cellmap[last_key] = index_to_remove
+
+        -- Pop
+        ip.cellkey[last_index] = nil
+        ip.cellmap[key_to_remove] = nil
+    end
 
     return ip
 end
@@ -211,6 +246,26 @@ end
 
 --- General pattern utilites.
 -- @section utils
+
+--- Recalculates the bounding box of the pattern.
+-- This is a slow O(N) operation and should be used sparingly, e.g., after
+-- a batch of cell removals.
+-- @param ip pattern to process.
+function pattern.recalculate_bounding_box(ip)
+    if ip:size() > 0 then
+        ip.max.x, ip.max.y = -math.huge, -math.huge
+        ip.min.x, ip.min.y = math.huge, math.huge
+        for x, y in ip:cell_coordinates() do
+            ip.max.x = max(ip.max.x, x)
+            ip.max.y = max(ip.max.y, y)
+            ip.min.x = min(ip.min.x, x)
+            ip.min.y = min(ip.min.y, y)
+        end
+    else
+        ip.max.x, ip.max.y = -math.huge, -math.huge
+        ip.min.x, ip.min.y = math.huge, math.huge
+    end
+end
 
 --- Comparator function to sort patterns by their size (descending).
 --
@@ -325,23 +380,25 @@ end
 -- @return a new pattern that is the union of the provided patterns.
 function pattern.union(...)
     local patterns = { ... }
-    if #patterns == 1 then
-        if type(patterns[1]) == 'table' then
-            patterns = patterns[1]
+    if #patterns == 1 and type(patterns[1]) == 'table' then
+        patterns = patterns[1]
+    end
+
+    if #patterns == 0 then return pattern.new() end
+    if #patterns == 1 then return patterns[1]:clone() end
+
+    local all_keys = {}
+    for _, p in ipairs(patterns) do
+        assert(getmetatable(p) == pattern, "pattern.union requires a pattern as an argument")
+        for i = 1, #p.cellkey do
+            all_keys[p.cellkey[i]] = true
         end
     end
-    if #patterns == 1 then
-        return patterns[1]
-    end
-    local total = pattern.clone(patterns[1])
-    for i = 2, #patterns, 1 do
-        local v = patterns[i]
-        assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
-        for x, y in v:cell_coordinates() do
-            if total:has_cell(x, y) == false then
-                total:insert(x, y)
-            end
-        end
+
+    local total = pattern.new()
+    for key in pairs(all_keys) do
+        local x, y = key_to_coordinates(key)
+        total:insert(x, y)
     end
     return total
 end
@@ -577,8 +634,10 @@ function pattern.__eq(a, b)
     if a:size() ~= b:size() then return false end
     if a.min ~= b.min then return false end
     if a.max ~= b.max then return false end
-    for x, y in a:cell_coordinates() do
-        if b:has_cell(x, y) == false then return false end
+    for i = 1, #a.cellkey do
+        if b.cellmap[a.cellkey[i]] == nil then
+            return false
+        end
     end
     return true
 end
@@ -737,9 +796,9 @@ end
 -- local p_vreflected = p:vreflect()
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
-    local np = pattern.clone(ip)
+    local np = pattern.new()
     for vx, vy in ip:cell_coordinates() do
-        local new_y = 2 * ip.max.y - vy + 1
+        local new_y = ip.min.y + ip.max.y - vy
         np:insert(vx, new_y)
     end
     return np
@@ -753,9 +812,9 @@ end
 -- local p_hreflected = p:hreflect()
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
-    local np = pattern.clone(ip)
+    local np = pattern.new()
     for vx, vy in ip:cell_coordinates() do
-        local new_x = 2 * ip.max.x - vx + 1
+        local new_x = ip.min.x + ip.max.x - vx
         np:insert(new_x, vy)
     end
     return np
@@ -807,9 +866,16 @@ function pattern.sample_poisson(ip, distance, radius, rng)
     local domain = ip:clone()
     while domain:size() > 0 do
         local dart = domain:rcell(rng)
-        local mask = function(icell) return distance(icell, dart) >= radius end
-        domain = pattern.filter(domain, mask)
         sample:insert(dart.x, dart.y)
+        local to_remove = {}
+        for cell_to_check in domain:cells() do
+            if distance(cell_to_check, dart) < radius then
+                table.insert(to_remove, cell_to_check)
+            end
+        end
+        for _, cell_to_remove in ipairs(to_remove) do
+            domain:remove(cell_to_remove.x, cell_to_remove.y)
+        end
     end
     return sample
 end
@@ -864,12 +930,21 @@ end
 
 --- Returns the contiguous subpattern (connected component) starting from a given location.
 local function floodfill(x, y, nbh, domain, retpat)
-    if domain:has_cell(x, y) and retpat:has_cell(x, y) == false then
-        retpat:insert(x, y)
+    local q = { cell.new(x, y) }
+    retpat:insert(x, y)
+
+    local head = 1
+    while head <= #q do
+        local current = q[head]
+        head = head + 1
+
         for i = 1, #nbh, 1 do
-            local nx = nbh[i].x + x
-            local ny = nbh[i].y + y
-            floodfill(nx, ny, nbh, domain, retpat)
+            local nx = nbh[i].x + current.x
+            local ny = nbh[i].y + current.y
+            if domain:has_cell(nx, ny) and not retpat:has_cell(nx, ny) then
+                retpat:insert(nx, ny)
+                q[#q + 1] = cell.new(nx, ny)
+            end
         end
     end
 end
@@ -887,7 +962,9 @@ function pattern.floodfill(ip, icell, nbh)
     assert(icell, "pattern.floodfill requires a cell as the second argument")
     if nbh == nil then nbh = neighbourhood.moore() end
     local retpat = pattern.new()
-    floodfill(icell.x, icell.y, nbh, ip, retpat)
+    if ip:has_cell(icell.x, icell.y) then
+        floodfill(icell.x, icell.y, nbh, ip, retpat)
+    end
     return retpat
 end
 
@@ -921,10 +998,18 @@ function pattern.convex_hull(ip)
     local primitives = require('forma.primitives')
     local hull_points = convex_hull.points(ip)
     local chull = pattern.new()
-    for i = 1, #hull_points - 1, 1 do
-        chull = chull + primitives.line(hull_points[i], hull_points[i + 1])
+    local function add_line(p1, p2)
+        local line = primitives.line(p1, p2)
+        for x, y in line:cell_coordinates() do
+            if not chull:has_cell(x, y) then
+                chull:insert(x, y)
+            end
+        end
     end
-    chull = chull + primitives.line(hull_points[#hull_points], hull_points[1])
+    for i = 1, #hull_points - 1, 1 do
+        add_line(hull_points[i], hull_points[i + 1])
+    end
+    add_line(hull_points[#hull_points], hull_points[1])
     return chull
 end
 
@@ -941,13 +1026,7 @@ function pattern.thin(ip)
     -- Utility callback to remove cells from the pattern
     local function process_changes(to_remove)
         for _, c in ipairs(to_remove) do
-            p.cellmap[coordinates_to_key(c[1], c[2])] = nil
-            for k = 1, #p.cellkey do
-                if p.cellkey[k] == coordinates_to_key(c[1], c[2]) then
-                    table.remove(p.cellkey, k)
-                    break
-                end
-            end
+            p:remove(c[1], c[2])
         end
     end
     -- Main Zhang-Suen thinning loop
@@ -960,6 +1039,10 @@ function pattern.thin(ip)
         -- Perform pass B
         changed = changed or zs.pass(p, zs.passB_conditions, process_changes)
     end
+
+    -- Recalculate bounding box as cells may have been removed
+    p:recalculate_bounding_box()
+
     return p
 end
 
@@ -1009,16 +1092,23 @@ function pattern.dilate(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.dilate requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.dilate requires a neighbourhood as the second argument")
-    local np = pattern.clone(ip)
+
+    local dilated_keys = {}
+    -- Add original cells and their neighbours to a single set to handle overlaps.
     for x, y in ip:cell_coordinates() do
+        dilated_keys[coordinates_to_key(x, y)] = true
         for j = 1, #nbh, 1 do
             local offset = nbh[j]
             local nx = x + offset.x
             local ny = y + offset.y
-            if not np:has_cell(nx, ny) then
-                np:insert(nx, ny)
-            end
+            dilated_keys[coordinates_to_key(nx, ny)] = true
         end
+    end
+
+    local np = pattern.new()
+    for key in pairs(dilated_keys) do
+        local x, y = key_to_coordinates(key)
+        np:insert(x, y)
     end
     return np
 end
@@ -1118,7 +1208,7 @@ function pattern.find_packing_position(a, b, rng)
     assert(getmetatable(b) == pattern, "pattern.find_packing_position requires a pattern as a second argument")
     assert(a:size() > 0, "pattern.find_packing_position requires a non-empty pattern as the first argument")
     local hinge = a:rcell(rng)
-    for bcell in b:cells() do
+    for bcell in b:shuffled_cells(rng) do
         local coordshift = bcell - hinge
         local tiles = true
         for acell in a:cells() do
@@ -1197,8 +1287,10 @@ function pattern.connected_components(ip, nbh)
     while pattern.size(wp) > 0 do
         local seed_cell = wp:cells()()
         local segment = pattern.floodfill(wp, seed_cell, nbh)
-        wp = wp - segment
         mp:insert(segment)
+        for x, y in segment:cell_coordinates() do
+            wp:remove(x, y)
+        end
     end
     return mp
 end
@@ -1242,11 +1334,12 @@ function pattern.bsp(ip, th_volume, alpha)
     assert(getmetatable(ip) == pattern, "pattern.bsp requires a pattern as an argument")
     assert(th_volume, "pattern.bsp rules must specify a threshold volume for partitioning")
     assert(th_volume > 0, "pattern.bsp rules must specify positive threshold volume for partitioning")
-    local available = ip
+    local available = ip:clone()
     local mp = multipattern.new()
     local bsp = require('forma.utils.bsp')
     while pattern.size(available) > 0 do
         local min_rect, max_rect = bsp.max_rectangle_coordinates(available, alpha)
+        if max_rect.x < min_rect.x then break end
         bsp.split(min_rect, max_rect, th_volume, mp)
         available = available - mp:union_all()
     end

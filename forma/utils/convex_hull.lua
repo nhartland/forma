@@ -16,7 +16,7 @@ function convex_hull.points(ip)
     -- Build and sort list of existing cells
     local points = ip:cell_list()
     table.sort(points, function(a, b)
-        return a.x == b.x and a.y > b.y or a.x > b.x
+        return a.x < b.x or (a.x == b.x and a.y < b.y)
     end)
     local lower = {}
     for i = 1, #points do

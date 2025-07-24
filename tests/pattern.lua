@@ -104,6 +104,30 @@ function TestPattern:testInsert()
     lu.assertEquals(insert_test.min.y, -1)
 end
 
+function TestPattern:testRemove()
+    local p = primitives.square(3) -- 9 cells from (0,0) to (2,2)
+    lu.assertEquals(p:size(), 9)
+    p:remove(1, 1) -- remove center
+    lu.assertEquals(p:size(), 8)
+    lu.assertFalse(p:has_cell(1, 1))
+    lu.assertTrue(p:has_cell(0, 0))
+
+    -- test removing last element
+    p:remove(2, 2)
+    lu.assertEquals(p:size(), 7)
+    lu.assertFalse(p:has_cell(2, 2))
+
+    -- test removing non-existent element
+    p:remove(10, 10)
+    lu.assertEquals(p:size(), 7)
+
+    -- test removing until empty
+    local p2 = primitives.square(1)
+    p2:remove(0, 0)
+    lu.assertEquals(p2:size(), 0)
+    lu.assertFalse(p2:has_cell(0, 0))
+end
+
 -- Test the standard iterator methods
 function TestPattern:testIterators()
     local sqpat = primitives.square(20)
@@ -306,20 +330,35 @@ function TestPattern:testEnlarge()
 end
 
 function TestPattern:testReflect()
-    -- Test that a square pattern rotated both vertically and horizontally
-    -- is a square pattern of twice the side length
-    local test_square_4 = primitives.square(4)
-    local test_square_8 = primitives.square(8)
-    local test_reflect = test_square_4:vreflect():hreflect()
-    lu.assertTrue(test_square_8 == test_reflect)
-    -- Test for reflections on a more irregular pattern
-    local test_irreg = pattern.new({
+    -- Test for reflections on an irregular pattern
+    local p = pattern.new({
         { 1, 0 },
-        { 0, 1 } }):hreflect()
-    local test_irreg_reflect = pattern.new({
-        { 1, 0, 0, 1 },
-        { 0, 1, 1, 0 } })
-    lu.assertTrue(test_irreg == test_irreg_reflect)
+        { 0, 1 } }):translate(1, 1) -- from (1,1) to (2,2)
+
+    -- Horizontal reflection
+    local hreflect = p:hreflect()
+    local hreflect_expected = pattern.new()
+    hreflect_expected:insert(2, 1)
+    hreflect_expected:insert(1, 2)
+    lu.assertTrue(hreflect == hreflect_expected)
+
+    -- Vertical reflection
+    local vreflect = p:vreflect()
+    local vreflect_expected = pattern.new()
+    vreflect_expected:insert(1, 2)
+    vreflect_expected:insert(2, 1)
+    lu.assertTrue(vreflect == vreflect_expected)
+
+    -- A double reflection should be the same as a 180 degree rotation
+    -- around the center of the bounding box.
+    local double_reflect = p:hreflect():vreflect()
+    local rotated_180_around_center = pattern.new()
+    local center_x_2 = p.min.x + p.max.x
+    local center_y_2 = p.min.y + p.max.y
+    for x, y in p:cell_coordinates() do
+        rotated_180_around_center:insert(center_x_2 - x, center_y_2 - y)
+    end
+    lu.assertTrue(double_reflect == rotated_180_around_center)
 end
 
 function TestPattern:testRotate()
@@ -353,7 +392,7 @@ local function test_generic_packing_function(fn)
         local pp = fn(test_point, test_pattern)
         lu.assertTrue(test_pattern:has_cell(pp.x, pp.y))
         -- Remove point from test pattern
-        test_pattern = test_pattern - test_point:translate(pp.x, pp.y)
+        test_pattern:remove(pp.x, pp.y)
     end
     -- Pattern should now be empty
     lu.assertEquals(test_pattern:size(), 0)

@@ -153,8 +153,9 @@ end
 -- @return a new multipattern of the method's results.
 function multipattern.apply(mp, method, ...)
     assert(getmetatable(mp) == multipattern, "multipattern.apply requires a multipattern as an argument")
+    local pattern_mt = require('forma.pattern')
     local new_components = {}
-    for i, pat in ipairs(mp.components) do
+    for _, pat in ipairs(mp.components) do
         local m = pat[method]
         assert(type(m) == "function", "No method named '" .. tostring(method) .. "' on pattern")
         local return_value = m(pat, ...)
@@ -162,8 +163,8 @@ function multipattern.apply(mp, method, ...)
             for _, v in ipairs(return_value.components) do
                 table.insert(new_components, v)
             end
-        elseif getmetatable(return_value) == require('forma.pattern') then
-            new_components[i] = return_value
+        elseif getmetatable(return_value) == pattern_mt then
+            table.insert(new_components, return_value)
         else
             assert(false, "Method must return a pattern or multipattern")
         end

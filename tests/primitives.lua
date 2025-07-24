@@ -43,6 +43,20 @@ function TestPrimitives:testLine()
         local floodfill = pattern.floodfill(line, start)
         lu.assertTrue(floodfill==line)
     end
+
+    -- Test horizontal line
+    local h_start = cell.new(0, 0)
+    local h_finish = cell.new(10, 0)
+    local h_line = primitives.line(h_start, h_finish)
+    lu.assertEquals(h_line:size(), 11)
+    lu.assertTrue(h_line:has_cell(5, 0))
+
+    -- Test vertical line
+    local v_start = cell.new(0, 0)
+    local v_finish = cell.new(0, 10)
+    local v_line = primitives.line(v_start, v_finish)
+    lu.assertEquals(v_line:size(), 11)
+    lu.assertTrue(v_line:has_cell(0, 5))
 end
 -- Test Bezier raster ------------------------------------------------
 function TestPrimitives:testBezier()
