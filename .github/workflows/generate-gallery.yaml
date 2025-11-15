@@ -1,0 +1,49 @@
+name: Generate Gallery Images
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate-gallery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Install font
+        run: |
+          # Create a directory for the font
+          sudo mkdir -p /usr/local/share/fonts/input-mono
+          # Copy the font file (assuming it's in a resources/fonts directory)
+          sudo cp resources/fonts/*.ttf /usr/local/share/fonts/input-mono/
+          # Rebuild the font cache
+          sudo fc-cache -f -v
+
+      - name: Generate images
+        run: |
+          chmod +x generate_example_images.sh
+          ./generate_example_images.sh
+
+      - name: Commit and push changes (PR)
+        if: github.event_name == 'pull_request'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: update gallery images"
+          branch: ${{ github.head_ref }}
+
+      - name: Commit and push changes (Push)
+        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: update gallery images"
+          branch: main
