@@ -252,18 +252,13 @@ end
 -- a batch of cell removals.
 -- @param ip pattern to process.
 function pattern.recalculate_bounding_box(ip)
-    if ip:size() > 0 then
-        ip.max.x, ip.max.y = -math.huge, -math.huge
-        ip.min.x, ip.min.y = math.huge, math.huge
-        for x, y in ip:cell_coordinates() do
-            ip.max.x = max(ip.max.x, x)
-            ip.max.y = max(ip.max.y, y)
-            ip.min.x = min(ip.min.x, x)
-            ip.min.y = min(ip.min.y, y)
-        end
-    else
-        ip.max.x, ip.max.y = -math.huge, -math.huge
-        ip.min.x, ip.min.y = math.huge, math.huge
+    ip.max.x, ip.max.y = -math.huge, -math.huge
+    ip.min.x, ip.min.y = math.huge, math.huge
+    for x, y in ip:cell_coordinates() do
+        ip.max.x = max(ip.max.x, x)
+        ip.max.y = max(ip.max.y, y)
+        ip.min.x = min(ip.min.x, x)
+        ip.min.y = min(ip.min.y, y)
     end
 end
 
@@ -1197,6 +1192,17 @@ end
 --- Packing methods
 -- @section packing
 
+-- Check if pattern a fits entirely within domain b when shifted by coordshift
+local function can_pack_at(a, b, coordshift)
+    for acell in a:cells() do
+        local shifted = acell + coordshift
+        if not b:has_cell(shifted.x, shifted.y) then
+            return false
+        end
+    end
+    return true
+end
+
 --- Finds a packing offset where pattern a fits entirely within domain b.
 -- Returns a coordinate shift that, when applied to a, makes it tile inside b.
 --
@@ -1213,15 +1219,7 @@ function pattern.find_packing_position(a, b, rng)
     local hinge = a:rcell(rng)
     for bcell in b:shuffled_cells(rng) do
         local coordshift = bcell - hinge
-        local tiles = true
-        for acell in a:cells() do
-            local shifted = acell + coordshift
-            if b:has_cell(shifted.x, shifted.y) == false then
-                tiles = false
-                break
-            end
-        end
-        if tiles == true then
+        if can_pack_at(a, b, coordshift) then
             return coordshift
         end
     end
@@ -1252,17 +1250,9 @@ function pattern.find_central_packing_position(a, b, c)
         return adist < bdist
     end
     table.sort(allcells, distance_to_c)
-    for i = 1, #allcells, 1 do
+    for i = 1, #allcells do
         local coordshift = allcells[i] - hinge
-        local tiles = true
-        for acell in a:cells() do
-            local shifted = acell + coordshift
-            if b:has_cell(shifted.x, shifted.y) == false then
-                tiles = false
-                break
-            end
-        end
-        if tiles == true then
+        if can_pack_at(a, b, coordshift) then
             return coordshift
         end
     end

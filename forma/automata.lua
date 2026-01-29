@@ -103,19 +103,11 @@ end
 -- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
 local function check_cell(ruleset, ipattern, ix, iy)
-    local alive = ipattern:has_cell(ix, iy)
-    if alive == false then -- Check Birth
-        for i = 1, #ruleset, 1 do
-            local irule = ruleset[i]
-            local count = nCount(ipattern, irule.neighbourhood, ix, iy)
-            if irule.B[count] == nil then return false end
-        end
-    else -- Check Survival
-        for i = 1, #ruleset, 1 do
-            local irule = ruleset[i]
-            local count = nCount(ipattern, irule.neighbourhood, ix, iy)
-            if irule.S[count] == nil then return false end
-        end
+    local rule_type = ipattern:has_cell(ix, iy) and 'S' or 'B'
+    for i = 1, #ruleset do
+        local irule = ruleset[i]
+        local count = nCount(ipattern, irule.neighbourhood, ix, iy)
+        if irule[rule_type][count] == nil then return false end
     end
     return true
 end
