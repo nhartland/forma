@@ -41,6 +41,15 @@ function TestSubPatterns:testFloodFill()
     lu.assertTrue(floodfill == test_pattern)
 end
 
+function TestSubPatterns:testFloodFillLarge()
+    -- Large pattern test to ensure iterative implementation doesn't overflow.
+    -- A recursive implementation would fail on patterns larger than ~1000 cells.
+    local large_square = primitives.square(200)
+    local start_cell = cell.new(0, 0)
+    local floodfill = pattern.floodfill(large_square, start_cell, neighbourhood.moore())
+    lu.assertEquals(floodfill:size(), 40000)
+end
+
 --  Connected Components --------------------------------------------------------------
 function TestSubPatterns:testConnectedComponents()
     -- Measure the number of connected components in a pattern by flood-filling.

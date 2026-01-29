@@ -930,20 +930,23 @@ end
 
 --- Returns the contiguous subpattern (connected component) starting from a given location.
 local function floodfill(x, y, nbh, domain, retpat)
-    local q = { cell.new(x, y) }
+    local q = { x, y }
+    local head = 1
+    local tail = 2
     retpat:insert(x, y)
 
-    local head = 1
-    while head <= #q do
-        local current = q[head]
-        head = head + 1
+    while head < tail do
+        local cx, cy = q[head], q[head + 1]
+        head = head + 2
 
-        for i = 1, #nbh, 1 do
-            local nx = nbh[i].x + current.x
-            local ny = nbh[i].y + current.y
+        for i = 1, #nbh do
+            local nx = nbh[i].x + cx
+            local ny = nbh[i].y + cy
             if domain:has_cell(nx, ny) and not retpat:has_cell(nx, ny) then
                 retpat:insert(nx, ny)
-                q[#q + 1] = cell.new(nx, ny)
+                q[tail + 1] = nx
+                q[tail + 2] = ny
+                tail = tail + 2
             end
         end
     end
