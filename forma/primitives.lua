@@ -32,7 +32,7 @@ function primitives.square(x, y)
     y = y ~= nil and y or x
     assert(type(x) == "number",
         'primitives.square requires a number as the first argument')
-    assert(type(x) == "number",
+    assert(type(y) == "number",
         'primitives.square requires either a number or nil as a second argument')
 
     local sqPattern = pattern.new()
