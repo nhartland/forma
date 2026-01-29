@@ -64,17 +64,16 @@ end
 -- Game of Life. Ordered clockwise assuming an downwards y-axis and rightwards
 -- x-axis
 function neighbourhood.moore()
-    local nbh = {}
-    table.insert(nbh, cell.new(0, -1))  -- top
-    table.insert(nbh, cell.new(1, -1))  -- top-right
-    table.insert(nbh, cell.new(1, 0))   -- right
-    table.insert(nbh, cell.new(1, 1))   -- bottom-right
-    table.insert(nbh, cell.new(0, 1))   -- bottom
-    table.insert(nbh, cell.new(-1, 1))  -- bottom-left
-    table.insert(nbh, cell.new(-1, 0))  -- left
-    table.insert(nbh, cell.new(-1, -1)) -- top-left
-
-    nbh = neighbourhood.new(nbh)
+    local nbh = neighbourhood.new({
+        cell.new(0, -1),   -- top
+        cell.new(1, -1),   -- top-right
+        cell.new(1, 0),    -- right
+        cell.new(1, 1),    -- bottom-right
+        cell.new(0, 1),    -- bottom
+        cell.new(-1, 1),   -- bottom-left
+        cell.new(-1, 0),   -- left
+        cell.new(-1, -1),  -- top-left
+    })
     nbh.category_label = nil
     return nbh
 end
@@ -85,12 +84,12 @@ end
 -- Contains all cells with Manhattan distance 1 from origin. Ordered clockwise
 -- assuming an upwards y-axis and rightwards x-axis
 function neighbourhood.von_neumann()
-    local nbh = {}
-    table.insert(nbh, cell.new(0, 1))
-    table.insert(nbh, cell.new(1, 0))
-    table.insert(nbh, cell.new(0, -1))
-    table.insert(nbh, cell.new(-1, 0))
-    nbh = neighbourhood.new(nbh)
+    local nbh = neighbourhood.new({
+        cell.new(0, 1),
+        cell.new(1, 0),
+        cell.new(0, -1),
+        cell.new(-1, 0),
+    })
     -- utf8 characters for the 16 possible von neumann categories
     nbh._category_label = { '┼', '┬', '┤', '┴', '├', '│', '┘', '┐', '─', '┌', '└', '╶', '╵', '╷', '╴', '.' }
     return nbh
@@ -102,12 +101,12 @@ end
 -- neighbourhood with the von Neumann subtracted. Ordered clockwise assuming an
 -- upwards y-axis and rightwards x-axis
 function neighbourhood.diagonal()
-    local nbh = {}
-    table.insert(nbh, cell.new(1, 1))
-    table.insert(nbh, cell.new(1, -1))
-    table.insert(nbh, cell.new(-1, -1))
-    table.insert(nbh, cell.new(-1, 1))
-    nbh = neighbourhood.new(nbh)
+    local nbh = neighbourhood.new({
+        cell.new(1, 1),
+        cell.new(1, -1),
+        cell.new(-1, -1),
+        cell.new(-1, 1),
+    })
     nbh._category_label = nil -- TODO
     return nbh
 end
@@ -117,12 +116,12 @@ end
 -- Contains all cells two cells away from the origin along the diagonal axes.
 -- Ordered clockwise assuming an upwards y-axis and rightwards x-axis
 function neighbourhood.diagonal_2()
-    local nbh = {}
-    table.insert(nbh, cell.new(2, 2))
-    table.insert(nbh, cell.new(2, -2))
-    table.insert(nbh, cell.new(-2, -2))
-    table.insert(nbh, cell.new(-2, 2))
-    nbh = neighbourhood.new(nbh)
+    local nbh = neighbourhood.new({
+        cell.new(2, 2),
+        cell.new(2, -2),
+        cell.new(-2, -2),
+        cell.new(-2, 2),
+    })
     nbh._category_label = nil -- TODO
     return nbh
 end
