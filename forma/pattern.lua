@@ -39,7 +39,7 @@
 --
 -- @module forma.pattern
 
----@class forma.pattern
+--@class forma.pattern
 local pattern = {}
 
 local min   = math.min
