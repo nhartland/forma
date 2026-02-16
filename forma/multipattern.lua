@@ -219,15 +219,15 @@ function multipattern.print(mp, chars, domain)
         "multipattern.print: there must be as many character table entries as components")
     -- Print out the segments to a map
     for i = domain.min.y, domain.max.y, 1 do
-        local string = ''
+        local row = {}
         for j = domain.min.x, domain.max.x, 1 do
             local token = ' '
             for k, v in ipairs(mp.components) do
                 if v:has_cell(j, i) then token = chars[k] end
             end
-            string = string .. token
+            row[#row + 1] = token
         end
-        io.write(string .. '\n')
+        io.write(table.concat(row) .. '\n')
     end
 end
 

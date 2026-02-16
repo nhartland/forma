@@ -1521,11 +1521,11 @@ function pattern.print(ip, char, domain, printer)
         or function(line) io.write(line .. "\n") end
 
     for y = domain.min.y, domain.max.y, 1 do
-        local line = ""
+        local chars = {}
         for x = domain.min.x, domain.max.x, 1 do
-            line = line .. (ip:has_cell(x, y) and onchar or offchar)
+            chars[#chars + 1] = ip:has_cell(x, y) and onchar or offchar
         end
-        print_line(line)
+        print_line(table.concat(chars))
     end
 end
 
