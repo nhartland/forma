@@ -43,6 +43,7 @@ build = {
     },
     copy_directories = {
         "docs",
+        "stubs",
         "tests"
     }
 }

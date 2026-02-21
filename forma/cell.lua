@@ -11,7 +11,6 @@
 --
 -- @module forma.cell
 
---@class forma.cell
 local cell = {}
 
 local abs   = math.abs

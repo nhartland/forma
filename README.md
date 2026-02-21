@@ -108,6 +108,32 @@ Simply running
 
 in the root directory should generate all the required pages.
 
+## LuaLS (Lua Language Server) Support
+
+forma ships with [LuaLS](https://luals.github.io/) type stubs for full
+intellisense and type checking. When installed via luarocks, the stubs are
+located in the rock's install directory.
+
+Add the installed stubs to your project's `.luarc.json`:
+
+```json
+{
+    "workspace": {
+        "library": [
+            "<luarocks_tree>/lib/luarocks/rocks-<version>/forma/scm-1/stubs"
+        ]
+    }
+}
+```
+
+You can find your luarocks tree with `luarocks config deploy_lua_dir`. To find
+the exact stubs path:
+
+```bash
+luarocks show forma --rock-dir
+# Append /stubs to the result
+```
+
 ## Testing
 
 Unit tests and coverage reports are provided. The test suite requires
