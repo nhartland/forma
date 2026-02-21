@@ -167,9 +167,24 @@ Initial release
 
 ## Misc
 
-- Improved speed of neighbourhood categorisation.
 - Changed `multipattern.apply` such that when used with a method that itself
   returns multipatterns on each component, the resulting patterns are flattened
   into a single multipattern.
 - `pattern.vreflect` and `pattern.hreflect` now return only the reflected pattern, not the union of pattern and reflection.
 - Improved `pattern.floodfill`, no longer operates recursively for greater stability.
+- Lazy bounding box recomputation after `pattern.remove`. The bounding box is
+  now automatically recalculated when accessed if cells on the boundary have
+  been removed, eliminating the need to manually call
+  `recalculate_bounding_box`.
+- Replaced string concatenation with `table.concat` in `pattern.print` and
+  `multipattern.print` for improved performance on wide patterns.
+
+## Bugfix
+
+- Fixed multipattern:insert so that it returns the multipattern, allowing for chaining.
+- Fixed a bug in Bresenham line drawing where a crash would occour for perfectly vertical or horizontal lines.
+- Fixed bug in sorting in convex hull finding.
+- Added missing `forma.utils.zhang_suen` module to rockspec build.
+- Added missing `multipattern` to global lazy import in `forma/init.lua`.
+- Updated Lua version constraint in rockspec from `< 5.4` to `< 5.5` to
+  support Lua 5.4.
