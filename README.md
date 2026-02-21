@@ -17,9 +17,11 @@ suited (but not limited) to the generation of roguelike environments.
 
 ## Features
 
-- **A spatial-hashing pattern** class for fast lookup of active cells.
-- **Pattern manipulators** such as the addition, subtraction, rotation and reflection of patterns.
+- **A spatial-hashing pattern** class with sparse set storage for fast lookup and removal of active cells.
+- **Pattern manipulators** such as union, subtraction, intersection, XOR, rotation, reflection, dilation, erosion, opening, closing and morphological gradient.
 - **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares and Bezier curves.
+- A **multipattern** class for handling collections of patterns with batch operations.
+- A **raycasting** tool for computing visible areas from a source cell.
 - A very flexible **cellular automata** implementation with
   - Synchronous and asynchronous updates
   - Combination of multiple rule sets
@@ -31,7 +33,8 @@ suited (but not limited) to the generation of roguelike environments.
 - **Algorithms for subpattern finding** including
   - Flood-fill contiguous segment finding
   - Convex hull finding
-  - Pattern edge and surface finding
+  - Pattern exterior/interior hull finding
+  - Pattern thinning/skeletonisation (Zhang-Suen)
   - Binary space partitioning
   - Voronoi tessellation / Lloyd's algorithm
 
@@ -80,7 +83,7 @@ connected_components:print(nil, domain)
 
 ## Installation
 
-**forma** is compatible with Lua 5.1, 5.2, 5.3 and LuaJIT 2.0, 2.1. The library
+**forma** is compatible with Lua 5.1, 5.2, 5.3, 5.4 and LuaJIT 2.0, 2.1. The library
 is written in pure Lua, no compilation is required. Including the project is as
 simple as including the `forma` directory in your project or Lua path.
 
@@ -89,12 +92,6 @@ use:
 
 ```Shell
     luarocks install forma
-```
-
-Alternatively you can try the dev branch with:
-
-```Shell
-    luarocks install --server=http://luarocks.org/dev forma
 ```
 
 ## Documentation
@@ -120,4 +117,4 @@ Unit tests and coverage reports are provided. The test suite requires
 
 To run the tests use
 
-    luarocks --lua-version=5.1 test
+    luarocks test
