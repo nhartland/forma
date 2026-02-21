@@ -74,7 +74,7 @@
 
 - Fixed GitHub actions workflows by bumping `gh-action-lua` and
   `gh-action-luarocks` versions.
-- Fixed luaunit at v3.3
+- Fixed luaunit at v3.4
 
 ## Misc
 

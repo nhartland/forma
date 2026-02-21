@@ -18,13 +18,6 @@ multipattern.__index = function(mp, key)
     end
 end
 
---- Multipattern length.
--- Note: Only works with lua5.2 and above.
--- Returns the number of components in the multipattern.
-multipattern.__len = function(mp)
-    return mp:n_components()
-end
-
 
 --- Create a new multipattern from a list of patterns.
 -- @param components an array of `pattern` objects.
