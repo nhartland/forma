@@ -44,7 +44,7 @@ end
 function TestPattern:testConstructor()
     lu.assertEquals(pattern.size(self.pattern_1), 0)
     lu.assertEquals(pattern.size(self.pattern_2), 25)
-    lu.assertEquals(pattern.size(self.pattern_2), 25)
+    lu.assertEquals(pattern.size(self.pattern_3), 1)
     -- Test that both methods of generating patterns work
     lu.assertTrue(self.pattern_4 == self.pattern_3)
     lu.assertTrue(self.pattern_5 == self.pattern_2)
