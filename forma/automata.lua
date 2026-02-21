@@ -67,20 +67,20 @@ end
 -- @usage
 --  -- Initialise a rule corresponding to Conway's Game of Life
 --  local gol_rule = automata.rule(neighbourhood.moore(), "B3/S23")
--- @param neighbourhood specifying the `neighbourhood` the rule is to be applied in.
+-- @param nbh specifying the `neighbourhood` the rule is to be applied in.
 -- @param rule_string string specifying the ruleset (i.e B23/S1).
 -- @return A verified rule for use with the CA methods.
-function automata.rule(neighbourhood, rule_string)
-    assert(#neighbourhood < 11,
+function automata.rule(nbh, rule_string)
+    assert(#nbh < 11,
         "forma.automata.rule: Rule string format does not support neighbourhoods with more than 10 elements")
-    assert(type(neighbourhood) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
+    assert(type(nbh) == 'table', "forma.automata.rule: first argument must be a neighbourhood table")
     assert(type(rule_string) == 'string', "forma.automata.rule: parse_rules trying to parse a " .. type(rule_string))
     local Bpos, Spos = string.find(rule_string, 'B'), string.find(rule_string, 'S')
     assert(Bpos == 1 and Spos ~= nil, "forma.automata.rule: parse_rules cannot understand rule " .. rule_string)
     local Brule, Srule = string.sub(rule_string, 1, Spos - 2), string.sub(rule_string, Spos, #rule_string)
-    local newrule = { neighbourhood = neighbourhood }
-    newrule.B = parse_rule(neighbourhood, Brule)
-    newrule.S = parse_rule(neighbourhood, Srule)
+    local newrule = { neighbourhood = nbh }
+    newrule.B = parse_rule(nbh, Brule)
+    newrule.S = parse_rule(nbh, Srule)
     return newrule
 end
 
@@ -103,19 +103,11 @@ end
 -- Ruleset pass/fail analysis
 -- This function assesses whether or not a cell should be alive
 local function check_cell(ruleset, ipattern, ix, iy)
-    local alive = ipattern:has_cell(ix, iy)
-    if alive == false then -- Check Birth
-        for i = 1, #ruleset, 1 do
-            local irule = ruleset[i]
-            local count = nCount(ipattern, irule.neighbourhood, ix, iy)
-            if irule.B[count] == nil then return false end
-        end
-    else -- Check Survival
-        for i = 1, #ruleset, 1 do
-            local irule = ruleset[i]
-            local count = nCount(ipattern, irule.neighbourhood, ix, iy)
-            if irule.S[count] == nil then return false end
-        end
+    local rule_type = ipattern:has_cell(ix, iy) and 'S' or 'B'
+    for i = 1, #ruleset do
+        local irule = ruleset[i]
+        local count = nCount(ipattern, irule.neighbourhood, ix, iy)
+        if irule[rule_type][count] == nil then return false end
     end
     return true
 end
@@ -193,11 +185,11 @@ function automata.async_iterate(prevp, domain, ruleset, rng)
         local check = check_cell(ruleset, prevp, x, y)
         if prevp:has_cell(x, y) and check == false then
             -- Copy old pattern, subtracting off newly deactivated cell
-            local nextp = prevp - pattern.new():insert(x, y)
+            local nextp = prevp:clone():remove(x, y)
             return nextp, false
         elseif prevp:has_cell(x, y) == false and check == true then
             -- Activate new cell
-            local nextp = prevp + pattern.new():insert(x, y)
+            local nextp = prevp:clone():insert(x, y)
             return nextp, false
         end
     end

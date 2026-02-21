@@ -10,12 +10,14 @@
 -- and Euclidean distances.
 --
 -- @module forma.cell
-local cell   = {}
 
-local abs    = math.abs
-local max    = math.max
-local sqrt   = math.sqrt
-local floor  = math.floor
+--@class forma.cell
+local cell = {}
+
+local abs   = math.abs
+local max   = math.max
+local sqrt  = math.sqrt
+local floor = math.floor
 
 -- Cell indexing
 -- For enabling syntax sugar cell:method

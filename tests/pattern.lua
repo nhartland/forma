@@ -4,7 +4,7 @@ local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local neighbourhood = require("forma.neighbourhood")
 
-TestPattern         = {}
+TestPattern = {}
 
 function TestPattern:setUp()
     self.pattern_1 = pattern.new()
@@ -44,7 +44,7 @@ end
 function TestPattern:testConstructor()
     lu.assertEquals(pattern.size(self.pattern_1), 0)
     lu.assertEquals(pattern.size(self.pattern_2), 25)
-    lu.assertEquals(pattern.size(self.pattern_2), 25)
+    lu.assertEquals(pattern.size(self.pattern_3), 1)
     -- Test that both methods of generating patterns work
     lu.assertTrue(self.pattern_4 == self.pattern_3)
     lu.assertTrue(self.pattern_5 == self.pattern_2)
@@ -104,6 +104,30 @@ function TestPattern:testInsert()
     lu.assertEquals(insert_test.min.y, -1)
 end
 
+function TestPattern:testRemove()
+    local p = primitives.square(3) -- 9 cells from (0,0) to (2,2)
+    lu.assertEquals(p:size(), 9)
+    p:remove(1, 1) -- remove center
+    lu.assertEquals(p:size(), 8)
+    lu.assertFalse(p:has_cell(1, 1))
+    lu.assertTrue(p:has_cell(0, 0))
+
+    -- test removing last element
+    p:remove(2, 2)
+    lu.assertEquals(p:size(), 7)
+    lu.assertFalse(p:has_cell(2, 2))
+
+    -- test removing non-existent element
+    p:remove(10, 10)
+    lu.assertEquals(p:size(), 7)
+
+    -- test removing until empty
+    local p2 = primitives.square(1)
+    p2:remove(0, 0)
+    lu.assertEquals(p2:size(), 0)
+    lu.assertFalse(p2:has_cell(0, 0))
+end
+
 -- Test the standard iterator methods
 function TestPattern:testIterators()
     local sqpat = primitives.square(20)
@@ -134,6 +158,23 @@ function TestPattern:testShuffledIterators()
     for x, y in sqpat:shuffled_coordinates() do
         lu.assertTrue(sqpat:has_cell(x, y))
     end
+end
+
+-- Test bounding box methods
+function TestPattern:testBoundingBoxMethods()
+    local sqpat = primitives.square(20)
+    lu.assertTrue(sqpat:bounding_box_density() == 1.0)
+    lu.assertTrue(sqpat:bounding_box_asymmetry() == 1.0)
+
+    local recpat = primitives.square(5, 20)
+    lu.assertTrue(recpat:bounding_box_density() == 1.0)
+    lu.assertTrue(recpat:bounding_box_asymmetry() == 4.0)
+
+    local lower_density = pattern.new({
+        { 1, 1, 1 },
+        { 1, 0, 1 },
+        { 1, 1, 1 } }):bounding_box_density()
+    lu.assertTrue(lower_density < 1.0)
 end
 
 function TestPattern:testCentroid()
@@ -289,20 +330,35 @@ function TestPattern:testEnlarge()
 end
 
 function TestPattern:testReflect()
-    -- Test that a square pattern rotated both vertically and horizontally
-    -- is a square pattern of twice the side length
-    local test_square_4 = primitives.square(4)
-    local test_square_8 = primitives.square(8)
-    local test_reflect = test_square_4:vreflect():hreflect()
-    lu.assertTrue(test_square_8 == test_reflect)
-    -- Test for reflections on a more irregular pattern
-    local test_irreg = pattern.new({
+    -- Test for reflections on an irregular pattern
+    local p = pattern.new({
         { 1, 0 },
-        { 0, 1 } }):hreflect()
-    local test_irreg_reflect = pattern.new({
-        { 1, 0, 0, 1 },
-        { 0, 1, 1, 0 } })
-    lu.assertTrue(test_irreg == test_irreg_reflect)
+        { 0, 1 } }):translate(1, 1) -- from (1,1) to (2,2)
+
+    -- Horizontal reflection
+    local hreflect = p:hreflect()
+    local hreflect_expected = pattern.new()
+    hreflect_expected:insert(2, 1)
+    hreflect_expected:insert(1, 2)
+    lu.assertTrue(hreflect == hreflect_expected)
+
+    -- Vertical reflection
+    local vreflect = p:vreflect()
+    local vreflect_expected = pattern.new()
+    vreflect_expected:insert(1, 2)
+    vreflect_expected:insert(2, 1)
+    lu.assertTrue(vreflect == vreflect_expected)
+
+    -- A double reflection should be the same as a 180 degree rotation
+    -- around the center of the bounding box.
+    local double_reflect = p:hreflect():vreflect()
+    local rotated_180_around_center = pattern.new()
+    local center_x_2 = p.min.x + p.max.x
+    local center_y_2 = p.min.y + p.max.y
+    for x, y in p:cell_coordinates() do
+        rotated_180_around_center:insert(center_x_2 - x, center_y_2 - y)
+    end
+    lu.assertTrue(double_reflect == rotated_180_around_center)
 end
 
 function TestPattern:testRotate()
@@ -327,15 +383,16 @@ end
 
 -- Common tests for find_packing_position and find_packing_position_centre
 local function test_generic_packing_function(fn)
-    -- Should be able to pack 25 single cells into a 5x5 square
+    -- Should be able to pack n*n single cells into a nxn square
+    local n = 10
     local test_point = primitives.square(1)
-    local test_pattern = primitives.square(5)
-    for _ = 1, 25 do
+    local test_pattern = primitives.square(n)
+    for _ = 1, n * n do
         -- Location where the test point can fit into the test pattern
         local pp = fn(test_point, test_pattern)
         lu.assertTrue(test_pattern:has_cell(pp.x, pp.y))
         -- Remove point from test pattern
-        test_pattern = test_pattern - test_point:translate(pp.x, pp.y)
+        test_pattern:remove(pp.x, pp.y)
     end
     -- Pattern should now be empty
     lu.assertEquals(test_pattern:size(), 0)
@@ -361,7 +418,7 @@ function TestPattern:testFind_central_packing_position()
         { 0, 1, 0, },
         { 1, 1, 1, },
         { 0, 1, 0, } })
-    local pp = test_point:find_central_packing_position(test_pattern)
+    local pp = test_point:find_central_packing_position(test_pattern, test_pattern:centroid())
     lu.assertEquals(pp.x, 1)
     lu.assertEquals(pp.y, 1)
 end
@@ -541,3 +598,16 @@ function TestPattern:testGradient3x3Block()
     lu.assertEquals(grad:size(), 24, "3×3 block morphological gradient (Moore+center) should be 24")
 end
 
+--- Test pattern.print method
+function TestPattern:testPrint()
+    -- Capture output via custom printer
+    local out = {}
+    local printer = function(line)
+        table.insert(out, line)
+    end
+    -- pattern_3 is a single‐cell domain at (0,0), using '*' as the on‐char
+    self.pattern_2:print('*', self.pattern_3, printer)
+    -- we expect exactly one line, and that line must be "*"
+    lu.assertEquals(#out, 1)
+    lu.assertEquals(out[1], '*')
+end

@@ -39,20 +39,21 @@
 --
 -- @module forma.pattern
 
-local pattern         = {}
+--@class forma.pattern
+local pattern = {}
 
-local min             = math.min
-local max             = math.max
-local floor           = math.floor
+local min   = math.min
+local max   = math.max
+local floor = math.floor
 
-local cell            = require('forma.cell')
-local neighbourhood   = require('forma.neighbourhood')
-local rutils          = require('forma.utils.random')
-local multipattern    = require('forma.multipattern')
+local cell          = require('forma.cell')
+local neighbourhood = require('forma.neighbourhood')
+local rutils        = require('forma.utils.random')
+local multipattern  = require('forma.multipattern')
 
 -- Pattern indexing.
 -- Enables the syntax sugar pattern:method.
-pattern.__index       = pattern
+pattern.__index = pattern
 
 -- Pattern coordinates (either x or y) must be within ± MAX_COORDINATE.
 local MAX_COORDINATE  = 65536
@@ -86,19 +87,20 @@ end
 -- @param prototype (optional) an N×M table of ones and zeros.
 -- @return a new pattern according to the prototype.
 function pattern.new(prototype)
-    local np   = {}
+    local np = {}
 
-    np.max     = cell.new(-math.huge, -math.huge)
-    np.min     = cell.new(math.huge, math.huge)
+    np.max = cell.new(-math.huge, -math.huge)
+    np.min = cell.new(math.huge, math.huge)
 
     -- Characters to be used with tostring metamethod.
     np.offchar = '0'
     np.onchar  = '1'
 
     np.cellkey = {} -- Table consisting of a list of coordinate keys.
-    np.cellmap = {} -- Spatial hash of coordinate key to bool (active/inactive cell).
+    np.cellmap = {} -- Spatial hash of coordinate key to its index in cellkey.
+    np.bbox_dirty = false -- Whether the bounding box needs recomputation.
 
-    np         = setmetatable(np, pattern)
+    np = setmetatable(np, pattern)
 
     if prototype ~= nil then
         assert(type(prototype) == 'table',
@@ -136,12 +138,18 @@ function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local newpat = pattern.new()
 
-    for x, y in ip:cell_coordinates() do
-        newpat:insert(x, y)
+    for i = 1, #ip.cellkey, 1 do
+        local key = ip.cellkey[i]
+        newpat.cellkey[i] = key
+        newpat.cellmap[key] = i
     end
+
+    newpat.min = ip.min:clone()
+    newpat.max = ip.max:clone()
 
     newpat.offchar = ip.offchar
     newpat.onchar  = ip.onchar
+    newpat.bbox_dirty = ip.bbox_dirty
 
     return newpat
 end
@@ -159,14 +167,51 @@ function pattern.insert(ip, x, y)
 
     local key = coordinates_to_key(x, y)
     assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
-    ip.cellmap[key] = true
-    ip.cellkey[#ip.cellkey + 1] = key
+    local new_index = #ip.cellkey + 1
+    ip.cellkey[new_index] = key
+    ip.cellmap[key] = new_index
 
     -- Reset pattern extent.
     ip.max.x = max(ip.max.x, x)
     ip.max.y = max(ip.max.y, y)
     ip.min.x = min(ip.min.x, x)
     ip.min.y = min(ip.min.y, y)
+
+    return ip
+end
+
+--- Removes a cell from the pattern.
+-- Returns the modified pattern to allow for method chaining.
+-- The bounding box is lazily recomputed when next accessed if the removed
+-- cell was on the boundary.
+--
+-- @param ip pattern to modify.
+-- @param x x-coordinate (integer) of the cell to remove.
+-- @param y y-coordinate (integer) of the cell to remove.
+-- @return the updated pattern (for cascading calls).
+function pattern.remove(ip, x, y)
+    local key_to_remove = coordinates_to_key(x, y)
+    local index_to_remove = ip.cellmap[key_to_remove]
+
+    if index_to_remove then
+        local last_index = #ip.cellkey
+        local last_key = ip.cellkey[last_index]
+
+        -- Swap
+        ip.cellkey[index_to_remove] = last_key
+        ip.cellmap[last_key] = index_to_remove
+
+        -- Pop
+        ip.cellkey[last_index] = nil
+        ip.cellmap[key_to_remove] = nil
+
+        -- Mark bounding box dirty if removed cell was on the boundary
+        if not ip.bbox_dirty then
+            if x == ip.min.x or x == ip.max.x or y == ip.min.y or y == ip.max.y then
+                ip.bbox_dirty = true
+            end
+        end
+    end
 
     return ip
 end
@@ -211,13 +256,77 @@ end
 --- General pattern utilites.
 -- @section utils
 
---- Comparator function to sort patterns by their size (number of cells).
+--- Recalculates the bounding box of the pattern.
+-- This is a slow O(N) operation. It is called automatically (lazily) when
+-- the bounding box is accessed after a `remove` operation on a boundary cell.
+-- Manual calls are only needed after directly modifying pattern internals.
+-- @param ip pattern to process.
+function pattern.recalculate_bounding_box(ip)
+    ip.max.x, ip.max.y = -math.huge, -math.huge
+    ip.min.x, ip.min.y = math.huge, math.huge
+    for x, y in ip:cell_coordinates() do
+        ip.max.x = max(ip.max.x, x)
+        ip.max.y = max(ip.max.y, y)
+        ip.min.x = min(ip.min.x, x)
+        ip.min.y = min(ip.min.y, y)
+    end
+    ip.bbox_dirty = false
+end
+
+--- Ensures the bounding box is up-to-date, recomputing if necessary.
+-- @param ip pattern to check.
+local function ensure_bbox(ip)
+    if ip.bbox_dirty then
+        pattern.recalculate_bounding_box(ip)
+    end
+end
+
+--- Comparator function to sort patterns by their size (descending).
 --
 -- @param pa first pattern.
 -- @param pb second pattern.
 -- @return boolean true if pa's size is greater than pb's.
 function pattern.size_sort(pa, pb)
     return pa:size() > pb:size()
+end
+
+--- Comparator function to sort patterns by their size (ascending).
+--
+-- @param pa first pattern.
+-- @param pb second pattern.
+-- @return boolean true if pa's size is less than pb's.
+function pattern.inverse_size_sort(pa, pb)
+    return pa:size() < pb:size()
+end
+
+--- Computes how densely the bounding box is filled.
+-- Returns zero for an empty pattern.
+--
+-- @param ip input pattern
+-- @return float the fraction of the bounding box that is occupied
+function pattern.bounding_box_density(ip)
+    assert(getmetatable(ip) == pattern,
+        "bounding_box_density: first argument must be a forma.pattern")
+    if ip:size() == 0 then return 0 end
+    ensure_bbox(ip)
+    local bb_area = (ip.max.x - ip.min.x + 1) * (ip.max.y - ip.min.y + 1)
+    return ip:size() / bb_area
+end
+
+--- Computes the asymmetry of the pattern's bounding box.
+-- Returns zero in the case of an empty pattern.
+--
+-- @param ip input pattern
+-- @return float the ratio of the bounding box's longest to shortest edge
+function pattern.bounding_box_asymmetry(ip)
+    assert(getmetatable(ip) == pattern,
+        "bounding_box_asymmetry: first argument must be a forma.pattern")
+    if ip:size() == 0 then return 0 end
+    ensure_bbox(ip)
+    return (
+        (max((ip.max.x - ip.min.x), (ip.max.y - ip.min.y)) + 1)
+        / (min((ip.max.x - ip.min.x), (ip.max.y - ip.min.y)) + 1)
+    )
 end
 
 --- Counts active neighbors around a specified cell within the pattern.
@@ -287,23 +396,25 @@ end
 -- @return a new pattern that is the union of the provided patterns.
 function pattern.union(...)
     local patterns = { ... }
-    if #patterns == 1 then
-        if type(patterns[1]) == 'table' then
-            patterns = patterns[1]
+    if #patterns == 1 and type(patterns[1]) == 'table' then
+        patterns = patterns[1]
+    end
+
+    if #patterns == 0 then return pattern.new() end
+    if #patterns == 1 then return patterns[1]:clone() end
+
+    local all_keys = {}
+    for _, p in ipairs(patterns) do
+        assert(getmetatable(p) == pattern, "pattern.union requires a pattern as an argument")
+        for i = 1, #p.cellkey do
+            all_keys[p.cellkey[i]] = true
         end
     end
-    if #patterns == 1 then
-        return patterns[1]
-    end
-    local total = pattern.clone(patterns[1])
-    for i = 2, #patterns, 1 do
-        local v = patterns[i]
-        assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
-        for x, y in v:cell_coordinates() do
-            if total:has_cell(x, y) == false then
-                total:insert(x, y)
-            end
-        end
+
+    local total = pattern.new()
+    for key in pairs(all_keys) do
+        local x, y = key_to_coordinates(key)
+        total:insert(x, y)
     end
     return total
 end
@@ -454,6 +565,7 @@ end
 -- @usage
 -- print(p)
 function pattern.__tostring(ip)
+    ensure_bbox(ip)
     local str = '- pattern origin: ' .. tostring(ip.min) .. '\n'
     for y = ip.min.y, ip.max.y, 1 do
         for x = ip.min.x, ip.max.x, 1 do
@@ -539,8 +651,10 @@ function pattern.__eq(a, b)
     if a:size() ~= b:size() then return false end
     if a.min ~= b.min then return false end
     if a.max ~= b.max then return false end
-    for x, y in a:cell_coordinates() do
-        if b:has_cell(x, y) == false then return false end
+    for i = 1, #a.cellkey do
+        if b.cellmap[a.cellkey[i]] == nil then
+            return false
+        end
     end
     return true
 end
@@ -650,6 +764,7 @@ end
 -- local p_norm = p:normalise()
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
+    ensure_bbox(ip)
     return ip:translate(-ip.min.x, -ip.min.y)
 end
 
@@ -699,9 +814,10 @@ end
 -- local p_vreflected = p:vreflect()
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
-    local np = pattern.clone(ip)
+    ensure_bbox(ip)
+    local np = pattern.new()
     for vx, vy in ip:cell_coordinates() do
-        local new_y = 2 * ip.max.y - vy + 1
+        local new_y = ip.min.y + ip.max.y - vy
         np:insert(vx, new_y)
     end
     return np
@@ -715,9 +831,10 @@ end
 -- local p_hreflected = p:hreflect()
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
-    local np = pattern.clone(ip)
+    ensure_bbox(ip)
+    local np = pattern.new()
     for vx, vy in ip:cell_coordinates() do
-        local new_x = 2 * ip.max.x - vx + 1
+        local new_x = ip.min.x + ip.max.x - vx
         np:insert(new_x, vy)
     end
     return np
@@ -769,16 +886,23 @@ function pattern.sample_poisson(ip, distance, radius, rng)
     local domain = ip:clone()
     while domain:size() > 0 do
         local dart = domain:rcell(rng)
-        local mask = function(icell) return distance(icell, dart) >= radius end
-        domain = pattern.filter(domain, mask)
         sample:insert(dart.x, dart.y)
+        local to_remove = {}
+        for cell_to_check in domain:cells() do
+            if distance(cell_to_check, dart) < radius then
+                table.insert(to_remove, cell_to_check)
+            end
+        end
+        for _, cell_to_remove in ipairs(to_remove) do
+            domain:remove(cell_to_remove.x, cell_to_remove.y)
+        end
     end
     return sample
 end
 
 --- Returns an approximate Poisson-disc sample using Mitchell's best candidate algorithm.
 --
--- @param ip pattern (domain) to sample from.
+-- @param ip the input pattern to sample from.
 -- @param distance distance function (e.g., cell.euclidean).
 -- @param n number of samples (integer).
 -- @param k number of candidate attempts per iteration (integer).
@@ -799,7 +923,7 @@ function pattern.sample_mitchell(ip, distance, n, k, rng)
     local sample = pattern.new():insert(seed.x, seed.y)
     for _ = 2, n, 1 do
         local min_distance = 0
-        local min_sample   = nil
+        local min_sample = nil
         for _ = 1, k, 1 do
             local jcell = ip:rcell(rng)
             while sample:has_cell(jcell.x, jcell.y) do
@@ -810,11 +934,13 @@ function pattern.sample_mitchell(ip, distance, n, k, rng)
                 jdistance = math.min(jdistance, distance(jcell, vcell))
             end
             if jdistance > min_distance then
-                min_sample   = jcell
+                min_sample = jcell
                 min_distance = jdistance
             end
         end
-        sample:insert(min_sample.x, min_sample.y)
+        if min_sample then
+            sample:insert(min_sample.x, min_sample.y)
+        end
     end
     return sample
 end
@@ -824,12 +950,24 @@ end
 
 --- Returns the contiguous subpattern (connected component) starting from a given location.
 local function floodfill(x, y, nbh, domain, retpat)
-    if domain:has_cell(x, y) and retpat:has_cell(x, y) == false then
-        retpat:insert(x, y)
-        for i = 1, #nbh, 1 do
-            local nx = nbh[i].x + x
-            local ny = nbh[i].y + y
-            floodfill(nx, ny, nbh, domain, retpat)
+    local q = { x, y }
+    local head = 1
+    local tail = 2
+    retpat:insert(x, y)
+
+    while head < tail do
+        local cx, cy = q[head], q[head + 1]
+        head = head + 2
+
+        for i = 1, #nbh do
+            local nx = nbh[i].x + cx
+            local ny = nbh[i].y + cy
+            if domain:has_cell(nx, ny) and not retpat:has_cell(nx, ny) then
+                retpat:insert(nx, ny)
+                q[tail + 1] = nx
+                q[tail + 2] = ny
+                tail = tail + 2
+            end
         end
     end
 end
@@ -847,21 +985,25 @@ function pattern.floodfill(ip, icell, nbh)
     assert(icell, "pattern.floodfill requires a cell as the second argument")
     if nbh == nil then nbh = neighbourhood.moore() end
     local retpat = pattern.new()
-    floodfill(icell.x, icell.y, nbh, ip, retpat)
+    if ip:has_cell(icell.x, icell.y) then
+        floodfill(icell.x, icell.y, nbh, ip, retpat)
+    end
     return retpat
 end
 
 --- Finds the largest contiguous rectangular subpattern within the pattern.
 --
 -- @param ip pattern to analyze.
+-- @param alpha 'squareness' parameter. 0 for max rectangle, 1 for max square.
 -- @return a subpattern representing the maximal rectangle.
 -- @usage
 -- local rect = p:max_rectangle()
-function pattern.max_rectangle(ip)
+function pattern.max_rectangle(ip, alpha)
     assert(getmetatable(ip) == pattern, "pattern.max_rectangle requires a pattern as an argument")
+    ensure_bbox(ip)
     local primitives = require('forma.primitives')
     local bsp = require('forma.utils.bsp')
-    local min_rect, max_rect = bsp.max_rectangle_coordinates(ip)
+    local min_rect, max_rect = bsp.max_rectangle_coordinates(ip, alpha)
     local size = max_rect - min_rect + cell.new(1, 1)
     return primitives.square(size.x, size.y):translate(min_rect.x, min_rect.y)
 end
@@ -880,48 +1022,52 @@ function pattern.convex_hull(ip)
     local primitives = require('forma.primitives')
     local hull_points = convex_hull.points(ip)
     local chull = pattern.new()
-    for i = 1, #hull_points - 1, 1 do
-        chull = chull + primitives.line(hull_points[i], hull_points[i + 1])
+    local function add_line(p1, p2)
+        local line = primitives.line(p1, p2)
+        for x, y in line:cell_coordinates() do
+            if not chull:has_cell(x, y) then
+                chull:insert(x, y)
+            end
+        end
     end
-    chull = chull + primitives.line(hull_points[#hull_points], hull_points[1])
+    for i = 1, #hull_points - 1, 1 do
+        add_line(hull_points[i], hull_points[i + 1])
+    end
+    add_line(hull_points[#hull_points], hull_points[1])
     return chull
 end
 
 --- Returns a thinned (skeletonized) version of the pattern.
--- Repeatedly removes boundary cells (while preserving connectivity) until no
--- further safe removals can be made.
---
+-- This uses the Zhang-Suen algorithm thinning algorithm assumes that the
+-- neighbourhood is 8-connected (moore), but it is very efficient.
 -- @param ip pattern to thin.
--- @param nbh (optional) neighbourhood for connectivity (default: neighbourhood.moore()).
 -- @return a new, thinned pattern.
 -- @usage
 -- local thin_p = p:thin()
-function pattern.thin(ip, nbh)
-    nbh = nbh or neighbourhood.moore()
+function pattern.thin(ip)
     assert(getmetatable(ip) == pattern, "pattern.thin requires a pattern as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "pattern.thin requires a neighbourhood as the second argument")
-    local current = pattern.clone(ip)
-    local function num_components(pat)
-        return pattern.connected_components(pat, nbh):n_components()
+    local p = pattern.clone(ip)
+    -- Utility callback to remove cells from the pattern
+    local function process_changes(to_remove)
+        for _, c in ipairs(to_remove) do
+            p:remove(c[1], c[2])
+        end
     end
+    -- Main Zhang-Suen thinning loop
+    local zs = require('forma.utils.zhang_suen')
     local changed = true
     while changed do
         changed = false
-        local comp_count = num_components(current)
-        local boundary = current:interior_hull(nbh)
-        for c in boundary:cells() do
-            local ncount = pattern.count_neighbors(current, nbh, c.x, c.y)
-            if ncount > 1 then
-                local candidate = current - pattern.new():insert(c.x, c.y)
-                if num_components(candidate) == comp_count then
-                    current = candidate
-                    changed = true
-                    break
-                end
-            end
-        end
+        -- Perform pass A
+        changed = changed or zs.pass(p, zs.passA_conditions, process_changes)
+        -- Perform pass B
+        changed = changed or zs.pass(p, zs.passB_conditions, process_changes)
     end
-    return current
+
+    -- Recalculate bounding box as cells may have been removed
+    p:recalculate_bounding_box()
+
+    return p
 end
 
 --- Morphological operations
@@ -970,16 +1116,23 @@ function pattern.dilate(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.dilate requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.dilate requires a neighbourhood as the second argument")
-    local np = pattern.clone(ip)
+
+    local dilated_keys = {}
+    -- Add original cells and their neighbours to a single set to handle overlaps.
     for x, y in ip:cell_coordinates() do
+        dilated_keys[coordinates_to_key(x, y)] = true
         for j = 1, #nbh, 1 do
             local offset = nbh[j]
             local nx = x + offset.x
             local ny = y + offset.y
-            if not np:has_cell(nx, ny) then
-                np:insert(nx, ny)
-            end
+            dilated_keys[coordinates_to_key(nx, ny)] = true
         end
+    end
+
+    local np = pattern.new()
+    for key in pairs(dilated_keys) do
+        local x, y = key_to_coordinates(key)
+        np:insert(x, y)
     end
     return np
 end
@@ -1065,6 +1218,17 @@ end
 --- Packing methods
 -- @section packing
 
+-- Check if pattern a fits entirely within domain b when shifted by coordshift
+local function can_pack_at(a, b, coordshift)
+    for acell in a:cells() do
+        local shifted = acell + coordshift
+        if not b:has_cell(shifted.x, shifted.y) then
+            return false
+        end
+    end
+    return true
+end
+
 --- Finds a packing offset where pattern a fits entirely within domain b.
 -- Returns a coordinate shift that, when applied to a, makes it tile inside b.
 --
@@ -1079,55 +1243,42 @@ function pattern.find_packing_position(a, b, rng)
     assert(getmetatable(b) == pattern, "pattern.find_packing_position requires a pattern as a second argument")
     assert(a:size() > 0, "pattern.find_packing_position requires a non-empty pattern as the first argument")
     local hinge = a:rcell(rng)
-    for bcell in b:cells() do
+    for bcell in b:shuffled_cells(rng) do
         local coordshift = bcell - hinge
-        local tiles = true
-        for acell in a:cells() do
-            local shifted = acell + coordshift
-            if b:has_cell(shifted.x, shifted.y) == false then
-                tiles = false
-                break
-            end
-        end
-        if tiles == true then
+        if can_pack_at(a, b, coordshift) then
             return coordshift
         end
     end
     return nil
 end
 
---- Finds a center-weighted packing offset to place pattern a as close as possible to the center of domain b.
+--- Finds a center-weighted packing offset to place pattern a within pattern
+--- b as close as possible to the cell c. If no `c` is provided, then the centroid
+--- of pattern b is used.
 --
 -- @param a pattern to pack.
 -- @param b domain pattern.
+-- @param c (optional) cell to act as a center for packing.
 -- @return a coordinate shift if a valid position is found; nil otherwise.
 -- @usage
--- local central_offset = pattern.find_central_packing_position(p, domain)
-function pattern.find_central_packing_position(a, b)
+-- local central_offset = pattern.find_central_packing_position(p, domain, c)
+function pattern.find_central_packing_position(a, b, c)
     assert(getmetatable(a) == pattern, "pattern.find_central_packing_position requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.find_central_packing_position requires a pattern as a second argument")
     assert(a:size() > 0, "pattern.find_central_packing_position requires a non-empty pattern as the first argument")
-    if b:size() == 0 then return nil end
+    if b:size() == 0 or a:size() > b:size() then return nil end
+    if c == nil then c = b:centroid() end
     local hinge    = a:medoid()
-    local com      = b:centroid()
     local allcells = b:cell_list()
-    local function distance_to_com(k, j)
-        local adist = (k.x - com.x) * (k.x - com.x) + (k.y - com.y) * (k.y - com.y)
-        local bdist = (j.x - com.x) * (j.x - com.x) + (j.y - com.y) * (j.y - com.y)
+    local function distance_to_c(k, j)
+        local adist = (k.x - c.x) * (k.x - c.x) + (k.y - c.y) * (k.y - c.y)
+        local bdist = (j.x - c.x) * (j.x - c.x) + (j.y - c.y) * (j.y - c.y)
         return adist < bdist
     end
-    table.sort(allcells, distance_to_com)
-    for i = 1, #allcells, 1 do
+    table.sort(allcells, distance_to_c)
+    for i = 1, #allcells do
         local coordshift = allcells[i] - hinge
-        local tiles = true
-        for acell in a:cells() do
-            local shifted = acell + coordshift
-            if b:has_cell(shifted.x, shifted.y) == false then
-                tiles = false
-                break
-            end
-        end
-        if tiles == true then
+        if can_pack_at(a, b, coordshift) then
             return coordshift
         end
     end
@@ -1155,8 +1306,10 @@ function pattern.connected_components(ip, nbh)
     while pattern.size(wp) > 0 do
         local seed_cell = wp:cells()()
         local segment = pattern.floodfill(wp, seed_cell, nbh)
-        wp = wp - segment
         mp:insert(segment)
+        for x, y in segment:cell_coordinates() do
+            wp:remove(x, y)
+        end
     end
     return mp
 end
@@ -1174,6 +1327,7 @@ function pattern.interior_holes(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.interior_holes requires a pattern as the first argument")
     assert(ip:size() > 0, "pattern.interior_holes requires a non-empty pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.interior_holes requires a neighbourhood as the second argument")
+    ensure_bbox(ip)
     local primitives = require('forma.primitives')
     local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):translate(ip.min.x, ip.min.y) - ip
@@ -1192,18 +1346,20 @@ end
 --
 -- @param ip pattern to partition.
 -- @param th_volume threshold volume (number) for final partitions.
+-- @param alpha (optional) parameter for squareness of BSP.
 -- @return a multipattern of BSP subpatterns.
 -- @usage
 -- local partitions = p:bsp(50)
-function pattern.bsp(ip, th_volume)
+function pattern.bsp(ip, th_volume, alpha)
     assert(getmetatable(ip) == pattern, "pattern.bsp requires a pattern as an argument")
     assert(th_volume, "pattern.bsp rules must specify a threshold volume for partitioning")
     assert(th_volume > 0, "pattern.bsp rules must specify positive threshold volume for partitioning")
-    local available = ip
+    local available = ip:clone()
     local mp = multipattern.new()
     local bsp = require('forma.utils.bsp')
     while pattern.size(available) > 0 do
-        local min_rect, max_rect = bsp.max_rectangle_coordinates(available)
+        local min_rect, max_rect = bsp.max_rectangle_coordinates(available, alpha)
+        if max_rect.x < min_rect.x then break end
         bsp.split(min_rect, max_rect, th_volume, mp)
         available = available - mp:union_all()
     end
@@ -1374,6 +1530,31 @@ function pattern.test_coordinate_map(x, y)
     local key = coordinates_to_key(x, y)
     local tx, ty = key_to_coordinates(key)
     return (x == tx) and (y == ty)
+end
+
+--- Prints the pattern within an optional domain, line-by-line.
+-- @param ip      pattern to render.
+-- @param char    (optional) single-character to draw “on” cells.
+-- @param domain  (optional) pattern defining the bounding box.
+-- @param printer (optional) function(line:string); defaults to io.write(line.."\n").
+function pattern.print(ip, char, domain, printer)
+    assert(getmetatable(ip) == pattern, "pattern.print requires a pattern as the first argument")
+    local onchar  = char or ip.onchar
+    local offchar = ip.offchar
+    domain        = domain or ip
+    assert(getmetatable(domain) == pattern, "pattern.print requires a pattern as the domain argument")
+    ensure_bbox(domain)
+
+    local print_line = printer
+        or function(line) io.write(line .. "\n") end
+
+    for y = domain.min.y, domain.max.y, 1 do
+        local chars = {}
+        for x = domain.min.x, domain.max.x, 1 do
+            chars[#chars + 1] = ip:has_cell(x, y) and onchar or offchar
+        end
+        print_line(table.concat(chars))
+    end
 end
 
 return pattern

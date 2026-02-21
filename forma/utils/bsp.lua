@@ -5,12 +5,19 @@ local primitives = require('forma.primitives')
 -- Find the (lower-left and upper-right) coordinates of the maximal contiguous
 -- rectangular area within a pattern.
 -- @param ip the input pattern.
+-- @param alpha (optional) square-bias.
 -- @return the minimum and maxium coordinates of the area.
-function bsp.max_rectangle_coordinates(ip)
+function bsp.max_rectangle_coordinates(ip, alpha)
     -- Algorithm from http://www.drdobbs.com/database/the-maximal-rectangle-problem/184410529.
     local best_ll = cell.new(0, 0)
     local best_ur = cell.new(-1, -1)
-    local best_area = 0
+    local best_score = 0
+
+    local max_area = (ip.max.x - ip.min.x + 1) * (ip.max.y - ip.min.y + 1)
+    -- Squareness interpolation parameter
+    -- If alpha == 0.0 then we're finding strictly the largest rectangle,
+    -- if alpha == 1.0 then we're finding strictly the largest square
+    alpha = alpha or 0.0
 
     local stack_w = {}
     local stack_y = {}
@@ -43,7 +50,7 @@ function bsp.max_rectangle_coordinates(ip)
 
     for x = ip.max.x, ip.min.x, -1 do
         updateCache(x)
-        local width = 0            -- Width of widest opened rectangle
+        local width = 0 -- Width of widest opened rectangle
         for y = ip.min.y, ip.max.y + 1, 1 do
             if cache[y] > width then -- Opening new rectangle(s)?
                 push(y, width)
@@ -53,10 +60,14 @@ function bsp.max_rectangle_coordinates(ip)
                 local y0, w0
                 repeat
                     y0, w0 = pop()
-                    if width * (y - y0) > best_area then
+                    local height = y - y0
+                    local area = (width * height) / max_area
+                    local squareness = math.min(width, height) / math.max(width, height)
+                    local score = area * (squareness ^ alpha)
+                    if score > best_score then
                         best_ll.x, best_ll.y = x, y0
                         best_ur.x, best_ur.y = x + width - 1, y - 1
-                        best_area = width * (y - y0)
+                        best_score = score
                     end
                     width = w0
                 until cache[y] >= width
@@ -74,6 +85,7 @@ function bsp.split(min, max, th_volume, mp)
     local size = max - min + cell.new(1, 1)
     local volume = size.x * size.y
 
+    -- TODO: Come up with some randomiser here
     if volume > th_volume then
         local r1max, r2min
         if size.x > size.y then
@@ -94,6 +106,5 @@ function bsp.split(min, max, th_volume, mp)
         mp:insert(np)
     end
 end
-
 
 return bsp

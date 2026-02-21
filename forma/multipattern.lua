@@ -18,12 +18,6 @@ multipattern.__index = function(mp, key)
     end
 end
 
---- Multipattern length.
--- Returns the number of components in the multipattern.
-multipattern.__len = function(mp)
-    return mp:n_components()
-end
-
 
 --- Create a new multipattern from a list of patterns.
 -- @param components an array of `pattern` objects.
@@ -47,13 +41,37 @@ function multipattern.clone(mp)
     return multipattern.new(components)
 end
 
+--- Merge multipatterns.
+-- @param ... a table of multipatterns or a list of pattern arguments.
+-- @return a new multipattern that is consists of the set of all input components
+function multipattern.merge(...)
+    local multipatterns = { ... }
+    if #multipatterns == 1 then
+        if type(multipatterns[1]) == 'table' then
+            multipatterns = multipatterns[1]
+        end
+    end
+    if #multipatterns == 1 then
+        return multipatterns[1]
+    end
+    local total = multipattern.new()
+    for _, v in ipairs(multipatterns) do
+        assert(getmetatable(v) == multipattern, "multipattern.merge requires multipatterns as arguments")
+        for _, p in ipairs(v.components) do
+            total:insert(p)
+        end
+    end
+    return total
+end
+
 --- Insert a pattern into the multipattern.
 -- @param mp multipattern to be operated upon.
 -- @param ip the new pattern to insert.
--- @return the new multipattern.
+-- @return the multipattern.
 function multipattern.insert(mp, ip)
     assert(getmetatable(mp) == multipattern, "multipattern.insert requires a multipattern as the first argument")
     table.insert(mp.components, ip)
+    return mp
 end
 
 --- Count the number of components in a multipattern.
@@ -114,6 +132,9 @@ end
 -- This is an alternative to `:map(...)` for calling an *existing* pattern method
 -- by name on all sub-patterns. You may also supply arguments to that method.
 --
+-- Note that when used with a method that generates multipatterns (e.g. `connected_components`),
+-- the results will be 'flattened' into a single multipattern.
+--
 -- **Example**:
 --   ```
 --   local translated = mp:apply("translate", 10, 5)
@@ -125,11 +146,21 @@ end
 -- @return a new multipattern of the method's results.
 function multipattern.apply(mp, method, ...)
     assert(getmetatable(mp) == multipattern, "multipattern.apply requires a multipattern as an argument")
+    local pattern_mt = require('forma.pattern')
     local new_components = {}
-    for i, pat in ipairs(mp.components) do
+    for _, pat in ipairs(mp.components) do
         local m = pat[method]
         assert(type(m) == "function", "No method named '" .. tostring(method) .. "' on pattern")
-        new_components[i] = m(pat, ...)
+        local return_value = m(pat, ...)
+        if getmetatable(return_value) == multipattern then
+            for _, v in ipairs(return_value.components) do
+                table.insert(new_components, v)
+            end
+        elseif getmetatable(return_value) == pattern_mt then
+            table.insert(new_components, return_value)
+        else
+            assert(false, "Method must return a pattern or multipattern")
+        end
     end
     return multipattern.new(new_components)
 end
@@ -147,7 +178,11 @@ end
 function multipattern.union_all(mp)
     -- Require here to avoid circular dependency.
     local pattern = require('forma.pattern')
-    return pattern.union(mp.components)
+    if mp:n_components() == 0 then
+        return pattern.new()
+    else
+        return pattern.union(mp.components)
+    end
 end
 
 --- Utilities
@@ -163,6 +198,7 @@ function multipattern.print(mp, chars, domain)
     assert(getmetatable(mp) == multipattern, "multipattern.print requires a multipattern as a first argument")
     domain = domain or mp:union_all()
     assert(domain:size() > 0, "multipattern.print: domain must have at least one cell")
+    if domain.bbox_dirty then domain:recalculate_bounding_box() end
     local n = mp:n_components()
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
@@ -177,15 +213,15 @@ function multipattern.print(mp, chars, domain)
         "multipattern.print: there must be as many character table entries as components")
     -- Print out the segments to a map
     for i = domain.min.y, domain.max.y, 1 do
-        local string = ''
+        local row = {}
         for j = domain.min.x, domain.max.x, 1 do
             local token = ' '
             for k, v in ipairs(mp.components) do
                 if v:has_cell(j, i) then token = chars[k] end
             end
-            string = string .. token
+            row[#row + 1] = token
         end
-        io.write(string .. '\n')
+        io.write(table.concat(row) .. '\n')
     end
 end
 

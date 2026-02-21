@@ -3,7 +3,7 @@ version = "scm-1"
 rockspec_format = "3.0"
 source = {
     url = "git://github.com/nhartland/forma",
-    branch = "dev",
+    branch = "master",
 }
 
 description = {
@@ -22,7 +22,7 @@ and more.
     license = "MIT"
 }
 dependencies = {
-    "lua >= 5.1", "lua < 5.4"
+    "lua >= 5.1", "lua < 5.5"
 }
 build = {
     type = "builtin",
@@ -39,6 +39,7 @@ build = {
         ["forma.utils.noise"]       = "forma/utils/noise.lua",
         ["forma.utils.convex_hull"] = "forma/utils/convex_hull.lua",
         ["forma.utils.bsp"]         = "forma/utils/bsp.lua",
+        ["forma.utils.zhang_suen"]  = "forma/utils/zhang_suen.lua",
     },
     copy_directories = {
         "docs",
