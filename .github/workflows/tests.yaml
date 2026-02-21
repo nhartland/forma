@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leafo/gh-actions-lua@v11
         with:
-          luaVersion: "luajit"
+          luaVersion: "5.4"
       - uses: leafo/gh-actions-luarocks@v5
       - name: Install rocks
         run: |
