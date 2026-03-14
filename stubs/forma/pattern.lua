@@ -266,8 +266,9 @@ function pattern.convex_hull(ip) end
 
 --- Returns a thinned (skeletonized) version of the pattern.
 ---@param ip forma.pattern
+---@param nbh? forma.neighbourhood
 ---@return forma.pattern
-function pattern.thin(ip) end
+function pattern.thin(ip, nbh) end
 
 --- Returns the erosion of the pattern.
 ---@param ip forma.pattern
