@@ -39,7 +39,6 @@ build = {
         ["forma.utils.noise"]       = "forma/utils/noise.lua",
         ["forma.utils.convex_hull"] = "forma/utils/convex_hull.lua",
         ["forma.utils.bsp"]         = "forma/utils/bsp.lua",
-        ["forma.utils.zhang_suen"]  = "forma/utils/zhang_suen.lua",
     },
     copy_directories = {
         "docs",

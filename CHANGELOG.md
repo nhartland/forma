@@ -7,7 +7,8 @@
 - Performance enhancement on various `pattern` methods to take advantage of new data structure.
 - Added a multipattern method `multipattern.merge` to combine multiple multipatterns
   into a single multipattern.
-- Improved the pattern.thin method with the Zhang-Suen algorithm.
+- Replaced `pattern.thin` with a connectivity-preserving thinning algorithm
+  that accepts a configurable radius-1 neighbourhood parameter (e.g., Moore or von Neumann).
 - Introduced a pattern.print method along the lines of multipattern.print
 - Adjusted `pattern.find_central_packing_position` to accept a custom center.
 - Introduced `pattern.bounding_box_density` and `pattern.bounding_box_asymmetry`.
@@ -17,7 +18,6 @@
 - Fixed multipattern:insert so that it returns the multipattern, allowing for chaining.
 - Fixed a bug in Bresenham line drawing where a crash would occour for perfectly vertical or horizontal lines.
 - Fixed bug in sorting in convex hull finding.
-- Added missing `forma.utils.zhang_suen` module to rockspec build.
 - Added missing `multipattern` to global lazy import in `forma/init.lua`.
 - Updated Lua version constraint in rockspec from `< 5.4` to `< 5.5` to
   support Lua 5.4.
@@ -35,6 +35,7 @@
   `recalculate_bounding_box`.
 - Replaced string concatenation with `table.concat` in `pattern.print` and
   `multipattern.print` for improved performance on wide patterns.
+- Removed `forma.utils.zhang_suen` module.
 
 # 1.0
 

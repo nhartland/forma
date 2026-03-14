@@ -31,13 +31,14 @@ function TestSubPatterns:testFloodFill()
     -- Basic test of flood-fill algorithm. Tested on a fully-(moore) connected
     -- pattern it should return the same pattern as input. The translate is just a
     -- consistency check.
-    local test_pattern = pattern.new({ { 1, 0, 0, 1, },
-        { 0, 1, 1, 0, },
-        { 0, 1, 1, 0, },
-        { 1, 0, 0, 1, } }):translate(100, -100)
-    local floodfill = pattern.floodfill(test_pattern,
-        test_pattern:rcell(),
-        neighbourhood.moore())
+    -- stylua: ignore
+    local test_pattern = pattern.new({
+        { 1, 0, 0, 1 },
+        { 0, 1, 1, 0 },
+        { 0, 1, 1, 0 },
+        { 1, 0, 0, 1 },
+    }):translate(100, -100)
+    local floodfill = pattern.floodfill(test_pattern, test_pattern:rcell(), neighbourhood.moore())
     lu.assertTrue(floodfill == test_pattern)
 end
 
@@ -47,10 +48,13 @@ function TestSubPatterns:testConnectedComponents()
     -- This test pattern should return one segment for the Moore neighbourhood,
     -- and five for the von Neumann neighbourhood. The translate is just a
     -- consistency check.
-    local test_pattern     = pattern.new({ { 1, 0, 0, 1, },
-        { 0, 1, 1, 0, },
-        { 0, 1, 1, 0, },
-        { 1, 0, 0, 1, } }):translate(100, -100)
+    -- stylua: ignore
+    local test_pattern = pattern.new({
+        { 1, 0, 0, 1 },
+        { 0, 1, 1, 0 },
+        { 0, 1, 1, 0 },
+        { 1, 0, 0, 1 },
+    }):translate(100, -100)
     local moore_components = pattern.connected_components(test_pattern, neighbourhood.moore())
     local vn_components    = pattern.connected_components(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(moore_components:n_components(), 1)
@@ -62,13 +66,16 @@ function TestSubPatterns:testInteriorHoles()
     -- Test pattern should return one hole for Moore neighbourhood,
     -- and two for von Neumann neighbourhood. The translate is just a
     -- consistency check.
-    local test_pattern      = pattern.new({ { 1, 1, 1, 1, 1, 1, 1 },
+    -- stylua: ignore
+    local test_pattern = pattern.new({
+        { 1, 1, 1, 1, 1, 1, 1 },
         { 1, 0, 0, 0, 0, 0, 1 },
         { 1, 0, 0, 1, 0, 0, 1 },
         { 1, 0, 1, 0, 1, 0, 1 },
         { 1, 0, 0, 1, 0, 0, 1 },
         { 1, 0, 0, 0, 0, 0, 1 },
-        { 1, 1, 1, 1, 1, 1, 1 } }):translate(100, -100)
+        { 1, 1, 1, 1, 1, 1, 1 },
+    }):translate(100, -100)
     local moore_subpatterns = pattern.interior_holes(test_pattern, neighbourhood.moore())
     local vn_subpatterns    = pattern.interior_holes(test_pattern, neighbourhood.von_neumann())
     lu.assertEquals(moore_subpatterns:n_components(), 1)
@@ -184,17 +191,21 @@ end
 -- Test the function computing the convex hull
 function TestSubPatterns:testConvexHull()
     -- Pattern for running convex hull algorithm over
-    local test_pattern = pattern.new({ { 1, 0, 0, 0, 1 },
+    local test_pattern = pattern.new({
+        { 1, 0, 0, 0, 1 },
         { 0, 0, 1, 0, 0 },
         { 0, 1, 1, 1, 0 },
         { 0, 0, 1, 0, 0 },
-        { 1, 0, 0, 0, 1 } })
+        { 1, 0, 0, 0, 1 },
+    })
     -- Actual convex hull pattern
-    local true_pattern = pattern.new({ { 1, 1, 1, 1, 1 },
+    local true_pattern = pattern.new({
+        { 1, 1, 1, 1, 1 },
         { 1, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 1 },
         { 1, 0, 0, 0, 1 },
-        { 1, 1, 1, 1, 1 } })
+        { 1, 1, 1, 1, 1 },
+    })
     local convex_hull  = pattern.convex_hull(test_pattern)
     local overlap      = pattern.intersect(convex_hull, true_pattern)
     lu.assertEquals(convex_hull:size(), overlap:size(), true_pattern:size())
@@ -202,31 +213,40 @@ end
 
 -- Thinning --------------------------------------------------------------------------
 function TestSubPatterns:testThinning()
-    -- Testing the Zhang-Suen thinning algorithm on a couple of simple patterns.
-    -- Test 1: Thinning a 3x3 block
-    -- Expectation: only the center (1,1) remains.
+    -- Thinning a 3x3 block: the connectivity-preserving algorithm reduces
+    -- this to 2 cells.
     local block = pattern.new({
         { 1, 1, 1 },
         { 1, 1, 1 },
         { 1, 1, 1 },
     })
     local block_thinned = pattern.thin(block)
-    lu.assertEquals(block_thinned:size(), 1, "3x3 block should collapse to a single cell")
-    lu.assertTrue(block_thinned:has_cell(1, 1), "Center cell (1,1) should remain")
-    -- Check bounding box
-    lu.assertEquals(block_thinned.min.x, 1)
-    lu.assertEquals(block_thinned.min.y, 1)
-    lu.assertEquals(block_thinned.max.x, 1)
-    lu.assertEquals(block_thinned.max.y, 1)
+    lu.assertEquals(block_thinned:size(), 2)
 
-    -- Test 2: Thinning a single 5-wide row
     -- A one-dimensional line is already minimal, so it should remain unchanged.
-    local row = pattern.new({
-        { 1, 1, 1, 1, 1 }, -- row of 5 active cells at y=0
-    })
+    local row = pattern.new({ { 1, 1, 1, 1, 1 } })
     local row_thinned = pattern.thin(row)
-    lu.assertEquals(row_thinned:size(), 5, "Row of length 5 should remain length 5")
-    lu.assertTrue(row_thinned == row, "Row should be unchanged by thinning")
+    lu.assertEquals(row_thinned:size(), 5)
+    lu.assertTrue(row_thinned == row)
+
+    -- Thinning a 10x20 rectangle should produce a vertical line
+    local rect = primitives.square(10, 20)
+    local rect_thinned = pattern.thin(rect)
+    lu.assertTrue(rect_thinned:size() > 2)
+    -- All cells should share the same x coordinate (vertical line)
+    local xs = {}
+    for x, _ in rect_thinned:cell_coordinates() do xs[x] = true end
+    local x_count = 0
+    for _ in pairs(xs) do x_count = x_count + 1 end
+    lu.assertEquals(x_count, 1)
+
+    -- Thinning with von Neumann neighbourhood
+    local rect_vn = pattern.thin(rect, neighbourhood.von_neumann())
+    lu.assertTrue(rect_vn:size() > 2)
+
+    -- Thinning preserves connectivity
+    local components = pattern.connected_components(rect_thinned, neighbourhood.moore())
+    lu.assertEquals(components:n_components(), 1)
 end
 
 -- Voronoi tesselation ---------------------------------------------------------------
