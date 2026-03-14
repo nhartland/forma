@@ -34,7 +34,7 @@ suited (but not limited) to the generation of roguelike environments.
   - Flood-fill contiguous segment finding
   - Convex hull finding
   - Pattern exterior/interior hull finding
-  - Pattern thinning/skeletonisation (Zhang-Suen)
+  - Pattern thinning/skeletonisation
   - Binary space partitioning
   - Voronoi tessellation / Lloyd's algorithm
 
