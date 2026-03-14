@@ -1041,7 +1041,9 @@ end
 -- Iteratively removes border cells whose Moore neighbours remain a single
 -- connected component under `nbh`.
 -- @param ip pattern to thin.
--- @param nbh neighbourhood for connectivity (default: neighbourhood.moore()).
+-- @param nbh neighbourhood for connectivity; must be a radius-1 neighbourhood
+--            (e.g. `neighbourhood.moore()` or `neighbourhood.von_neumann()`).
+--            Default: `neighbourhood.moore()`.
 -- @return a new, thinned pattern.
 -- @usage
 -- local thin_p = p:thin()
