@@ -340,7 +340,7 @@ end
 function pattern.count_neighbors(p, nbh, arg1, arg2)
     assert(getmetatable(p) == pattern,
         "count_neighbors: first argument must be a forma.pattern")
-    assert(getmetatable(nbh),
+    assert(getmetatable(nbh) == neighbourhood,
         "count_neighbors: second argument must be a neighbourhood")
 
     local x, y
@@ -1038,30 +1038,58 @@ function pattern.convex_hull(ip)
 end
 
 --- Returns a thinned (skeletonized) version of the pattern.
--- This uses the Zhang-Suen algorithm thinning algorithm assumes that the
--- neighbourhood is 8-connected (moore), but it is very efficient.
+-- Iteratively removes border cells whose Moore neighbours remain a single
+-- connected component under `nbh`.
 -- @param ip pattern to thin.
+-- @param nbh neighbourhood for connectivity (default: neighbourhood.moore()).
 -- @return a new, thinned pattern.
 -- @usage
 -- local thin_p = p:thin()
-function pattern.thin(ip)
-    assert(getmetatable(ip) == pattern, "pattern.thin requires a pattern as the first argument")
-    local p = pattern.clone(ip)
-    -- Utility callback to remove cells from the pattern
-    local function process_changes(to_remove)
-        for _, c in ipairs(to_remove) do
-            p:remove(c[1], c[2])
+-- local thin_4 = p:thin(neighbourhood.von_neumann())
+function pattern.thin(ip, nbh)
+    assert(getmetatable(ip) == pattern,
+        "pattern.thin requires a pattern as the first argument")
+    nbh = nbh or neighbourhood.moore()
+    assert(getmetatable(nbh) == neighbourhood,
+        "pattern.thin requires a neighbourhood as the second argument")
+
+    -- Moore direction deltas (matches neighbourhood.moore() ordering)
+    local mdx = { 0, 1, 1, 1, 0, -1, -1, -1 }
+    local mdy = { -1, -1, 0, 1, 1, 1, 0, -1 }
+    -- Cardinal border directions: top, right, bottom, left
+    local borders = { 1, 3, 5, 7 }
+
+    local p = ip:clone()
+    local function can_delete(x, y, border)
+        if p:has_cell(x + mdx[border], y + mdy[border]) then return false end
+        if pattern.count_neighbors(p, nbh, x, y) < 2 then return false end
+        -- All Moore neighbours must form a single nbh-connected component
+        local nbrs = pattern.new()
+        local seed = nil
+        for i = 1, 8 do
+            if p:has_cell(x + mdx[i], y + mdy[i]) then
+                nbrs:insert(mdx[i], mdy[i])
+                seed = seed or cell.new(mdx[i], mdy[i])
+            end
         end
+        if seed == nil then return true end
+        return pattern.floodfill(nbrs, seed, nbh):size() == nbrs:size()
     end
-    -- Main Zhang-Suen thinning loop
-    local zs = require('forma.utils.zhang_suen')
     local changed = true
     while changed do
         changed = false
-        -- Perform pass A
-        changed = changed or zs.pass(p, zs.passA_conditions, process_changes)
-        -- Perform pass B
-        changed = changed or zs.pass(p, zs.passB_conditions, process_changes)
+        for _, border in ipairs(borders) do
+            local to_remove = {}
+            for x, y in p:cell_coordinates() do
+                if can_delete(x, y, border) then
+                    to_remove[#to_remove + 1] = { x, y }
+                end
+            end
+            for _, xy in ipairs(to_remove) do
+                p:remove(xy[1], xy[2])
+                changed = true
+            end
+        end
     end
 
     -- Recalculate bounding box as cells may have been removed

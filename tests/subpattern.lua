@@ -202,31 +202,45 @@ end
 
 -- Thinning --------------------------------------------------------------------------
 function TestSubPatterns:testThinning()
-    -- Testing the Zhang-Suen thinning algorithm on a couple of simple patterns.
     -- Test 1: Thinning a 3x3 block
-    -- Expectation: only the center (1,1) remains.
+    -- The connectivity-preserving algorithm reduces this to 2 cells.
     local block = pattern.new({
         { 1, 1, 1 },
         { 1, 1, 1 },
         { 1, 1, 1 },
     })
     local block_thinned = pattern.thin(block)
-    lu.assertEquals(block_thinned:size(), 1, "3x3 block should collapse to a single cell")
-    lu.assertTrue(block_thinned:has_cell(1, 1), "Center cell (1,1) should remain")
-    -- Check bounding box
-    lu.assertEquals(block_thinned.min.x, 1)
-    lu.assertEquals(block_thinned.min.y, 1)
-    lu.assertEquals(block_thinned.max.x, 1)
-    lu.assertEquals(block_thinned.max.y, 1)
+    lu.assertEquals(block_thinned:size(), 2, "3x3 block should collapse to 2 cells")
 
     -- Test 2: Thinning a single 5-wide row
     -- A one-dimensional line is already minimal, so it should remain unchanged.
     local row = pattern.new({
-        { 1, 1, 1, 1, 1 }, -- row of 5 active cells at y=0
+        { 1, 1, 1, 1, 1 },
     })
     local row_thinned = pattern.thin(row)
     lu.assertEquals(row_thinned:size(), 5, "Row of length 5 should remain length 5")
     lu.assertTrue(row_thinned == row, "Row should be unchanged by thinning")
+
+    -- Test 3: Thinning a 10x20 rectangle should produce a vertical line
+    local rect = require('forma.primitives').square(10, 20)
+    local rect_thinned = pattern.thin(rect)
+    lu.assertTrue(rect_thinned:size() > 2, "Rectangle skeleton should be more than 2 cells")
+    -- All cells should share the same x coordinate (vertical line)
+    local xs = {}
+    for x, _ in rect_thinned:cell_coordinates() do xs[x] = true end
+    local x_count = 0
+    for _ in pairs(xs) do x_count = x_count + 1 end
+    lu.assertEquals(x_count, 1, "Rectangle skeleton should be a vertical line")
+
+    -- Test 4: Thinning with von Neumann neighbourhood
+    local vn = require('forma.neighbourhood').von_neumann()
+    local rect_vn = pattern.thin(rect, vn)
+    lu.assertTrue(rect_vn:size() > 2, "vN rectangle skeleton should be more than 2 cells")
+
+    -- Test 5: Thinning preserves connectivity
+    local moore = require('forma.neighbourhood').moore()
+    local components = pattern.connected_components(rect_thinned, moore)
+    lu.assertEquals(components:n_components(), 1, "Skeleton should be connected")
 end
 
 -- Voronoi tesselation ---------------------------------------------------------------
