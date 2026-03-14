@@ -8,7 +8,7 @@
 - Added a multipattern method `multipattern.merge` to combine multiple multipatterns
   into a single multipattern.
 - Replaced `pattern.thin` with a connectivity-preserving thinning algorithm
-  that accepts an arbitrary neighbourhood parameter.
+  that accepts a configurable radius-1 neighbourhood parameter (e.g., Moore or von Neumann).
 - Introduced a pattern.print method along the lines of multipattern.print
 - Adjusted `pattern.find_central_packing_position` to accept a custom center.
 - Introduced `pattern.bounding_box_density` and `pattern.bounding_box_asymmetry`.
