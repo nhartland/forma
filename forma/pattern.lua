@@ -98,7 +98,6 @@ function pattern.new(prototype)
 
     np.cellkey = {} -- Table consisting of a list of coordinate keys.
     np.cellmap = {} -- Spatial hash of coordinate key to its index in cellkey.
-    np.bbox_dirty = false -- Whether the bounding box needs recomputation.
 
     np = setmetatable(np, pattern)
 
@@ -138,18 +137,12 @@ function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local newpat = pattern.new()
 
-    for i = 1, #ip.cellkey, 1 do
-        local key = ip.cellkey[i]
-        newpat.cellkey[i] = key
-        newpat.cellmap[key] = i
+    for x, y in ip:cell_coordinates() do
+        newpat:insert(x, y)
     end
-
-    newpat.min = ip.min:clone()
-    newpat.max = ip.max:clone()
 
     newpat.offchar = ip.offchar
     newpat.onchar  = ip.onchar
-    newpat.bbox_dirty = ip.bbox_dirty
 
     return newpat
 end
@@ -180,10 +173,21 @@ function pattern.insert(ip, x, y)
     return ip
 end
 
+--- Recalculates the bounding box of the pattern.
+-- Called automatically by `remove` when a boundary cell is deleted.
+local function recalculate_bounding_box(ip)
+    ip.max.x, ip.max.y = -math.huge, -math.huge
+    ip.min.x, ip.min.y = math.huge, math.huge
+    for x, y in ip:cell_coordinates() do
+        ip.max.x = max(ip.max.x, x)
+        ip.max.y = max(ip.max.y, y)
+        ip.min.x = min(ip.min.x, x)
+        ip.min.y = min(ip.min.y, y)
+    end
+end
+
 --- Removes a cell from the pattern.
 -- Returns the modified pattern to allow for method chaining.
--- The bounding box is lazily recomputed when next accessed if the removed
--- cell was on the boundary.
 --
 -- @param ip pattern to modify.
 -- @param x x-coordinate (integer) of the cell to remove.
@@ -197,19 +201,17 @@ function pattern.remove(ip, x, y)
         local last_index = #ip.cellkey
         local last_key = ip.cellkey[last_index]
 
-        -- Swap
+        -- Swap with last element
         ip.cellkey[index_to_remove] = last_key
         ip.cellmap[last_key] = index_to_remove
 
-        -- Pop
+        -- Pop last element
         ip.cellkey[last_index] = nil
         ip.cellmap[key_to_remove] = nil
 
-        -- Mark bounding box dirty if removed cell was on the boundary
-        if not ip.bbox_dirty then
-            if x == ip.min.x or x == ip.max.x or y == ip.min.y or y == ip.max.y then
-                ip.bbox_dirty = true
-            end
+        -- Recompute bounding box if removed cell was on the boundary
+        if x == ip.min.x or x == ip.max.x or y == ip.min.y or y == ip.max.y then
+            recalculate_bounding_box(ip)
         end
     end
 
@@ -256,31 +258,6 @@ end
 --- General pattern utilites.
 -- @section utils
 
---- Recalculates the bounding box of the pattern.
--- This is a slow O(N) operation. It is called automatically (lazily) when
--- the bounding box is accessed after a `remove` operation on a boundary cell.
--- Manual calls are only needed after directly modifying pattern internals.
--- @param ip pattern to process.
-function pattern.recalculate_bounding_box(ip)
-    ip.max.x, ip.max.y = -math.huge, -math.huge
-    ip.min.x, ip.min.y = math.huge, math.huge
-    for x, y in ip:cell_coordinates() do
-        ip.max.x = max(ip.max.x, x)
-        ip.max.y = max(ip.max.y, y)
-        ip.min.x = min(ip.min.x, x)
-        ip.min.y = min(ip.min.y, y)
-    end
-    ip.bbox_dirty = false
-end
-
---- Ensures the bounding box is up-to-date, recomputing if necessary.
--- @param ip pattern to check.
-local function ensure_bbox(ip)
-    if ip.bbox_dirty then
-        pattern.recalculate_bounding_box(ip)
-    end
-end
-
 --- Comparator function to sort patterns by their size (descending).
 --
 -- @param pa first pattern.
@@ -308,7 +285,6 @@ function pattern.bounding_box_density(ip)
     assert(getmetatable(ip) == pattern,
         "bounding_box_density: first argument must be a forma.pattern")
     if ip:size() == 0 then return 0 end
-    ensure_bbox(ip)
     local bb_area = (ip.max.x - ip.min.x + 1) * (ip.max.y - ip.min.y + 1)
     return ip:size() / bb_area
 end
@@ -322,7 +298,6 @@ function pattern.bounding_box_asymmetry(ip)
     assert(getmetatable(ip) == pattern,
         "bounding_box_asymmetry: first argument must be a forma.pattern")
     if ip:size() == 0 then return 0 end
-    ensure_bbox(ip)
     return (
         (max((ip.max.x - ip.min.x), (ip.max.y - ip.min.y)) + 1)
         / (min((ip.max.x - ip.min.x), (ip.max.y - ip.min.y)) + 1)
@@ -403,18 +378,15 @@ function pattern.union(...)
     if #patterns == 0 then return pattern.new() end
     if #patterns == 1 then return patterns[1]:clone() end
 
-    local all_keys = {}
-    for _, p in ipairs(patterns) do
-        assert(getmetatable(p) == pattern, "pattern.union requires a pattern as an argument")
-        for i = 1, #p.cellkey do
-            all_keys[p.cellkey[i]] = true
+    local total = pattern.clone(patterns[1])
+    for i = 2, #patterns, 1 do
+        local v = patterns[i]
+        assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
+        for x, y in v:cell_coordinates() do
+            if total:has_cell(x, y) == false then
+                total:insert(x, y)
+            end
         end
-    end
-
-    local total = pattern.new()
-    for key in pairs(all_keys) do
-        local x, y = key_to_coordinates(key)
-        total:insert(x, y)
     end
     return total
 end
@@ -565,7 +537,6 @@ end
 -- @usage
 -- print(p)
 function pattern.__tostring(ip)
-    ensure_bbox(ip)
     local str = '- pattern origin: ' .. tostring(ip.min) .. '\n'
     for y = ip.min.y, ip.max.y, 1 do
         for x = ip.min.x, ip.max.x, 1 do
@@ -764,7 +735,6 @@ end
 -- local p_norm = p:normalise()
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
-    ensure_bbox(ip)
     return ip:translate(-ip.min.x, -ip.min.y)
 end
 
@@ -814,7 +784,6 @@ end
 -- local p_vreflected = p:vreflect()
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
-    ensure_bbox(ip)
     local np = pattern.new()
     for vx, vy in ip:cell_coordinates() do
         local new_y = ip.min.y + ip.max.y - vy
@@ -831,7 +800,6 @@ end
 -- local p_hreflected = p:hreflect()
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
-    ensure_bbox(ip)
     local np = pattern.new()
     for vx, vy in ip:cell_coordinates() do
         local new_x = ip.min.x + ip.max.x - vx
@@ -1000,7 +968,6 @@ end
 -- local rect = p:max_rectangle()
 function pattern.max_rectangle(ip, alpha)
     assert(getmetatable(ip) == pattern, "pattern.max_rectangle requires a pattern as an argument")
-    ensure_bbox(ip)
     local primitives = require('forma.primitives')
     local bsp = require('forma.utils.bsp')
     local min_rect, max_rect = bsp.max_rectangle_coordinates(ip, alpha)
@@ -1094,9 +1061,6 @@ function pattern.thin(ip, nbh)
         end
     end
 
-    -- Recalculate bounding box as cells may have been removed
-    p:recalculate_bounding_box()
-
     return p
 end
 
@@ -1146,23 +1110,16 @@ function pattern.dilate(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.dilate requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.dilate requires a neighbourhood as the second argument")
-
-    local dilated_keys = {}
-    -- Add original cells and their neighbours to a single set to handle overlaps.
+    local np = pattern.clone(ip)
     for x, y in ip:cell_coordinates() do
-        dilated_keys[coordinates_to_key(x, y)] = true
         for j = 1, #nbh, 1 do
             local offset = nbh[j]
             local nx = x + offset.x
             local ny = y + offset.y
-            dilated_keys[coordinates_to_key(nx, ny)] = true
+            if not np:has_cell(nx, ny) then
+                np:insert(nx, ny)
+            end
         end
-    end
-
-    local np = pattern.new()
-    for key in pairs(dilated_keys) do
-        local x, y = key_to_coordinates(key)
-        np:insert(x, y)
     end
     return np
 end
@@ -1357,7 +1314,6 @@ function pattern.interior_holes(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.interior_holes requires a pattern as the first argument")
     assert(ip:size() > 0, "pattern.interior_holes requires a non-empty pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.interior_holes requires a neighbourhood as the second argument")
-    ensure_bbox(ip)
     local primitives = require('forma.primitives')
     local size = ip.max - ip.min + cell.new(1, 1)
     local interior = primitives.square(size.x, size.y):translate(ip.min.x, ip.min.y) - ip
@@ -1573,7 +1529,6 @@ function pattern.print(ip, char, domain, printer)
     local offchar = ip.offchar
     domain        = domain or ip
     assert(getmetatable(domain) == pattern, "pattern.print requires a pattern as the domain argument")
-    ensure_bbox(domain)
 
     local print_line = printer
         or function(line) io.write(line .. "\n") end
