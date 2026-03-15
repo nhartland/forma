@@ -198,7 +198,7 @@ function multipattern.print(mp, chars, domain)
     assert(getmetatable(mp) == multipattern, "multipattern.print requires a multipattern as a first argument")
     domain = domain or mp:union_all()
     assert(domain:size() > 0, "multipattern.print: domain must have at least one cell")
-    if domain.bbox_dirty then domain:recalculate_bounding_box() end
+
     local n = mp:n_components()
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
