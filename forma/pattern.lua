@@ -1022,35 +1022,36 @@ function pattern.thin(ip, nbh)
     assert(getmetatable(nbh) == neighbourhood,
         "pattern.thin requires a neighbourhood as the second argument")
 
-    -- Moore direction deltas (matches neighbourhood.moore() ordering)
-    local mdx = { 0, 1, 1, 1, 0, -1, -1, -1 }
-    local mdy = { -1, -1, 0, 1, 1, 1, 0, -1 }
-    -- Cardinal border directions: top, right, bottom, left
-    local borders = { 1, 3, 5, 7 }
+    -- Moore neighbourhood used for border detection and local pruning
+    local moore = neighbourhood.moore()
+    -- Each iteration does one sub-pass per cardinal direction, only removing
+    -- cells exposed on that side.
+    local von_neumann = neighbourhood.von_neumann()
 
     local p = ip:clone()
-    local function can_delete(x, y, border)
-        if p:has_cell(x + mdx[border], y + mdy[border]) then return false end
+    local function can_delete(x, y, border_cell)
+        -- Cell must be exposed on the border side
+        if p:has_cell(x + border_cell.x, y + border_cell.y) then return false end
+        -- Don't delete endpoints
         if pattern.count_neighbors(p, nbh, x, y) < 2 then return false end
         -- All Moore neighbours must form a single nbh-connected component
         local nbrs = pattern.new()
         local seed = nil
-        for i = 1, 8 do
-            if p:has_cell(x + mdx[i], y + mdy[i]) then
-                nbrs:insert(mdx[i], mdy[i])
-                seed = seed or cell.new(mdx[i], mdy[i])
+        for i = 1, #moore do
+            if p:has_cell(x + moore[i].x, y + moore[i].y) then
+                nbrs:insert(moore[i].x, moore[i].y)
+                seed = seed or cell.new(moore[i].x, moore[i].y)
             end
         end
-        if seed == nil then return true end
         return pattern.floodfill(nbrs, seed, nbh):size() == nbrs:size()
     end
     local changed = true
     while changed do
         changed = false
-        for _, border in ipairs(borders) do
+        for _, border_cell in ipairs(von_neumann) do
             local to_remove = {}
             for x, y in p:cell_coordinates() do
-                if can_delete(x, y, border) then
+                if can_delete(x, y, border_cell) then
                     to_remove[#to_remove + 1] = { x, y }
                 end
             end
