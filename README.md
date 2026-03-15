@@ -17,7 +17,7 @@ suited (but not limited) to the generation of roguelike environments.
 
 ## Features
 
-- **A spatial-hashing pattern** class with sparse set storage for fast lookup and removal of active cells.
+- **A spatial-hashing pattern** class with sparse set storage for fast lookup, insertion, and removal of active cells.
 - **Pattern manipulators** such as union, subtraction, intersection, XOR, rotation, reflection, dilation, erosion, opening, closing and morphological gradient.
 - **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares and Bezier curves.
 - A **multipattern** class for handling collections of patterns with batch operations.

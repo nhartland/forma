@@ -173,8 +173,7 @@ function pattern.insert(ip, x, y)
     return ip
 end
 
---- Recalculates the bounding box of the pattern.
--- Called automatically by `remove` when a boundary cell is deleted.
+--- Recalculates the bounding box of the pattern from its cells.
 local function recalculate_bounding_box(ip)
     ip.max.x, ip.max.y = -math.huge, -math.huge
     ip.min.x, ip.min.y = math.huge, math.huge

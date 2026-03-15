@@ -2,21 +2,26 @@
 
 ## Features
 
-- Modified underlying `pattern` data structure to that of a Sparse Set, to enable O(1) cell removal.
-- New `pattern.remove` method to remove a cell.
-- Performance enhancement on various `pattern` methods to take advantage of new data structure.
-- Added a multipattern method `multipattern.merge` to combine multiple multipatterns
-  into a single multipattern.
-- Replaced `pattern.thin` with a connectivity-preserving thinning algorithm
-  that accepts a configurable radius-1 neighbourhood parameter (e.g., Moore or von Neumann).
-- Introduced a pattern.print method along the lines of multipattern.print
+- Modified underlying `pattern` data structure to that of a Sparse Set, to
+  enable O(1) cell removal.
+- New `pattern.remove` method to remove a cell. The bounding box is eagerly
+  recomputed when a boundary cell is removed, keeping `min`/`max` always
+  correct.
+- Added a multipattern method `multipattern.merge` to combine multiple
+  multipatterns into a single multipattern.
+- Replaced `pattern.thin` with a connectivity-preserving directional thinning
+  algorithm that accepts a configurable neighbourhood parameter for
+  connectivity (e.g., Moore or von Neumann).
+- Introduced `pattern.print` method along the lines of `multipattern.print`.
 - Adjusted `pattern.find_central_packing_position` to accept a custom center.
 - Introduced `pattern.bounding_box_density` and `pattern.bounding_box_asymmetry`.
 
 ## Bugfix
 
-- Fixed multipattern:insert so that it returns the multipattern, allowing for chaining.
-- Fixed a bug in Bresenham line drawing where a crash would occour for perfectly vertical or horizontal lines.
+- Fixed `multipattern:insert` so that it returns the multipattern, allowing
+  for chaining.
+- Fixed a bug in Bresenham line drawing where a crash would occur for perfectly
+  vertical or horizontal lines.
 - Fixed bug in sorting in convex hull finding.
 - Added missing `multipattern` to global lazy import in `forma/init.lua`.
 - Updated Lua version constraint in rockspec from `< 5.4` to `< 5.5` to
@@ -27,12 +32,16 @@
 - Changed `multipattern.apply` such that when used with a method that itself
   returns multipatterns on each component, the resulting patterns are flattened
   into a single multipattern.
-- `pattern.vreflect` and `pattern.hreflect` now return only the reflected pattern, not the union of pattern and reflection.
-- Improved `pattern.floodfill`, no longer operates recursively for greater stability.
-- Lazy bounding box recomputation after `pattern.remove`. The bounding box is
-  now automatically recalculated when accessed if cells on the boundary have
-  been removed, eliminating the need to manually call
-  `recalculate_bounding_box`.
+- `pattern.vreflect` and `pattern.hreflect` now return only the reflected
+  pattern, not the union of pattern and reflection.
+- Improved `pattern.floodfill`, no longer operates recursively for greater
+  stability.
+- Simplified internal bounding box management. Removed lazy dirty-flag
+  mechanism in favour of eager recomputation in `pattern.remove`.
+  `recalculate_bounding_box` is now a local function.
+- Simplified `pattern.clone`, `pattern.union`, and `pattern.dilate` to use the
+  public API (`insert`/`has_cell`) rather than directly manipulating internal
+  data structures.
 - Replaced string concatenation with `table.concat` in `pattern.print` and
   `multipattern.print` for improved performance on wide patterns.
 - Removed `forma.utils.zhang_suen` module.
