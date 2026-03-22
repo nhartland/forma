@@ -15,17 +15,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Lua
       - uses: leafo/gh-actions-lua@v11
       - uses: leafo/gh-actions-luarocks@v5
-      - name: Install ldoc
-        run: luarocks install ldoc
-      - name: Generate documentation
-        run: ldoc --output contents --style=./ --dir docs .
+      - run: luarocks install dkjson
+
+      # LuaLS (no dedicated action exists)
+      - name: Install lua-language-server
+        run: |
+          LLS_VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]+')
+          curl -sL "https://github.com/LuaLS/lua-language-server/releases/download/${LLS_VERSION}/lua-language-server-${LLS_VERSION}-linux-x64.tar.gz" \
+            | tar xz -C /usr/local
+
+      # MkDocs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install mkdocs-material
+
+      # Build
+      - name: Build docs
+        run: |
+          mkdir -p .docgen
+          lua-language-server --doc=. --doc_out_path=.docgen
+          lua docs/extract_docs.lua
+          lua docs/extract_examples.lua
+          mkdocs build
+
       - name: Upload pages artifact
         if: ${{ github.event_name == 'push' }}
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: site
 
   deploy_docs:
     if: ${{ github.event_name == 'push' }}

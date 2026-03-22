@@ -1,25 +1,27 @@
----  Cell neighbourhood definitions.
--- The **neighbourhood** of a `cell` in a `pattern` defines which other cells
--- are considered its neighbours. This is an important definition for many
--- functions in forma. For example, when finding all cells that border a
--- pattern in `pattern.exterior_hull` a definition of *border* in terms of a
--- neighbourhood is required. Cellular `automata` rules are also defined in
--- terms of neighbourhoods.
---
--- This module provides a class to represent a neighbourhood, along with
--- examples of typical neighbourhoods such as the `Moore` or `von Neumann`
--- neighbourhoods.
---
--- @usage
---  -- Load some neighbourhoods to use with other functions
---  local moore = neighbourhood.moore()
---  local vn    = neighbourhood.von_neumann()
---
---  -- Define a new neighbourhood from a table of forma.cells
---  local cell_list = {cell.new(-1,1), cell.new(1,-1)}
---  local new_neighbourhood = neighbourhood.new(cell_list)
---
--- @module forma.neighbourhood
+--- Cell neighbourhood definitions.
+--- The **neighbourhood** of a `cell` in a `pattern` defines which other cells
+--- are considered its neighbours. This is an important definition for many
+--- functions in forma. For example, when finding all cells that border a
+--- pattern in `pattern.exterior_hull` a definition of *border* in terms of a
+--- neighbourhood is required. Cellular `automata` rules are also defined in
+--- terms of neighbourhoods.
+---
+--- This module provides a class to represent a neighbourhood, along with
+--- examples of typical neighbourhoods such as the `Moore` or `von Neumann`
+--- neighbourhoods.
+---
+--- ```lua
+--- -- Load some neighbourhoods to use with other functions
+--- local moore = neighbourhood.moore()
+--- local vn    = neighbourhood.von_neumann()
+---
+--- -- Define a new neighbourhood from a table of forma.cells
+--- local cell_list = {cell.new(-1,1), cell.new(1,-1)}
+--- local new_neighbourhood = neighbourhood.new(cell_list)
+--- ```
+---@class forma.neighbourhood
+---@field _category_label string[]|nil category labels for rendering
+---@field categories table[]|nil generated neighbourhood configurations (lazy)
 local neighbourhood = {}
 local cell = require('forma.cell')
 
@@ -29,10 +31,8 @@ neighbourhood.__index = neighbourhood
 
 -- Helpers --------------------------------------------------------------
 --- Generate a list of possible neighbourhood configurations.
--- @param neighbour_cells the neighbourhood to generate categories for
--- @return a table categorising possible neighbourhood configurations
--- Maybe have this run on demand, rather than always building this for all
--- neighbourhoods?
+---@param neighbour_cells forma.cell[] the neighbourhood to generate categories for
+---@return table categories a table categorising possible neighbourhood configurations
 local function generate_categories(neighbour_cells)
     assert(#neighbour_cells > 0, "categories.generate requires a non-empty neighbourhood")
     local categories = { cell.new(0, 0) }
@@ -54,15 +54,14 @@ local function generate_categories(neighbour_cells)
     return categories
 end
 
---- Neighbourhoods
--- @section neighbourhoods
-
 --- The Moore neighbourhood.
--- [Wikipedia entry](https://en.wikipedia.org/wiki/Moore_neighborhood).
---
--- Contains all cells with Chebyshev distance 1 from origin. Used in Conway's
--- Game of Life. Ordered clockwise assuming an downwards y-axis and rightwards
--- x-axis
+--- [Wikipedia entry](https://en.wikipedia.org/wiki/Moore_neighborhood).
+---
+--- Contains all cells with Chebyshev distance 1 from origin. Used in Conway's
+--- Game of Life. Ordered clockwise assuming a downwards y-axis and rightwards
+--- x-axis.
+---
+---@return forma.neighbourhood nbh the Moore neighbourhood
 function neighbourhood.moore()
     local nbh = neighbourhood.new({
         cell.new(0, -1),   -- top
@@ -74,15 +73,17 @@ function neighbourhood.moore()
         cell.new(-1, 0),   -- left
         cell.new(-1, -1),  -- top-left
     })
-    nbh.category_label = nil
+    nbh._category_label = nil
     return nbh
 end
 
 --- The von Neumann neighbourhood.
--- [Wikipedia entry](https://en.wikipedia.org/wiki/von_Neumann_neighborhood).
---
--- Contains all cells with Manhattan distance 1 from origin. Ordered clockwise
--- assuming an upwards y-axis and rightwards x-axis
+--- [Wikipedia entry](https://en.wikipedia.org/wiki/von_Neumann_neighborhood).
+---
+--- Contains all cells with Manhattan distance 1 from origin. Ordered clockwise
+--- assuming an upwards y-axis and rightwards x-axis.
+---
+---@return forma.neighbourhood nbh the von Neumann neighbourhood
 function neighbourhood.von_neumann()
     local nbh = neighbourhood.new({
         cell.new(0, 1),
@@ -96,10 +97,12 @@ function neighbourhood.von_neumann()
 end
 
 --- The diagonal neighbourhood.
---
--- Contains all cells diagonally bordering the origin. i.e the Moore
--- neighbourhood with the von Neumann subtracted. Ordered clockwise assuming an
--- upwards y-axis and rightwards x-axis
+---
+--- Contains all cells diagonally bordering the origin. i.e the Moore
+--- neighbourhood with the von Neumann subtracted. Ordered clockwise assuming an
+--- upwards y-axis and rightwards x-axis.
+---
+---@return forma.neighbourhood nbh the diagonal neighbourhood
 function neighbourhood.diagonal()
     local nbh = neighbourhood.new({
         cell.new(1, 1),
@@ -112,9 +115,11 @@ function neighbourhood.diagonal()
 end
 
 --- The twice diagonal neighbourhood.
---
--- Contains all cells two cells away from the origin along the diagonal axes.
--- Ordered clockwise assuming an upwards y-axis and rightwards x-axis
+---
+--- Contains all cells two cells away from the origin along the diagonal axes.
+--- Ordered clockwise assuming an upwards y-axis and rightwards x-axis.
+---
+---@return forma.neighbourhood nbh the twice diagonal neighbourhood
 function neighbourhood.diagonal_2()
     local nbh = neighbourhood.new({
         cell.new(2, 2),
@@ -126,9 +131,11 @@ function neighbourhood.diagonal_2()
     return nbh
 end
 
---- The knight neighbourhood
---
--- Contains all cells that are a knight piece chess move away from the origin.
+--- The knight neighbourhood.
+---
+--- Contains all cells that are a knight piece chess move away from the origin.
+---
+---@return forma.neighbourhood nbh the knight neighbourhood
 function neighbourhood.knight()
     local nbh = {
         cell.new(2, 1), cell.new(2, -1),
@@ -141,12 +148,14 @@ function neighbourhood.knight()
     return nbh
 end
 
---- Functions
--- @section functions
-
 --- Generate a new neighbourhood from a set of cells.
--- @param neighbour_cells a list of neighbouring cell vectors
--- @return a forma.neighbourhood comprised of `neighbour_cells`
+---
+--- ```lua
+--- local cell_list = {cell.new(-1, 1), cell.new(1, -1)}
+--- local nbh = neighbourhood.new(cell_list)
+--- ```
+---@param neighbour_cells forma.cell[] a list of neighbouring cell vectors
+---@return forma.neighbourhood nbh a neighbourhood comprised of `neighbour_cells`
 function neighbourhood.new(neighbour_cells)
     assert(#neighbour_cells > 0, "neighbourhood.new requires a non-empty list of neighbouring cells")
     local nbh = {}
@@ -159,16 +168,17 @@ function neighbourhood.new(neighbour_cells)
 end
 
 --- Identify which category a cell in a pattern fits into.
--- Categorises cells in a pattern according to their neighbourhood
--- configuration. For each cell in a forma.pattern, there are a finite number
--- of possible configurations of neighbouring cells. Specifically, each cell
--- has 2^n possible neighbourhood configurations where n is the number of cells
--- in the neighbourhood. This method categorises cells according to which type
--- of neighbourhood they are in.
--- @param nbh the forma.neighbourhood to categorise the cell in
--- @param ip the input pattern
--- @param icell the cell in `ip` of interest
--- @return the category index of `nbh` that 'cell' belongs to
+--- Categorises cells in a pattern according to their neighbourhood
+--- configuration. For each cell in a forma.pattern, there are a finite number
+--- of possible configurations of neighbouring cells. Specifically, each cell
+--- has 2^n possible neighbourhood configurations where n is the number of cells
+--- in the neighbourhood. This method categorises cells according to which type
+--- of neighbourhood they are in.
+---
+---@param nbh forma.neighbourhood the neighbourhood to categorise the cell in
+---@param ip forma.pattern the input pattern
+---@param icell forma.cell the cell in `ip` of interest
+---@return integer category the category index of `nbh` that the cell belongs to
 function neighbourhood.categorise(nbh, ip, icell)
     local ncategories = nbh:get_ncategories() -- Generates the categorisation if needed
     for i = 1, ncategories, 1 do
@@ -182,19 +192,21 @@ function neighbourhood.categorise(nbh, ip, icell)
         end
         if match_cells then return i end
     end
-    assert(false, "neighbourhood.categorise cannot find a valid category")
+    error("neighbourhood.categorise cannot find a valid category")
 end
 
 --- Returns the category labelling (if it exists) for a neighbourhood.
--- @param nbh the neighbourhood to fetch the category labelling for.
--- @return a table of labels, one for each neighbourhood category.
+---
+---@param nbh forma.neighbourhood the neighbourhood to fetch the category labelling for
+---@return string[]|nil labels a table of labels, one for each neighbourhood category
 function neighbourhood.category_label(nbh)
     return nbh._category_label
 end
 
---- Returns the number of categories for a neighbourhood
--- @param `nbh` the `neighbourhood` in question
--- @return the number of categories for neighbourhood `nbh`
+--- Returns the number of categories for a neighbourhood.
+---
+---@param nbh forma.neighbourhood the neighbourhood in question
+---@return integer count the number of categories for neighbourhood `nbh`
 function neighbourhood.get_ncategories(nbh)
     -- Generate categories if needed
     if nbh.categories == nil then

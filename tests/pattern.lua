@@ -79,7 +79,7 @@ function TestPattern:testUnion()
         { 0, 0, 0, 0, 0 } })
     local tp12     = primitives.square(5)
     local union    = pattern.union(tp1, tp2)
-    local union_v2 = pattern.union({ tp1, tp2 })
+    local union_v2 = pattern.union({ tp1, tp2 }) ---@diagnostic disable-line: missing-fields
     local union_v3 = tp1:union(tp2)
     lu.assertTrue((tp1 + tp2) == tp12)
     lu.assertTrue((tp1 + tp2) == union)
@@ -135,8 +135,9 @@ function TestPattern:testIterators()
     local cells = sqpat:cells()
     local coords = sqpat:cell_coordinates()
     for _ = 1, sqpat:size(), 1 do
-        local ncell  = cells()
+        local ncell  = assert(cells())
         local nx, ny = coords()
+        assert(nx and ny)
         -- Same order in cells and coordinates
         lu.assertEquals(ncell.x, nx)
         lu.assertEquals(ncell.y, ny)
@@ -418,7 +419,7 @@ function TestPattern:testFind_central_packing_position()
         { 0, 1, 0, },
         { 1, 1, 1, },
         { 0, 1, 0, } })
-    local pp = test_point:find_central_packing_position(test_pattern, test_pattern:centroid())
+    local pp = assert(test_point:find_central_packing_position(test_pattern, test_pattern:centroid()))
     lu.assertEquals(pp.x, 1)
     lu.assertEquals(pp.y, 1)
 end

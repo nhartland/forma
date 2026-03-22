@@ -98,15 +98,18 @@ use:
 
 Documentation is hosted [here](https://nhartland.github.io/forma/).
 
-Generating the documentation requires
+To regenerate the documentation locally:
 
-- [LDoc](https://github.com/stevedonovan/LDoc)
+```Shell
+    lua-language-server --doc=. --doc_out_path=.docgen
+    lua docs/extract_docs.lua
+    lua docs/extract_examples.lua
+    mkdocs build
+```
 
-Simply running
-
-    ldoc --style=./ --output contents --dir docs .
-
-in the root directory should generate all the required pages.
+This requires [lua-language-server](https://github.com/LuaLS/lua-language-server),
+[dkjson](https://luarocks.org/modules/dhkolf/dkjson), and
+[MkDocs Material](https://squidfunk.github.io/mkdocs-material/).
 
 ## Testing
 
