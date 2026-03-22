@@ -22,7 +22,8 @@ local function trim_desc(s)
 end
 
 local function render_module(entry, name)
-    local md = { "# " .. name, "" }
+    local short = name:match("%.(%w+)$") or name
+    local md = { "# " .. short, "" }
 
     -- Module description
     for _, def in ipairs(entry.defines or {}) do
@@ -60,7 +61,7 @@ local function render_module(entry, name)
         md[#md+1] = ""
         for _, f in ipairs(funcs) do
             local fn = f.extends
-            md[#md+1] = "### `" .. name .. "." .. f.name .. "`"
+            md[#md+1] = "### `" .. short .. "." .. f.name .. "`"
             md[#md+1] = ""
             local desc = trim_desc(fn.rawdesc)
             if desc then md[#md+1] = desc; md[#md+1] = "" end
