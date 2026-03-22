@@ -84,6 +84,8 @@ local function key_to_coordinates(key)
     return xp - MAX_COORDINATE, yp - MAX_COORDINATE
 end
 
+-- @section Basic
+
 --- Pattern constructor.
 --- Returns a new pattern. If a prototype is provided (an N×M table of 1's and 0's),
 --- the corresponding active cells are inserted.
@@ -268,6 +270,8 @@ function pattern.size(ip)
     return #ip.cellkey
 end
 
+-- @section Utilities
+
 --- Comparator function to sort patterns by their size (descending).
 ---
 ---@param pa forma.pattern first pattern
@@ -372,6 +376,8 @@ function pattern.edit_distance(a, b)
     return edit_distance
 end
 
+-- @section Set operations
+
 --- Returns the union of a set of patterns.
 ---
 --- ```lua
@@ -443,6 +449,8 @@ function pattern.xor(a, b)
     assert(getmetatable(b) == pattern, "pattern.xor requires a pattern as the second argument")
     return (a + b) - (a * b)
 end
+
+-- @section Iterators
 
 --- Iterator over active cells in the pattern.
 ---
@@ -539,6 +547,8 @@ function pattern.shuffled_coordinates(ip, rng)
         end
     end
 end
+
+-- @section Metamethods
 
 --- Renders the pattern as a string.
 --- Active cells are shown with pattern.onchar and inactive cells with pattern.offchar.
@@ -647,6 +657,8 @@ function pattern.__eq(a, b)
     return true
 end
 
+-- @section Cell accessors
+
 --- Computes the centroid (arithmetic mean) of all cells in the pattern.
 --- The result is rounded to the nearest integer coordinate.
 ---
@@ -719,6 +731,8 @@ function pattern.rcell(ip, rng)
     local x, y = key_to_coordinates(ikey)
     return cell.new(x, y)
 end
+
+-- @section Transformations
 
 --- Returns a new pattern translated by a vector (sx, sy).
 ---
@@ -827,6 +841,8 @@ function pattern.hreflect(ip)
     end
     return np
 end
+
+-- @section Sampling
 
 --- Returns a random subpattern containing a fixed number of cells.
 ---
@@ -958,6 +974,8 @@ local function floodfill(x, y, nbh, domain, retpat)
     end
 end
 
+-- @section Subpattern finding
+
 --- Returns the contiguous subpattern (connected component) starting from a given cell.
 ---
 --- ```lua
@@ -1086,6 +1104,8 @@ function pattern.thin(ip, nbh)
 
     return p
 end
+
+-- @section Morphological operations
 
 --- Returns the erosion of the pattern.
 --- A cell is retained only if all of its neighbours (as defined by nbh) are active.
@@ -1240,6 +1260,8 @@ local function can_pack_at(a, b, coordshift)
     return true
 end
 
+-- @section Packing
+
 --- Finds a packing offset where pattern a fits entirely within domain b.
 --- Returns a coordinate shift that, when applied to a, makes it tile inside b.
 ---
@@ -1297,6 +1319,8 @@ function pattern.find_central_packing_position(a, b, c)
     end
     return nil
 end
+
+-- @section Decomposition
 
 --- Returns a multipattern of the connected components within the pattern.
 --- Uses flood-fill to extract contiguous subpatterns.
@@ -1522,6 +1546,8 @@ function pattern.voronoi_relax(seeds, domain, measure, max_ite)
     end
     error("This should not be reachable")
 end
+
+-- @section Display and utilities
 
 --- Returns the maximum allowed coordinate for spatial hashing.
 ---

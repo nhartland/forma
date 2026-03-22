@@ -13,7 +13,38 @@ local function table_row(name, typ, desc)
     return "| `" .. (name or "") .. "` | `" .. (typ or "any") .. "` | " .. (desc or "") .. " |"
 end
 
-local function render_module(entry, name)
+--- Parse `-- @section Label` markers from a source file.
+--- Returns a sorted list of {line, label} pairs.
+local function parse_sections(path)
+    local f = io.open(path, "r")
+    if not f then return {} end
+    local sections = {}
+    local n = 0
+    for line in f:lines() do
+        n = n + 1
+        local label = line:match("^%-%-%s*@section%s+(.+)$")
+        if label then
+            sections[#sections + 1] = { line = n, label = label }
+        end
+    end
+    f:close()
+    return sections
+end
+
+--- Return the section label for a given line number, or nil.
+local function section_for_line(sections, line)
+    local result = nil
+    for _, s in ipairs(sections) do
+        if s.line <= line then
+            result = s.label
+        else
+            break
+        end
+    end
+    return result
+end
+
+local function render_module(entry, name, sections)
     local short = name:match("%.(%w+)$") or name
     local out = { "# " .. short, "" }
     local function emit(s) out[#out + 1] = s end
@@ -51,9 +82,17 @@ local function render_module(entry, name)
     end
 
     if #funcs > 0 then
-        emit("## Functions")
-        emit("")
+        local current_section = nil
         for _, f in ipairs(funcs) do
+            -- Emit section heading when entering a new section
+            local line = (f.start or {})[1]
+            local sec = section_for_line(sections, line)
+            if sec and sec ~= current_section then
+                current_section = sec
+                emit("## " .. sec)
+                emit("")
+            end
+
             local fn = f.extends
             emit("### `" .. short .. "." .. f.name .. "`")
             emit("")
@@ -106,8 +145,18 @@ function M.generate(json_path, output_dir, module_names, write_file)
         if not entry then
             io.stderr:write("Warning: No data for " .. name .. "\n")
         else
+            -- Find the source file from the entry's defines
+            local source_file = nil
+            for _, def in ipairs(entry.defines or {}) do
+                if def.file then
+                    source_file = def.file
+                    break
+                end
+            end
+            local sections = source_file and parse_sections(source_file) or {}
+
             local slug = name:match("%.(%w+)$")
-            write_file(output_dir .. "/" .. slug .. ".md", render_module(entry, name))
+            write_file(output_dir .. "/" .. slug .. ".md", render_module(entry, name, sections))
         end
     end
 end
