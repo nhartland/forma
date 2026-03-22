@@ -99,7 +99,6 @@ Documentation is hosted [here](https://nhartland.github.io/forma/).
 To regenerate the documentation locally:
 
 ```Shell
-    lua-language-server --doc=. --doc_out_path=.docgen
     lua docs/extract.lua
     mkdocs build
 ```

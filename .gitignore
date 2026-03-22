@@ -1,7 +1,7 @@
 *.out
 site/
 .venv/
-.docgen/
+docs/source/
 
 # Generated docs (rebuilt by CI from source annotations)
 docs/api/
