@@ -100,8 +100,7 @@ To regenerate the documentation locally:
 
 ```Shell
     lua-language-server --doc=. --doc_out_path=.docgen
-    lua docs/extract_docs.lua
-    lua docs/extract_examples.lua
+    lua docs/extract.lua
     mkdocs build
 ```
 

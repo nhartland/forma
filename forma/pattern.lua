@@ -12,7 +12,7 @@
 --- Coordinates are maintained reliably in the range [-65536, 65536], which can be
 --- adjusted via the `MAX_COORDINATE` constant.
 ---
---- Functions can be invoked either procedurally:
+--- Functions can be invoked either as functions:
 ---
 ---     pattern.method(input_pattern, ... )
 ---
