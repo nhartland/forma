@@ -46,8 +46,6 @@ Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
 
 ## Examples
 
-- [Example Gallery](examples/)
-
 ```lua
 -- Generate a square box to run the CA inside
 local domain = primitives.square(80,20)
