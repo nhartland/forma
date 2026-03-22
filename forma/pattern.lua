@@ -1082,7 +1082,10 @@ function pattern.thin(ip, nbh)
                 seed = seed or cell.new(moore[i].x, moore[i].y)
             end
         end
-        assert(seed)
+        -- If there are no Moore neighbours, we cannot safely delete this cell
+        if not seed then
+            return false
+        end
         return pattern.floodfill(nbrs, seed, nbh):size() == nbrs:size()
     end
     local changed = true
