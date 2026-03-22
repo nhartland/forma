@@ -1,1 +1,8 @@
 *.out
+site/
+.venv/
+docs/source/
+
+# Generated docs (rebuilt by CI from source annotations)
+docs/api/
+docs/examples/

@@ -272,6 +272,7 @@ function TestSubPatterns:commonVoronoi(voronoi_multipattern, seeds, measure)
             end
 
             -- Ensure that the closest seed is in the cell
+            assert(closest_seed)
             lu.assertTrue(sp:has_cell(closest_seed.x, closest_seed.y))
         end
     end

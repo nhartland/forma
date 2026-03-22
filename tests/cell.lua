@@ -19,7 +19,6 @@ end
 function TestCell:testClone()
     lu.assertEvalToTrue(self.test_cell_1.x == self.test_cell_3.x)
     lu.assertEvalToTrue(self.test_cell_1.y == self.test_cell_3.y)
-    lu.assertEvalToTrue(self.test_cell_1.v == self.test_cell_3.v)
     lu.assertEvalToTrue(self.test_cell_1 == self.test_cell_3)
     lu.assertEvalToTrue(self.test_cell_1 == self.test_cell_4)
 end

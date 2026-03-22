@@ -1,0 +1,79 @@
+site_name: forma
+site_description: 2D grid shape generation in Lua
+site_url: https://nhartland.github.io/forma/
+repo_url: https://github.com/nhartland/forma
+repo_name: nhartland/forma
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+  - tables
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference:
+    - Cell: api/cell.md
+    - Pattern: api/pattern.md
+    - Primitives: api/primitives.md
+    - Automata: api/automata.md
+    - Neighbourhood: api/neighbourhood.md
+    - Multipattern: api/multipattern.md
+    - Raycasting: api/raycasting.md
+  - Examples:
+    - Asynchronous cellular automata: examples/async-automata.md
+    - Binary space partitioning: examples/binary-space-partition.md
+    - Circle primitives: examples/bubbles.md
+    - Cellular automata: examples/cellular-automata.md
+    - Convex hull finder: examples/convex-hull.md
+    - Combining cellular automata rules: examples/corridors.md
+    - Rasterising isolines: examples/isolines.md
+    - Maximum rectangle finding: examples/maxrectangle.md
+    - Perlin noise sampling: examples/perlin.md
+    - Raycasting: examples/raycasting.md
+    - Readme example: examples/readme.md
+    - Sampling methods: examples/sampling.md
+    - Voronoi tessellation: examples/voronoi.md
+
+docs_dir: docs
+site_dir: site
+exclude_docs: |
+  extract.lua
+  extract/
+  source/

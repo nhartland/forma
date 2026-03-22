@@ -1,45 +1,52 @@
 --- A class containing a set (or *pattern*) of cells.
---
--- The **pattern** class is the central class of `forma`, representing a set of
--- points or *cells*. It can be initialized empty or using a prototype (an N×M
--- matrix of 1's and 0's). Helper methods for initialization are provided in the
--- `primitives` module. Once created, a pattern is modified only via the `insert`
--- method—other manipulations return new patterns.
---
--- Pattern manipulators include methods like `translate`, `enlarge`, `rotate`,
--- `hreflect`, and `vreflect`. Other operations, such as computing the `exterior_hull`
--- or `interior_hull`, help determine the boundaries of a pattern.
--- Coordinates are maintained reliably in the range [-65536, 65536], which can be
--- adjusted via the `MAX_COORDINATE` constant.
---
--- Functions can be invoked either procedurally:
---      pattern.method(input_pattern, ... )
--- or as methods:
---      input_pattern:method(... )
---
--- @usage
--- -- Procedural style:
--- local p1 = pattern.new()
--- pattern.insert(p1, 1, 1)
---
--- -- Method chaining:
--- local p2 = pattern.new():insert(1, 1)
---
--- -- Prototype style:
--- local p3 = pattern.new({{1,1,1}, {1,0,1}, {1,1,1}})
---
--- -- Retrieve a random cell and the medoid cell:
--- local random_cell = p1:rcell()
--- local medoid_cell = p1:medoid()
---
--- -- Compute the exterior hull using the Moore neighbourhood:
--- local outer_hull = p1:exterior_hull(neighbourhood.moore())
--- -- or equivalently:
--- outer_hull = pattern.exterior_hull(p1, neighbourhood.moore())
---
--- @module forma.pattern
-
---@class forma.pattern
+---
+--- The **pattern** class is the central class of `forma`, representing a set of
+--- points or *cells*. It can be initialized empty or using a prototype (an N×M
+--- matrix of 1's and 0's). Helper methods for initialization are provided in the
+--- `primitives` module. Once created, a pattern is modified only via the `insert`
+--- method—other manipulations return new patterns.
+---
+--- Pattern manipulators include methods like `translate`, `enlarge`, `rotate`,
+--- `hreflect`, and `vreflect`. Other operations, such as computing the `exterior_hull`
+--- or `interior_hull`, help determine the boundaries of a pattern.
+--- Coordinates are maintained reliably in the range [-65536, 65536], which can be
+--- adjusted via the `MAX_COORDINATE` constant.
+---
+--- Functions can be invoked either as functions:
+---
+---     pattern.method(input_pattern, ... )
+---
+--- or as methods:
+---
+---     input_pattern:method(... )
+---
+--- ```lua
+--- -- Procedural style:
+--- local p1 = pattern.new()
+--- pattern.insert(p1, 1, 1)
+---
+--- -- Method chaining:
+--- local p2 = pattern.new():insert(1, 1)
+---
+--- -- Prototype style:
+--- local p3 = pattern.new({{1,1,1}, {1,0,1}, {1,1,1}})
+---
+--- -- Retrieve a random cell and the medoid cell:
+--- local random_cell = p1:rcell()
+--- local medoid_cell = p1:medoid()
+---
+--- -- Compute the exterior hull using the Moore neighbourhood:
+--- local outer_hull = p1:exterior_hull(neighbourhood.moore())
+--- -- or equivalently:
+--- outer_hull = pattern.exterior_hull(p1, neighbourhood.moore())
+--- ```
+---@class forma.pattern
+---@field max forma.cell maximum bounding box corner
+---@field min forma.cell minimum bounding box corner
+---@field offchar string character for inactive cells in tostring
+---@field onchar string character for active cells in tostring
+---@field cellkey table list of coordinate keys
+---@field cellmap table spatial hash of coordinate key to index
 local pattern = {}
 
 local min   = math.min
@@ -60,32 +67,35 @@ local MAX_COORDINATE  = 65536
 local COORDINATE_SPAN = 2 * MAX_COORDINATE + 1
 
 --- Generates the cellmap key from coordinates.
--- @param x the x-coordinate (number).
--- @param y the y-coordinate (number).
--- @return a unique key representing the cell.
+---@param x number the x-coordinate
+---@param y number the y-coordinate
+---@return number key a unique key representing the cell
 local function coordinates_to_key(x, y)
     return (x + MAX_COORDINATE) * COORDINATE_SPAN + (y + MAX_COORDINATE)
 end
 
 --- Generates the coordinates from the key.
--- @param key the spatial hash key (number).
--- @return the x and y coordinates (numbers).
+---@param key number the spatial hash key
+---@return number x the x-coordinate
+---@return number y the y-coordinate
 local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
     return xp - MAX_COORDINATE, yp - MAX_COORDINATE
 end
 
---- Basic pattern functions.
--- Here are the basic functions for creating and manipulating patterns.
--- @section basic
+-- @section Basic
 
 --- Pattern constructor.
--- Returns a new pattern. If a prototype is provided (an N×M table of 1's and 0's),
--- the corresponding active cells are inserted.
---
--- @param prototype (optional) an N×M table of ones and zeros.
--- @return a new pattern according to the prototype.
+--- Returns a new pattern. If a prototype is provided (an N×M table of 1's and 0's),
+--- the corresponding active cells are inserted.
+---
+--- ```lua
+--- local p = pattern.new()
+--- local p2 = pattern.new({{1,1,1}, {1,0,1}, {1,1,1}})
+--- ```
+---@param prototype? table an N×M table of ones and zeros
+---@return forma.pattern pattern a new pattern according to the prototype
 function pattern.new(prototype)
     local np = {}
 
@@ -130,9 +140,9 @@ function pattern.new(prototype)
 end
 
 --- Creates a copy of an existing pattern.
---
--- @param ip input pattern to clone.
--- @return a new pattern that is a duplicate of ip.
+---
+---@param ip forma.pattern input pattern to clone
+---@return forma.pattern pattern a new pattern that is a duplicate of ip
 function pattern.clone(ip)
     assert(getmetatable(ip) == pattern, "pattern cloning requires a pattern as the first argument")
     local newpat = pattern.new()
@@ -148,12 +158,15 @@ function pattern.clone(ip)
 end
 
 --- Inserts a new cell into the pattern.
--- Returns the modified pattern to allow for method chaining.
---
--- @param ip pattern to modify.
--- @param x x-coordinate (integer) of the new cell.
--- @param y y-coordinate (integer) of the new cell.
--- @return the updated pattern (for cascading calls).
+--- Returns the modified pattern to allow for method chaining.
+---
+--- ```lua
+--- local p = pattern.new():insert(1, 1):insert(2, 2)
+--- ```
+---@param ip forma.pattern pattern to modify
+---@param x integer x-coordinate of the new cell
+---@param y integer y-coordinate of the new cell
+---@return forma.pattern ip the updated pattern (for cascading calls)
 function pattern.insert(ip, x, y)
     assert(floor(x) == x, 'pattern.insert requires an integer for the x coordinate')
     assert(floor(y) == y, 'pattern.insert requires an integer for the y coordinate')
@@ -186,12 +199,15 @@ local function recalculate_bounding_box(ip)
 end
 
 --- Removes a cell from the pattern.
--- Returns the modified pattern to allow for method chaining.
---
--- @param ip pattern to modify.
--- @param x x-coordinate (integer) of the cell to remove.
--- @param y y-coordinate (integer) of the cell to remove.
--- @return the updated pattern (for cascading calls).
+--- Returns the modified pattern to allow for method chaining.
+---
+--- ```lua
+--- p:remove(1, 1)
+--- ```
+---@param ip forma.pattern pattern to modify
+---@param x integer x-coordinate of the cell to remove
+---@param y integer y-coordinate of the cell to remove
+---@return forma.pattern ip the updated pattern (for cascading calls)
 function pattern.remove(ip, x, y)
     local key_to_remove = coordinates_to_key(x, y)
     local index_to_remove = ip.cellmap[key_to_remove]
@@ -218,21 +234,21 @@ function pattern.remove(ip, x, y)
 end
 
 --- Checks if a cell at (x, y) is active in the pattern.
---
--- @param ip pattern to check.
--- @param x x-coordinate (integer).
--- @param y y-coordinate (integer).
--- @return boolean true if the cell is active, false otherwise.
+---
+---@param ip forma.pattern pattern to check
+---@param x integer x-coordinate
+---@param y integer y-coordinate
+---@return boolean active true if the cell is active, false otherwise
 function pattern.has_cell(ip, x, y)
     local key = coordinates_to_key(x, y)
     return ip.cellmap[key] ~= nil
 end
 
 --- Filters the pattern using a boolean callback, returning a subpattern.
---
--- @param ip the original pattern.
--- @param fn a function(cell) -> boolean that determines if a cell is kept.
--- @return a new pattern containing only the cells that pass the filter.
+---
+---@param ip forma.pattern the original pattern
+---@param fn fun(cell: forma.cell): boolean function that determines if a cell is kept
+---@return forma.pattern pattern a new pattern containing only the cells that pass the filter
 function pattern.filter(ip, fn)
     assert(getmetatable(ip) == pattern, "pattern.filter requires a pattern as the first argument")
     assert(type(fn) == 'function', 'pattern.filter requires a function for the second argument')
@@ -246,40 +262,39 @@ function pattern.filter(ip, fn)
 end
 
 --- Returns the number of active cells in the pattern.
---
--- @param ip pattern to measure.
--- @return integer count of active cells.
+---
+---@param ip forma.pattern pattern to measure
+---@return integer count count of active cells
 function pattern.size(ip)
     assert(getmetatable(ip) == pattern, "pattern.size requires a pattern as the first argument")
     return #ip.cellkey
 end
 
---- General pattern utilites.
--- @section utils
+-- @section Utilities
 
 --- Comparator function to sort patterns by their size (descending).
---
--- @param pa first pattern.
--- @param pb second pattern.
--- @return boolean true if pa's size is greater than pb's.
+---
+---@param pa forma.pattern first pattern
+---@param pb forma.pattern second pattern
+---@return boolean result true if pa's size is greater than pb's
 function pattern.size_sort(pa, pb)
     return pa:size() > pb:size()
 end
 
 --- Comparator function to sort patterns by their size (ascending).
---
--- @param pa first pattern.
--- @param pb second pattern.
--- @return boolean true if pa's size is less than pb's.
+---
+---@param pa forma.pattern first pattern
+---@param pb forma.pattern second pattern
+---@return boolean result true if pa's size is less than pb's
 function pattern.inverse_size_sort(pa, pb)
     return pa:size() < pb:size()
 end
 
 --- Computes how densely the bounding box is filled.
--- Returns zero for an empty pattern.
---
--- @param ip input pattern
--- @return float the fraction of the bounding box that is occupied
+--- Returns zero for an empty pattern.
+---
+---@param ip forma.pattern input pattern
+---@return number density the fraction of the bounding box that is occupied
 function pattern.bounding_box_density(ip)
     assert(getmetatable(ip) == pattern,
         "bounding_box_density: first argument must be a forma.pattern")
@@ -289,10 +304,10 @@ function pattern.bounding_box_density(ip)
 end
 
 --- Computes the asymmetry of the pattern's bounding box.
--- Returns zero in the case of an empty pattern.
---
--- @param ip input pattern
--- @return float the ratio of the bounding box's longest to shortest edge
+--- Returns zero in the case of an empty pattern.
+---
+---@param ip forma.pattern input pattern
+---@return number asymmetry the ratio of the bounding box's longest to shortest edge
 function pattern.bounding_box_asymmetry(ip)
     assert(getmetatable(ip) == pattern,
         "bounding_box_asymmetry: first argument must be a forma.pattern")
@@ -304,13 +319,13 @@ function pattern.bounding_box_asymmetry(ip)
 end
 
 --- Counts active neighbors around a specified cell within the pattern.
--- Can be invoked with either a cell object or with x and y coordinates.
---
--- @param p a pattern.
--- @param nbh a neighbourhood (e.g., neighbourhood.moore()).
--- @param arg1 either a cell (with x and y fields) or the x-coordinate (integer).
--- @param arg2 (optional) the y-coordinate (integer) if arg1 is not a cell.
--- @return integer count of active neighbouring cells.
+--- Can be invoked with either a cell object or with x and y coordinates.
+---
+---@param p forma.pattern a pattern
+---@param nbh forma.neighbourhood a neighbourhood (e.g., neighbourhood.moore())
+---@param arg1 forma.cell|integer either a cell or the x-coordinate
+---@param arg2? integer the y-coordinate if arg1 is not a cell
+---@return integer count count of active neighbouring cells
 function pattern.count_neighbors(p, nbh, arg1, arg2)
     assert(getmetatable(p) == pattern,
         "count_neighbors: first argument must be a forma.pattern")
@@ -336,9 +351,9 @@ function pattern.count_neighbors(p, nbh, arg1, arg2)
 end
 
 --- Returns a list (table) of active cells in the pattern.
---
--- @param ip pattern to list cells from.
--- @return table of cell objects.
+---
+---@param ip forma.pattern pattern to list cells from
+---@return forma.cell[] cells table of cell objects
 function pattern.cell_list(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_list requires a pattern as the first argument")
     local newlist = {}
@@ -349,10 +364,10 @@ function pattern.cell_list(ip)
 end
 
 --- Computes the edit distance between two patterns (the total number of differing cells).
---
--- @param a first pattern.
--- @param b second pattern.
--- @return integer representing the edit distance.
+---
+---@param a forma.pattern first pattern
+---@param b forma.pattern second pattern
+---@return integer distance the edit distance
 function pattern.edit_distance(a, b)
     assert(getmetatable(a) == pattern, "pattern.edit_distance requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.edit_distance requires a pattern as the second argument")
@@ -361,13 +376,15 @@ function pattern.edit_distance(a, b)
     return edit_distance
 end
 
---- Set operations.
--- @section set_ops
+-- @section Set operations
 
 --- Returns the union of a set of patterns.
---
--- @param ... a table of patterns or a list of pattern arguments.
--- @return a new pattern that is the union of the provided patterns.
+---
+--- ```lua
+--- local combined = pattern.union(p1, p2, p3)
+--- ```
+---@param ... forma.pattern a table of patterns or a list of pattern arguments
+---@return forma.pattern pattern a new pattern that is the union of the provided patterns
 function pattern.union(...)
     local patterns = { ... }
     if #patterns == 1 and type(patterns[1]) == 'table' then
@@ -391,9 +408,12 @@ function pattern.union(...)
 end
 
 --- Returns the intersection of multiple patterns (cells common to all).
---
--- @param ... two or more patterns to intersect.
--- @return a new pattern of cells that exist in every input pattern.
+---
+--- ```lua
+--- local common = pattern.intersect(p1, p2)
+--- ```
+---@param ... forma.pattern two or more patterns to intersect
+---@return forma.pattern pattern a new pattern of cells that exist in every input pattern
 function pattern.intersect(...)
     local patterns = { ... }
     assert(#patterns > 1, "pattern.intersect requires at least two patterns as arguments")
@@ -419,28 +439,28 @@ function pattern.intersect(...)
 end
 
 --- Returns the symmetric difference (XOR) of two patterns.
--- Cells are included if they exist in either pattern but not in both.
---
--- @param a first pattern.
--- @param b second pattern.
--- @return a new pattern representing the symmetric difference.
+--- Cells are included if they exist in either pattern but not in both.
+---
+---@param a forma.pattern first pattern
+---@param b forma.pattern second pattern
+---@return forma.pattern pattern a new pattern representing the symmetric difference
 function pattern.xor(a, b)
     assert(getmetatable(a) == pattern, "pattern.xor requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.xor requires a pattern as the second argument")
     return (a + b) - (a * b)
 end
 
---- Iterators
--- @section iterators
+-- @section Iterators
 
 --- Iterator over active cells in the pattern.
---
--- @param ip pattern to iterate over.
--- @return iterator that returns each active cell as a cell object.
--- @usage
--- for cell in p:cells() do
---     print(cell.x, cell.y)
--- end
+---
+--- ```lua
+--- for cell in p:cells() do
+---     print(cell.x, cell.y)
+--- end
+--- ```
+---@param ip forma.pattern pattern to iterate over
+---@return fun(): forma.cell? iterator that returns each active cell as a cell object
 function pattern.cells(ip)
     assert(getmetatable(ip) == pattern, "pattern.cells requires a pattern as the first argument")
     local icell, ncells = 0, ip:size()
@@ -455,13 +475,14 @@ function pattern.cells(ip)
 end
 
 --- Iterator over active cell coordinates (x, y) in the pattern.
---
--- @param ip pattern to iterate over.
--- @return iterator that returns the x and y coordinates of each active cell.
--- @usage
--- for x, y in p:cell_coordinates() do
---     print(x, y)
--- end
+---
+--- ```lua
+--- for x, y in p:cell_coordinates() do
+---     print(x, y)
+--- end
+--- ```
+---@param ip forma.pattern pattern to iterate over
+---@return fun(): integer?, integer? iterator that returns the x and y coordinates of each active cell
 function pattern.cell_coordinates(ip)
     assert(getmetatable(ip) == pattern, "pattern.cell_coordinates requires a pattern as the first argument")
     local icell, ncells = 0, ip:size()
@@ -475,14 +496,15 @@ function pattern.cell_coordinates(ip)
 end
 
 --- Returns an iterator over active cells in randomized order.
---
--- @param ip pattern to iterate over.
--- @param rng (optional) random number generator (e.g., math.random).
--- @return iterator that yields each active cell (cell object) in a random order.
--- @usage
--- for cell in pattern.shuffled_cells(p) do
---     print(cell.x, cell.y)
--- end
+---
+--- ```lua
+--- for cell in pattern.shuffled_cells(p) do
+---     print(cell.x, cell.y)
+--- end
+--- ```
+---@param ip forma.pattern pattern to iterate over
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return fun(): forma.cell? iterator that yields each active cell in a random order
 function pattern.shuffled_cells(ip, rng)
     assert(getmetatable(ip) == pattern,
         "pattern.shuffled_cells requires a pattern as the first argument")
@@ -501,14 +523,15 @@ function pattern.shuffled_cells(ip, rng)
 end
 
 --- Returns an iterator over active cell coordinates in randomized order.
---
--- @param ip pattern to iterate over.
--- @param rng (optional) random number generator (e.g., math.random).
--- @return iterator that yields x and y coordinates in random order.
--- @usage
--- for x, y in pattern.shuffled_coordinates(p) do
---     print(x, y)
--- end
+---
+--- ```lua
+--- for x, y in pattern.shuffled_coordinates(p) do
+---     print(x, y)
+--- end
+--- ```
+---@param ip forma.pattern pattern to iterate over
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return fun(): integer?, integer? iterator that yields x and y coordinates in random order
 function pattern.shuffled_coordinates(ip, rng)
     assert(getmetatable(ip) == pattern,
         "pattern.shuffled_coordinates requires a pattern as the first argument")
@@ -525,16 +548,16 @@ function pattern.shuffled_coordinates(ip, rng)
     end
 end
 
---- Metamethods
--- @section metamethods
+-- @section Metamethods
 
 --- Renders the pattern as a string.
--- Active cells are shown with pattern.onchar and inactive cells with pattern.offchar.
---
--- @param ip pattern to render.
--- @return string representation of the pattern.
--- @usage
--- print(p)
+--- Active cells are shown with pattern.onchar and inactive cells with pattern.offchar.
+---
+--- ```lua
+--- print(p)
+--- ```
+---@param ip forma.pattern pattern to render
+---@return string str string representation of the pattern
 function pattern.__tostring(ip)
     local str = '- pattern origin: ' .. tostring(ip.min) .. '\n'
     for y = ip.min.y, ip.max.y, 1 do
@@ -548,12 +571,13 @@ function pattern.__tostring(ip)
 end
 
 --- Adds two patterns using the '+' operator (i.e. returns their union).
---
--- @param a first pattern.
--- @param b second pattern.
--- @return a new pattern representing the union of a and b.
--- @usage
--- local combined = p1 + p2
+---
+--- ```lua
+--- local combined = p1 + p2
+--- ```
+---@param a forma.pattern first pattern
+---@param b forma.pattern second pattern
+---@return forma.pattern pattern a new pattern representing the union of a and b
 function pattern.__add(a, b)
     assert(getmetatable(a) == pattern, "pattern addition requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern addition requires a pattern as the second argument")
@@ -561,13 +585,14 @@ function pattern.__add(a, b)
 end
 
 --- Subtracts one pattern from another using the '-' operator.
--- Returns a new pattern with cells in a that are not in b.
---
--- @param a base pattern.
--- @param b pattern to subtract from a.
--- @return a new pattern with the difference.
--- @usage
--- local diff = p1 - p2
+--- Returns a new pattern with cells in a that are not in b.
+---
+--- ```lua
+--- local diff = p1 - p2
+--- ```
+---@param a forma.pattern base pattern
+---@param b forma.pattern pattern to subtract from a
+---@return forma.pattern pattern a new pattern with the difference
 function pattern.__sub(a, b)
     assert(getmetatable(a) == pattern, "pattern subtraction requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern subtraction requires a pattern as the second argument")
@@ -581,12 +606,13 @@ function pattern.__sub(a, b)
 end
 
 --- Computes the intersection of two patterns using the '*' operator.
---
--- @param a first pattern.
--- @param b second pattern.
--- @return a new pattern containing only the cells common to both.
--- @usage
--- local common = p1 * p2
+---
+--- ```lua
+--- local common = p1 * p2
+--- ```
+---@param a forma.pattern first pattern
+---@param b forma.pattern second pattern
+---@return forma.pattern pattern a new pattern containing only the cells common to both
 function pattern.__mul(a, b)
     assert(getmetatable(a) == pattern, "pattern multiplication requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern multiplication requires a pattern as the second argument")
@@ -594,12 +620,13 @@ function pattern.__mul(a, b)
 end
 
 --- Computes the symmetric difference (XOR) of two patterns using the '^' operator.
---
--- @param a first pattern.
--- @param b second pattern.
--- @return a new pattern with cells present in either a or b, but not both.
--- @usage
--- local xor_pattern = p1 ^ p2
+---
+--- ```lua
+--- local xor_pattern = p1 ^ p2
+--- ```
+---@param a forma.pattern first pattern
+---@param b forma.pattern second pattern
+---@return forma.pattern pattern a new pattern with cells present in either a or b, but not both
 function pattern.__pow(a, b)
     assert(getmetatable(a) == pattern, "pattern exponent (XOR) requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern exponent (XOR) requires a pattern as the second argument")
@@ -607,14 +634,15 @@ function pattern.__pow(a, b)
 end
 
 --- Tests whether two patterns are identical.
---
--- @param a first pattern.
--- @param b second pattern.
--- @return boolean true if the patterns are equal, false otherwise.
--- @usage
--- if p1 == p2 then
---     -- patterns are identical
--- end
+---
+--- ```lua
+--- if p1 == p2 then
+---     -- patterns are identical
+--- end
+--- ```
+---@param a forma.pattern first pattern
+---@param b forma.pattern second pattern
+---@return boolean equal true if the patterns are equal, false otherwise
 function pattern.__eq(a, b)
     assert(getmetatable(a) == pattern, "pattern equality test requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern equality test requires a pattern as the second argument")
@@ -629,16 +657,16 @@ function pattern.__eq(a, b)
     return true
 end
 
---- Cell accessors
--- @section cell_accessors
+-- @section Cell accessors
 
 --- Computes the centroid (arithmetic mean) of all cells in the pattern.
--- The result is rounded to the nearest integer coordinate.
---
--- @param ip pattern to process.
--- @return a cell representing the centroid (which may not be active).
--- @usage
--- local center = p:centroid()
+--- The result is rounded to the nearest integer coordinate.
+---
+--- ```lua
+--- local center = p:centroid()
+--- ```
+---@param ip forma.pattern pattern to process
+---@return forma.cell centroid a cell representing the centroid (which may not be active)
 function pattern.centroid(ip)
     assert(getmetatable(ip) == pattern, "pattern.centroid requires a pattern as the first argument")
     assert(ip:size() > 0, 'pattern.centroid requires a filled pattern!')
@@ -654,13 +682,14 @@ function pattern.centroid(ip)
 end
 
 --- Computes the medoid cell of the pattern.
--- The medoid minimizes the total distance to all other cells (using Euclidean distance by default).
---
--- @param ip pattern to process.
--- @param measure (optional) distance function (default: Euclidean).
--- @return the medoid cell of the pattern.
--- @usage
--- local medoid = p:medoid()
+--- The medoid minimizes the total distance to all other cells (using Euclidean distance by default).
+---
+--- ```lua
+--- local medoid = p:medoid()
+--- ```
+---@param ip forma.pattern pattern to process
+---@param measure? fun(a: forma.cell, b: forma.cell): number distance function (default: Euclidean)
+---@return forma.cell medoid the medoid cell of the pattern
 function pattern.medoid(ip, measure)
     assert(getmetatable(ip) == pattern, "pattern.medoid requires a pattern as the first argument")
     assert(ip:size() > 0, 'pattern.medoid requires a filled pattern!')
@@ -686,12 +715,13 @@ function pattern.medoid(ip, measure)
 end
 
 --- Returns a random cell from the pattern.
---
--- @param ip pattern to sample from.
--- @param rng (optional) random number generator (e.g., math.random).
--- @return a random cell from the pattern.
--- @usage
--- local random_cell = p:rcell()
+---
+--- ```lua
+--- local random_cell = p:rcell()
+--- ```
+---@param ip forma.pattern pattern to sample from
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return forma.cell cell a random cell from the pattern
 function pattern.rcell(ip, rng)
     assert(getmetatable(ip) == pattern, "pattern.rcell requires a pattern as the first argument")
     assert(ip:size() > 0, 'pattern.rcell requires a filled pattern!')
@@ -702,17 +732,17 @@ function pattern.rcell(ip, rng)
     return cell.new(x, y)
 end
 
---- Transformations
--- @section transformations
+-- @section Transformations
 
 --- Returns a new pattern translated by a vector (sx, sy).
---
--- @param ip pattern to translate.
--- @param sx translation along the x-axis (integer).
--- @param sy translation along the y-axis (integer).
--- @return a new pattern shifted by (sx, sy).
--- @usage
--- local p_translated = p:translate(2, 3)
+---
+--- ```lua
+--- local p_translated = p:translate(2, 3)
+--- ```
+---@param ip forma.pattern pattern to translate
+---@param sx integer translation along the x-axis
+---@param sy integer translation along the y-axis
+---@return forma.pattern pattern a new pattern shifted by (sx, sy)
 function pattern.translate(ip, sx, sy)
     assert(getmetatable(ip) == pattern, "pattern.translate requires a pattern as the first argument")
     assert(floor(sx) == sx, 'pattern.translate requires an integer for the x coordinate')
@@ -727,24 +757,26 @@ function pattern.translate(ip, sx, sy)
 end
 
 --- Normalizes the pattern by translating it so that its minimum coordinate is (0,0).
---
--- @param ip pattern to normalize.
--- @return a new normalized pattern.
--- @usage
--- local p_norm = p:normalise()
+---
+--- ```lua
+--- local p_norm = p:normalise()
+--- ```
+---@param ip forma.pattern pattern to normalize
+---@return forma.pattern pattern a new normalized pattern
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
     return ip:translate(-ip.min.x, -ip.min.y)
 end
 
 --- Returns an enlarged version of the pattern.
--- Each active cell is replaced by an f×f block.
---
--- @param ip pattern to enlarge.
--- @param f enlargement factor (number).
--- @return a new enlarged pattern.
--- @usage
--- local p_big = p:enlarge(2)
+--- Each active cell is replaced by an f×f block.
+---
+--- ```lua
+--- local p_big = p:enlarge(2)
+--- ```
+---@param ip forma.pattern pattern to enlarge
+---@param f number enlargement factor
+---@return forma.pattern pattern a new enlarged pattern
 function pattern.enlarge(ip, f)
     assert(getmetatable(ip) == pattern, "pattern.enlarge requires a pattern as the first argument")
     assert(type(f) == 'number', 'pattern.enlarge requires a number as the enlargement factor')
@@ -761,11 +793,12 @@ function pattern.enlarge(ip, f)
 end
 
 --- Returns a new pattern rotated 90° clockwise about the origin.
---
--- @param ip pattern to rotate.
--- @return a rotated pattern.
--- @usage
--- local p_rotated = p:rotate()
+---
+--- ```lua
+--- local p_rotated = p:rotate()
+--- ```
+---@param ip forma.pattern pattern to rotate
+---@return forma.pattern pattern a rotated pattern
 function pattern.rotate(ip)
     assert(getmetatable(ip) == pattern, "pattern.rotate requires a pattern as the first argument")
     local np = pattern.new()
@@ -776,11 +809,12 @@ function pattern.rotate(ip)
 end
 
 --- Returns a new pattern that is a vertical reflection of the original.
---
--- @param ip pattern to reflect vertically.
--- @return a vertically reflected pattern.
--- @usage
--- local p_vreflected = p:vreflect()
+---
+--- ```lua
+--- local p_vreflected = p:vreflect()
+--- ```
+---@param ip forma.pattern pattern to reflect vertically
+---@return forma.pattern pattern a vertically reflected pattern
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
     local np = pattern.new()
@@ -792,11 +826,12 @@ function pattern.vreflect(ip)
 end
 
 --- Returns a new pattern that is a horizontal reflection of the original.
---
--- @param ip pattern to reflect horizontally.
--- @return a horizontally reflected pattern.
--- @usage
--- local p_hreflected = p:hreflect()
+---
+--- ```lua
+--- local p_hreflected = p:hreflect()
+--- ```
+---@param ip forma.pattern pattern to reflect horizontally
+---@return forma.pattern pattern a horizontally reflected pattern
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
     local np = pattern.new()
@@ -807,17 +842,17 @@ function pattern.hreflect(ip)
     return np
 end
 
---- Random subpatterns
--- @section subpatterns
+-- @section Sampling
 
 --- Returns a random subpattern containing a fixed number of cells.
---
--- @param ip pattern (domain) to sample from.
--- @param ncells number of cells to sample (integer).
--- @param rng (optional) random number generator (e.g., math.random).
--- @return a new pattern with ncells randomly selected cells.
--- @usage
--- local sample = p:sample(10)
+---
+--- ```lua
+--- local sample = p:sample(10)
+--- ```
+---@param ip forma.pattern pattern (domain) to sample from
+---@param ncells integer number of cells to sample
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return forma.pattern pattern a new pattern with ncells randomly selected cells
 function pattern.sample(ip, ncells, rng)
     assert(getmetatable(ip) == pattern, "pattern.sample requires a pattern as the first argument")
     assert(type(ncells) == 'number', "pattern.sample requires an integer number of cells as the second argument")
@@ -829,21 +864,23 @@ function pattern.sample(ip, ncells, rng)
     local next_coords = ip:shuffled_coordinates(rng)
     for _ = 1, ncells, 1 do
         local x, y = next_coords()
+        assert(x and y)
         p:insert(x, y)
     end
     return p
 end
 
 --- Returns a Poisson-disc sampled subpattern.
--- Ensures that no two sampled cells are closer than the given radius.
---
--- @param ip pattern (domain) to sample from.
--- @param distance distance function (e.g., cell.euclidean).
--- @param radius minimum separation (number).
--- @param rng (optional) random number generator (e.g., math.random).
--- @return a new pattern sampled with Poisson-disc criteria.
--- @usage
--- local poisson_sample = p:sample_poisson(cell.euclidean, 5)
+--- Ensures that no two sampled cells are closer than the given radius.
+---
+--- ```lua
+--- local poisson_sample = p:sample_poisson(cell.euclidean, 5)
+--- ```
+---@param ip forma.pattern pattern (domain) to sample from
+---@param distance fun(a: forma.cell, b: forma.cell): number distance function (e.g., cell.euclidean)
+---@param radius number minimum separation
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return forma.pattern pattern a new pattern sampled with Poisson-disc criteria
 function pattern.sample_poisson(ip, distance, radius, rng)
     assert(getmetatable(ip) == pattern, "pattern.sample_poisson requires a pattern as the first argument")
     assert(type(distance) == 'function', "pattern.sample_poisson requires a distance measure as an argument")
@@ -868,15 +905,16 @@ function pattern.sample_poisson(ip, distance, radius, rng)
 end
 
 --- Returns an approximate Poisson-disc sample using Mitchell's best candidate algorithm.
---
--- @param ip the input pattern to sample from.
--- @param distance distance function (e.g., cell.euclidean).
--- @param n number of samples (integer).
--- @param k number of candidate attempts per iteration (integer).
--- @param rng (optional) random number generator (e.g., math.random).
--- @return a new pattern with n samples chosen via the algorithm.
--- @usage
--- local mitchell_sample = p:sample_mitchell(cell.euclidean, 10, 5)
+---
+--- ```lua
+--- local mitchell_sample = p:sample_mitchell(cell.euclidean, 10, 5)
+--- ```
+---@param ip forma.pattern the input pattern to sample from
+---@param distance fun(a: forma.cell, b: forma.cell): number distance function (e.g., cell.euclidean)
+---@param n integer number of samples
+---@param k integer number of candidate attempts per iteration
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return forma.pattern pattern a new pattern with n samples chosen via the algorithm
 function pattern.sample_mitchell(ip, distance, n, k, rng)
     assert(getmetatable(ip) == pattern,
         "pattern.sample_mitchell requires a pattern as the first argument")
@@ -912,9 +950,6 @@ function pattern.sample_mitchell(ip, distance, n, k, rng)
     return sample
 end
 
---- Deterministic subpatterns
--- @section det_subpatterns
-
 --- Returns the contiguous subpattern (connected component) starting from a given location.
 local function floodfill(x, y, nbh, domain, retpat)
     local q = { x, y }
@@ -939,14 +974,17 @@ local function floodfill(x, y, nbh, domain, retpat)
     end
 end
 
+-- @section Subpattern finding
+
 --- Returns the contiguous subpattern (connected component) starting from a given cell.
---
--- @param ip pattern upon which the flood fill is to be performed.
--- @param icell a cell specifying the origin of the flood fill.
--- @param nbh (optional) neighbourhood to use (default: neighbourhood.moore()).
--- @return a new pattern containing the connected component.
--- @usage
--- local component = p:floodfill(cell.new(2, 3))
+---
+--- ```lua
+--- local component = p:floodfill(cell.new(2, 3))
+--- ```
+---@param ip forma.pattern pattern upon which the flood fill is to be performed
+---@param icell forma.cell a cell specifying the origin of the flood fill
+---@param nbh? forma.neighbourhood neighbourhood to use (default: neighbourhood.moore())
+---@return forma.pattern pattern a new pattern containing the connected component
 function pattern.floodfill(ip, icell, nbh)
     assert(getmetatable(ip) == pattern, "pattern.floodfill requires a pattern as the first argument")
     assert(icell, "pattern.floodfill requires a cell as the second argument")
@@ -959,12 +997,13 @@ function pattern.floodfill(ip, icell, nbh)
 end
 
 --- Finds the largest contiguous rectangular subpattern within the pattern.
---
--- @param ip pattern to analyze.
--- @param alpha 'squareness' parameter. 0 for max rectangle, 1 for max square.
--- @return a subpattern representing the maximal rectangle.
--- @usage
--- local rect = p:max_rectangle()
+---
+--- ```lua
+--- local rect = p:max_rectangle()
+--- ```
+---@param ip forma.pattern pattern to analyze
+---@param alpha? number 'squareness' parameter. 0 for max rectangle, 1 for max square
+---@return forma.pattern pattern a subpattern representing the maximal rectangle
 function pattern.max_rectangle(ip, alpha)
     assert(getmetatable(ip) == pattern, "pattern.max_rectangle requires a pattern as an argument")
     local primitives = require('forma.primitives')
@@ -975,12 +1014,13 @@ function pattern.max_rectangle(ip, alpha)
 end
 
 --- Computes the convex hull of the pattern.
--- The hull points are connected using line rasterization.
---
--- @param ip pattern to process.
--- @return a new pattern representing the convex hull.
--- @usage
--- local hull = p:convex_hull()
+--- The hull points are connected using line rasterization.
+---
+--- ```lua
+--- local hull = p:convex_hull()
+--- ```
+---@param ip forma.pattern pattern to process
+---@return forma.pattern pattern a new pattern representing the convex hull
 function pattern.convex_hull(ip)
     assert(getmetatable(ip) == pattern, "pattern.convex_hull requires a pattern as the first argument")
     assert(ip:size() > 0, "pattern.convex_hull: input pattern must have at least one cell")
@@ -1004,16 +1044,16 @@ function pattern.convex_hull(ip)
 end
 
 --- Returns a thinned (skeletonized) version of the pattern.
--- Iteratively removes border cells whose Moore neighbours remain a single
--- connected component under `nbh`.
--- @param ip pattern to thin.
--- @param nbh neighbourhood for connectivity; must be a radius-1 neighbourhood
---            (e.g. `neighbourhood.moore()` or `neighbourhood.von_neumann()`).
---            Default: `neighbourhood.moore()`.
--- @return a new, thinned pattern.
--- @usage
--- local thin_p = p:thin()
--- local thin_4 = p:thin(neighbourhood.von_neumann())
+--- Iteratively removes border cells whose Moore neighbours remain a single
+--- connected component under `nbh`.
+---
+--- ```lua
+--- local thin_p = p:thin()
+--- local thin_4 = p:thin(neighbourhood.von_neumann())
+--- ```
+---@param ip forma.pattern pattern to thin
+---@param nbh? forma.neighbourhood neighbourhood for connectivity (default: neighbourhood.moore())
+---@return forma.pattern pattern a new, thinned pattern
 function pattern.thin(ip, nbh)
     assert(getmetatable(ip) == pattern,
         "pattern.thin requires a pattern as the first argument")
@@ -1042,6 +1082,10 @@ function pattern.thin(ip, nbh)
                 seed = seed or cell.new(moore[i].x, moore[i].y)
             end
         end
+        -- If there are no Moore neighbours, we cannot safely delete this cell
+        if not seed then
+            return false
+        end
         return pattern.floodfill(nbrs, seed, nbh):size() == nbrs:size()
     end
     local changed = true
@@ -1064,17 +1108,17 @@ function pattern.thin(ip, nbh)
     return p
 end
 
---- Morphological operations
--- @section morphological
+-- @section Morphological operations
 
 --- Returns the erosion of the pattern.
--- A cell is retained only if all of its neighbours (as defined by nbh) are active.
---
--- @param ip pattern to erode.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a new, eroded pattern.
--- @usage
--- local eroded = p:erode(neighbourhood.moore())
+--- A cell is retained only if all of its neighbours (as defined by nbh) are active.
+---
+--- ```lua
+--- local eroded = p:erode(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to erode
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.pattern pattern a new, eroded pattern
 function pattern.erode(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.erode requires a pattern as the first argument")
@@ -1099,13 +1143,14 @@ function pattern.erode(ip, nbh)
 end
 
 --- Returns the dilation of the pattern.
--- Each active cell contributes its neighbours (as defined by nbh) to the result.
---
--- @param ip pattern to dilate.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a new, dilated pattern.
--- @usage
--- local dilated = p:dilate(neighbourhood.moore())
+--- Each active cell contributes its neighbours (as defined by nbh) to the result.
+---
+--- ```lua
+--- local dilated = p:dilate(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to dilate
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.pattern pattern a new, dilated pattern
 function pattern.dilate(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.dilate requires a pattern as the first argument")
@@ -1125,13 +1170,14 @@ function pattern.dilate(ip, nbh)
 end
 
 --- Returns the morphological gradient of the pattern.
--- Computes the difference between the dilation and erosion.
---
--- @param ip pattern to process.
--- @param nbh neighbourhood for dilation/erosion (default: neighbourhood.moore()).
--- @return a new pattern representing the gradient.
--- @usage
--- local grad = p:gradient(neighbourhood.moore())
+--- Computes the difference between the dilation and erosion.
+---
+--- ```lua
+--- local grad = p:gradient(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to process
+---@param nbh? forma.neighbourhood neighbourhood for dilation/erosion (default: neighbourhood.moore())
+---@return forma.pattern pattern a new pattern representing the gradient
 function pattern.gradient(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.gradient requires a pattern as the first argument")
@@ -1140,13 +1186,14 @@ function pattern.gradient(ip, nbh)
 end
 
 --- Returns the morphological opening of the pattern.
--- Performs erosion followed by dilation to remove small artifacts.
---
--- @param ip pattern to process.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a new, opened pattern.
--- @usage
--- local opened = p:opening(neighbourhood.moore())
+--- Performs erosion followed by dilation to remove small artifacts.
+---
+--- ```lua
+--- local opened = p:opening(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to process
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.pattern pattern a new, opened pattern
 function pattern.opening(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.opening requires a pattern as the first argument")
@@ -1156,13 +1203,14 @@ function pattern.opening(ip, nbh)
 end
 
 --- Returns the morphological closing of the pattern.
--- Performs dilation followed by erosion to fill small holes.
---
--- @param ip pattern to process.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a new, closed pattern.
--- @usage
--- local closed = p:closing(neighbourhood.moore())
+--- Performs dilation followed by erosion to fill small holes.
+---
+--- ```lua
+--- local closed = p:closing(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to process
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.pattern pattern a new, closed pattern
 function pattern.closing(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.closing requires a pattern as the first argument")
@@ -1172,13 +1220,14 @@ function pattern.closing(ip, nbh)
 end
 
 --- Returns a pattern of cells that form the interior hull.
--- These are cells that neighbor inactive cells while still belonging to the pattern.
---
--- @param ip pattern to process.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a new pattern representing the interior hull.
--- @usage
--- local interior = p:interior_hull(neighbourhood.moore())
+--- These are cells that neighbor inactive cells while still belonging to the pattern.
+---
+--- ```lua
+--- local interior = p:interior_hull(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to process
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.pattern pattern a new pattern representing the interior hull
 function pattern.interior_hull(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.interior_hull requires a pattern as the first argument")
@@ -1187,23 +1236,21 @@ function pattern.interior_hull(ip, nbh)
 end
 
 --- Returns a pattern of cells that form the exterior hull.
--- This consists of inactive neighbours of the pattern, useful for enlarging or
--- determining non-overlapping borders.
---
--- @param ip pattern to process.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a new pattern representing the exterior hull.
--- @usage
--- local exterior = p:exterior_hull(neighbourhood.moore())
+--- This consists of inactive neighbours of the pattern, useful for enlarging or
+--- determining non-overlapping borders.
+---
+--- ```lua
+--- local exterior = p:exterior_hull(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to process
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.pattern pattern a new pattern representing the exterior hull
 function pattern.exterior_hull(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.exterior_hull requires a pattern as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "pattern.exterior_hull requires a neighbourhood as an argument")
     return (pattern.dilate(ip, nbh) - ip)
 end
-
---- Packing methods
--- @section packing
 
 -- Check if pattern a fits entirely within domain b when shifted by coordshift
 local function can_pack_at(a, b, coordshift)
@@ -1216,15 +1263,18 @@ local function can_pack_at(a, b, coordshift)
     return true
 end
 
+-- @section Packing
+
 --- Finds a packing offset where pattern a fits entirely within domain b.
--- Returns a coordinate shift that, when applied to a, makes it tile inside b.
---
--- @param a pattern to pack.
--- @param b domain pattern in which to pack a.
--- @param rng (optional) random number generator (e.g., math.random).
--- @return a cell (as a coordinate shift) if a valid position is found; nil otherwise.
--- @usage
--- local offset = pattern.find_packing_position(p, domain)
+--- Returns a coordinate shift that, when applied to a, makes it tile inside b.
+---
+--- ```lua
+--- local offset = pattern.find_packing_position(p, domain)
+--- ```
+---@param a forma.pattern pattern to pack
+---@param b forma.pattern domain pattern in which to pack a
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return forma.cell? shift a cell (as a coordinate shift) if a valid position is found; nil otherwise
 function pattern.find_packing_position(a, b, rng)
     assert(getmetatable(a) == pattern, "pattern.find_packing_position requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.find_packing_position requires a pattern as a second argument")
@@ -1242,13 +1292,14 @@ end
 --- Finds a center-weighted packing offset to place pattern a within pattern
 --- b as close as possible to the cell c. If no `c` is provided, then the centroid
 --- of pattern b is used.
---
--- @param a pattern to pack.
--- @param b domain pattern.
--- @param c (optional) cell to act as a center for packing.
--- @return a coordinate shift if a valid position is found; nil otherwise.
--- @usage
--- local central_offset = pattern.find_central_packing_position(p, domain, c)
+---
+--- ```lua
+--- local central_offset = pattern.find_central_packing_position(p, domain, c)
+--- ```
+---@param a forma.pattern pattern to pack
+---@param b forma.pattern domain pattern
+---@param c? forma.cell cell to act as a center for packing
+---@return forma.cell? shift a coordinate shift if a valid position is found; nil otherwise
 function pattern.find_central_packing_position(a, b, c)
     assert(getmetatable(a) == pattern, "pattern.find_central_packing_position requires a pattern as the first argument")
     assert(getmetatable(b) == pattern, "pattern.find_central_packing_position requires a pattern as a second argument")
@@ -1272,17 +1323,17 @@ function pattern.find_central_packing_position(a, b, c)
     return nil
 end
 
---- Multipattern methods
--- @section multipatterns
+-- @section Decomposition
 
 --- Returns a multipattern of the connected components within the pattern.
--- Uses flood-fill to extract contiguous subpatterns.
---
--- @param ip pattern to analyze.
--- @param nbh neighbourhood (default: neighbourhood.moore()).
--- @return a multipattern containing each connected component as a subpattern.
--- @usage
--- local components = p:connected_components(neighbourhood.moore())
+--- Uses flood-fill to extract contiguous subpatterns.
+---
+--- ```lua
+--- local components = p:connected_components(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern to analyze
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.moore())
+---@return forma.multipattern multipattern containing each connected component as a subpattern
 function pattern.connected_components(ip, nbh)
     nbh = nbh or neighbourhood.moore()
     assert(getmetatable(ip) == pattern, "pattern.connected_components requires a pattern as the first argument")
@@ -1291,7 +1342,7 @@ function pattern.connected_components(ip, nbh)
     local wp = pattern.clone(ip)
     local mp = multipattern.new()
     while pattern.size(wp) > 0 do
-        local seed_cell = wp:cells()()
+        local seed_cell = assert(wp:cells()())
         local segment = pattern.floodfill(wp, seed_cell, nbh)
         mp:insert(segment)
         for x, y in segment:cell_coordinates() do
@@ -1302,13 +1353,14 @@ function pattern.connected_components(ip, nbh)
 end
 
 --- Returns a multipattern of the interior holes of the pattern.
--- Interior holes are inactive regions completely surrounded by active cells.
---
--- @param ip pattern to analyze.
--- @param nbh neighbourhood (default: neighbourhood.von_neumann()).
--- @return a multipattern of interior hole subpatterns.
--- @usage
--- local holes = p:interior_holes(neighbourhood.von_neumann())
+--- Interior holes are inactive regions completely surrounded by active cells.
+---
+--- ```lua
+--- local holes = p:interior_holes(neighbourhood.von_neumann())
+--- ```
+---@param ip forma.pattern pattern to analyze
+---@param nbh? forma.neighbourhood neighbourhood (default: neighbourhood.von_neumann())
+---@return forma.multipattern multipattern of interior hole subpatterns
 function pattern.interior_holes(ip, nbh)
     nbh = nbh or neighbourhood.von_neumann()
     assert(getmetatable(ip) == pattern, "pattern.interior_holes requires a pattern as the first argument")
@@ -1328,14 +1380,15 @@ function pattern.interior_holes(ip, nbh)
 end
 
 --- Partitions the pattern using binary space partitioning (BSP).
--- Recursively subdivides contiguous rectangular areas until each partition's volume is below th_volume.
---
--- @param ip pattern to partition.
--- @param th_volume threshold volume (number) for final partitions.
--- @param alpha (optional) parameter for squareness of BSP.
--- @return a multipattern of BSP subpatterns.
--- @usage
--- local partitions = p:bsp(50)
+--- Recursively subdivides contiguous rectangular areas until each partition's volume is below th_volume.
+---
+--- ```lua
+--- local partitions = p:bsp(50)
+--- ```
+---@param ip forma.pattern pattern to partition
+---@param th_volume number threshold volume for final partitions
+---@param alpha? number parameter for squareness of BSP
+---@return forma.multipattern multipattern of BSP subpatterns
 function pattern.bsp(ip, th_volume, alpha)
     assert(getmetatable(ip) == pattern, "pattern.bsp requires a pattern as an argument")
     assert(th_volume, "pattern.bsp rules must specify a threshold volume for partitioning")
@@ -1353,13 +1406,14 @@ function pattern.bsp(ip, th_volume, alpha)
 end
 
 --- Categorizes cells in the pattern based on neighbourhood configurations.
--- Returns a multipattern with one subpattern per neighbourhood category.
---
--- @param ip pattern whose cells are to be categorized.
--- @param nbh neighbourhood used for categorization.
--- @return a multipattern with each category represented as a subpattern.
--- @usage
--- local categories = p:neighbourhood_categories(neighbourhood.moore())
+--- Returns a multipattern with one subpattern per neighbourhood category.
+---
+--- ```lua
+--- local categories = p:neighbourhood_categories(neighbourhood.moore())
+--- ```
+---@param ip forma.pattern pattern whose cells are to be categorized
+---@param nbh forma.neighbourhood neighbourhood used for categorization
+---@return forma.multipattern multipattern with each category represented as a subpattern
 function pattern.neighbourhood_categories(ip, nbh)
     assert(getmetatable(ip) == pattern, "pattern.neighbourhood_categories requires a pattern as a first argument")
     assert(getmetatable(nbh) == neighbourhood,
@@ -1376,16 +1430,17 @@ function pattern.neighbourhood_categories(ip, nbh)
 end
 
 --- Applies Perlin noise sampling to the pattern.
--- Generates a multipattern by thresholding Perlin noise values at multiple levels.
---
--- @param ip pattern (domain) to sample from.
--- @param freq frequency for Perlin noise (number).
--- @param depth sampling depth (integer).
--- @param thresholds table of threshold values (each between 0 and 1).
--- @param rng (optional) random number generator (e.g., math.random).
--- @return a multipattern with one component per threshold level.
--- @usage
--- local noise_samples = p:perlin(0.1, 4, {0.3, 0.5, 0.7})
+--- Generates a multipattern by thresholding Perlin noise values at multiple levels.
+---
+--- ```lua
+--- local noise_samples = p:perlin(0.1, 4, {0.3, 0.5, 0.7})
+--- ```
+---@param ip forma.pattern pattern (domain) to sample from
+---@param freq number frequency for Perlin noise
+---@param depth integer sampling depth
+---@param thresholds number[] table of threshold values (each between 0 and 1)
+---@param rng? fun(m: integer): integer random number generator (e.g., math.random)
+---@return forma.multipattern multipattern with one component per threshold level
 function pattern.perlin(ip, freq, depth, thresholds, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(ip) == pattern, "pattern.perlin requires a pattern as the first argument")
@@ -1413,13 +1468,14 @@ function pattern.perlin(ip, freq, depth, thresholds, rng)
 end
 
 --- Generates Voronoi tessellation segments for a domain based on seed points.
---
--- @param seeds pattern containing seed cells.
--- @param domain pattern defining the tessellation domain.
--- @param measure distance function (e.g., cell.euclidean).
--- @return a multipattern of Voronoi segments.
--- @usage
--- local segments = pattern.voronoi(seeds, domain, cell.euclidean)
+---
+--- ```lua
+--- local segments = pattern.voronoi(seeds, domain, cell.euclidean)
+--- ```
+---@param seeds forma.pattern pattern containing seed cells
+---@param domain forma.pattern pattern defining the tessellation domain
+---@param measure fun(a: forma.cell, b: forma.cell): number distance function (e.g., cell.euclidean)
+---@return forma.multipattern multipattern of Voronoi segments
 function pattern.voronoi(seeds, domain, measure)
     assert(getmetatable(seeds) == pattern, "pattern.voronoi requires a pattern as the first argument")
     assert(getmetatable(domain) == pattern, "pattern.voronoi requires a pattern as a second argument")
@@ -1447,15 +1503,18 @@ function pattern.voronoi(seeds, domain, measure)
 end
 
 --- Performs centroidal Voronoi tessellation (Lloyd's algorithm) on a set of seeds.
--- Iteratively relaxes seed positions until convergence or a maximum number of iterations.
---
--- @param seeds initial seed pattern.
--- @param domain tessellation domain pattern.
--- @param measure distance function (e.g., cell.euclidean).
--- @param max_ite (optional) maximum iterations (default: 30).
--- @return a multipattern of Voronoi segments, a pattern of relaxed seed positions, and a boolean convergence flag.
--- @usage
--- local segments, relaxed_seeds, converged = pattern.voronoi_relax(seeds, domain, cell.euclidean)
+--- Iteratively relaxes seed positions until convergence or a maximum number of iterations.
+---
+--- ```lua
+--- local segments, relaxed_seeds, converged = pattern.voronoi_relax(seeds, domain, cell.euclidean)
+--- ```
+---@param seeds forma.pattern initial seed pattern
+---@param domain forma.pattern tessellation domain pattern
+---@param measure fun(a: forma.cell, b: forma.cell): number distance function (e.g., cell.euclidean)
+---@param max_ite? integer maximum iterations (default: 30)
+---@return forma.multipattern segments a multipattern of Voronoi segments
+---@return forma.pattern seeds a pattern of relaxed seed positions
+---@return boolean converged whether the algorithm converged
 function pattern.voronoi_relax(seeds, domain, measure, max_ite)
     if max_ite == nil then max_ite = 30 end
     assert(getmetatable(seeds) == pattern, "pattern.voronoi_relax requires a pattern as the first argument")
@@ -1488,28 +1547,23 @@ function pattern.voronoi_relax(seeds, domain, measure, max_ite)
         end
         current_seeds = next_seeds
     end
-    assert(false, "This should not be reachable")
+    error("This should not be reachable")
 end
 
---- Test components
--- @section test
+-- @section Display and utilities
 
 --- Returns the maximum allowed coordinate for spatial hashing.
---
--- @return maximum coordinate value (number).
--- @usage
--- local max_coord = pattern.get_max_coordinate()
+---
+---@return number max_coordinate maximum coordinate value
 function pattern.get_max_coordinate()
     return MAX_COORDINATE
 end
 
 --- Tests the conversion between (x, y) coordinates and the spatial hash key.
---
--- @param x test x-coordinate (number).
--- @param y test y-coordinate (number).
--- @return boolean true if the conversion is correct, false otherwise.
--- @usage
--- local valid = pattern.test_coordinate_map(10, 20)
+---
+---@param x number test x-coordinate
+---@param y number test y-coordinate
+---@return boolean valid true if the conversion is correct, false otherwise
 function pattern.test_coordinate_map(x, y)
     assert(type(x) == 'number' and type(y) == 'number',
         "pattern.test_coordinate_map requires two numbers as arguments")
@@ -1519,10 +1573,11 @@ function pattern.test_coordinate_map(x, y)
 end
 
 --- Prints the pattern within an optional domain, line-by-line.
--- @param ip      pattern to render.
--- @param char    (optional) single-character to draw “on” cells.
--- @param domain  (optional) pattern defining the bounding box.
--- @param printer (optional) function(line:string); defaults to io.write(line.."\n").
+---
+---@param ip forma.pattern pattern to render
+---@param char? string single-character to draw "on" cells
+---@param domain? forma.pattern pattern defining the bounding box
+---@param printer? fun(line: string) function for printing each line; defaults to io.write(line.."\n")
 function pattern.print(ip, char, domain, printer)
     assert(getmetatable(ip) == pattern, "pattern.print requires a pattern as the first argument")
     local onchar  = char or ip.onchar

@@ -1,49 +1,40 @@
 --- Pattern manipulation with Cellular Automata.
---
--- Cellular Automata are defined here by a ruleset (a table of individual
--- CA rules). Each rule consists of two parts. Firstly a `neighbourhood` that
--- the rule acts on. Secondly a rule `signature` specifying the conditions
--- under which cells are *Born* (B) or *Survive* (S). These rule signatures are
--- initialised with a string in the "Golly" format. i.e a rule which activates
--- cells with one neighbour and deactivates cells with two would have the rule
--- string "B1/S2". The neighbourhood is specified by an instance of the
--- `forma.neighbourhood` class as usual.
---
--- Once a ruleset is specified, there are two provided implementations of a CA.
--- Firstly the standard *synchronous* CA is implemented in `automata.iterate`
--- whereby all cells are updated simultaneously. Secondly an *asynchronous*
--- update is provided in `automata.async_iterate` in which each iteration
--- updates only one cell at random.
---
--- When a ruleset consists of only one rule, the CA is unambiguous and is
--- applied in the conventional manner. When multiple rules are provided, rule
--- conflicts are resolved in favour of cell deactivation. For example, if there
--- are two rules in the set, cell activation requires that the candidate cell
--- passes the 'birth' criterion of both rules. Cell deactivation requires only
--- that one 'survive' criterion fails.
---
--- All CA updates here are only possible on a *finite* domain of cells. That
--- domain must be specified as a `pattern` in the iteration call.
---
--- Both the synchronous and asynchronous iterations return the result of one CA
--- iteration and a bool specifying whether or not the iteration has converged
--- to a stable pattern.
---
---### Relevant examples
---
--- - @{cellular_automata.lua}
--- - @{async_automata.lua}
---
--- @module forma.automata
+---
+--- Cellular Automata are defined here by a ruleset (a table of individual
+--- CA rules). Each rule consists of two parts. Firstly a `neighbourhood` that
+--- the rule acts on. Secondly a rule `signature` specifying the conditions
+--- under which cells are *Born* (B) or *Survive* (S). These rule signatures are
+--- initialised with a string in the "Golly" format. i.e a rule which activates
+--- cells with one neighbour and deactivates cells with two would have the rule
+--- string "B1/S2". The neighbourhood is specified by an instance of the
+--- `forma.neighbourhood` class as usual.
+---
+--- Once a ruleset is specified, there are two provided implementations of a CA.
+--- Firstly the standard *synchronous* CA is implemented in `automata.iterate`
+--- whereby all cells are updated simultaneously. Secondly an *asynchronous*
+--- update is provided in `automata.async_iterate` in which each iteration
+--- updates only one cell at random.
+---
+--- When a ruleset consists of only one rule, the CA is unambiguous and is
+--- applied in the conventional manner. When multiple rules are provided, rule
+--- conflicts are resolved in favour of cell deactivation. For example, if there
+--- are two rules in the set, cell activation requires that the candidate cell
+--- passes the 'birth' criterion of both rules. Cell deactivation requires only
+--- that one 'survive' criterion fails.
+---
+--- All CA updates here are only possible on a *finite* domain of cells. That
+--- domain must be specified as a `pattern` in the iteration call.
+---
+--- Both the synchronous and asynchronous iterations return the result of one CA
+--- iteration and a bool specifying whether or not the iteration has converged
+--- to a stable pattern.
+---@class forma.automata
 local automata = {}
 
 local pattern = require('forma.pattern')
 
 -- Cellular automata rule parsing.
 -- Takes a string signature i.e "X1234" and converts it into a boolean lookup-table
--- @param nbh the requested neighbourhood of the rule
--- @param rulesub the string signature in question
--- @return A boolean look-up table for the rule
 local function parse_rule(nbh, rulesub)
     local ruletable = {}
     for i = 2, #rulesub, 1 do
@@ -57,19 +48,18 @@ local function parse_rule(nbh, rulesub)
     return ruletable
 end
 
---- Ruleset Generation
--- @section Ruleset Generation
-
 --- Define a cellular automata rule.
--- CA rules in forma are defined by a `neighbourhood` in the usual CA sense and
--- a string signature in the 'Golly' format (BXX/SXX). This function
--- initialises a rule, and performs a few consistency checks.
--- @usage
---  -- Initialise a rule corresponding to Conway's Game of Life
---  local gol_rule = automata.rule(neighbourhood.moore(), "B3/S23")
--- @param nbh specifying the `neighbourhood` the rule is to be applied in.
--- @param rule_string string specifying the ruleset (i.e B23/S1).
--- @return A verified rule for use with the CA methods.
+--- CA rules in forma are defined by a `neighbourhood` in the usual CA sense and
+--- a string signature in the 'Golly' format (BXX/SXX). This function
+--- initialises a rule, and performs a few consistency checks.
+---
+--- ```lua
+--- -- Initialise a rule corresponding to Conway's Game of Life
+--- local gol_rule = automata.rule(neighbourhood.moore(), "B3/S23")
+--- ```
+---@param nbh forma.neighbourhood specifying the neighbourhood the rule is to be applied in
+---@param rule_string string specifying the ruleset (i.e B23/S1)
+---@return table rule a verified rule for use with the CA methods
 function automata.rule(nbh, rule_string)
     assert(#nbh < 11,
         "forma.automata.rule: Rule string format does not support neighbourhoods with more than 10 elements")
@@ -85,12 +75,6 @@ function automata.rule(nbh, rule_string)
 end
 
 -- Pattern neighbour count.
--- Counts how many adjacent cells there are to a cell at (ix, iy)
--- @param pa provided pattern for neighbour count
--- @param nbh neighbourhood for testing
--- @param ix x-coordinate of point check
--- @param iy y-coordinate of point check
--- @return Number of active cells in the neighbourhood of cell (ix, iy)
 local function nCount(pa, nbh, ix, iy)
     local n = 0
     for i = 1, #nbh, 1 do
@@ -101,7 +85,6 @@ local function nCount(pa, nbh, ix, iy)
 end
 
 -- Ruleset pass/fail analysis
--- This function assesses whether or not a cell should be alive
 local function check_cell(ruleset, ipattern, ix, iy)
     local rule_type = ipattern:has_cell(ix, iy) and 'S' or 'B'
     for i = 1, #ruleset do
@@ -121,25 +104,24 @@ local function check_ruleset(ruleset)
     end
 end
 
---- CA Iteration
--- @section CA Iteration
-
 --- Synchronous cellular automata iteration.
--- Performs one standard synchronous CA update on pattern prevp in the specified domain.
--- @usage
---  -- Domain and initial state (500 seed points) for the CA
---  local domain = primitives.square(100)
---  local ca_pat = pattern.sample(domain, 500)
---  -- Repeat iteration until convergence is reached
---  local converged = false
---  repeat
---  	ca_pat, converged = automata.iterate(ca_pat, domain, {gol_rule})
---  until converged == true
--- @param prevp the previous iteration of the pattern
--- @param domain the cells in which the CA operates
--- @param ruleset a table of forma.rules defining the CA
--- @return The result of the CA iteration [pattern].
--- @return Convergence flag [bool: true if converged, false otherwise].
+--- Performs one standard synchronous CA update on pattern prevp in the specified domain.
+---
+--- ```lua
+--- -- Domain and initial state (500 seed points) for the CA
+--- local domain = primitives.square(100)
+--- local ca_pat = pattern.sample(domain, 500)
+--- -- Repeat iteration until convergence is reached
+--- local converged = false
+--- repeat
+---     ca_pat, converged = automata.iterate(ca_pat, domain, {gol_rule})
+--- until converged == true
+--- ```
+---@param prevp forma.pattern the previous iteration of the pattern
+---@param domain forma.pattern the cells in which the CA operates
+---@param ruleset table[] a table of forma.rules defining the CA
+---@return forma.pattern result the result of the CA iteration
+---@return boolean converged true if converged, false otherwise
 function automata.iterate(prevp, domain, ruleset)
     assert(getmetatable(prevp) == pattern,
         "forma.automata: iterate requires a pattern as a first argument")
@@ -156,24 +138,26 @@ function automata.iterate(prevp, domain, ruleset)
 end
 
 --- Asynchronous cellular automata iteration.
--- Performs a CA update on one cell (chosen randomly) in the specified domain.
--- This corresponds to a 'random independent scheme' update.
--- @usage
---  -- Domain and initial state (10 seed points) for the CA
---  local domain = primitives.square(10)
---  local ca_pat = pattern.sample(domain, 10)
---  local rng    = math.random
---  -- Repeat iteration until convergence is reached
---  local converged = false
---  repeat
---  	ca_pat, converged = automata.async_iterate(ca_pat, domain, {gol_rule}, rng)
---  until converged == true
--- @param prevp the previous iteration of the pattern
--- @param domain the cells in which the CA operates
--- @param ruleset a table of forma.rules defining the CA
--- @param rng a (optional) random number generator (syntax as per math.random).
--- @return The result of the CA iteration [pattern].
--- @return Convergence flag [bool: true if converged, false otherwise].
+--- Performs a CA update on one cell (chosen randomly) in the specified domain.
+--- This corresponds to a 'random independent scheme' update.
+---
+--- ```lua
+--- -- Domain and initial state (10 seed points) for the CA
+--- local domain = primitives.square(10)
+--- local ca_pat = pattern.sample(domain, 10)
+--- local rng    = math.random
+--- -- Repeat iteration until convergence is reached
+--- local converged = false
+--- repeat
+---     ca_pat, converged = automata.async_iterate(ca_pat, domain, {gol_rule}, rng)
+--- until converged == true
+--- ```
+---@param prevp forma.pattern the previous iteration of the pattern
+---@param domain forma.pattern the cells in which the CA operates
+---@param ruleset table[] a table of forma.rules defining the CA
+---@param rng? fun(m: integer): integer a random number generator (syntax as per math.random)
+---@return forma.pattern result the result of the CA iteration
+---@return boolean converged true if converged, false otherwise
 function automata.async_iterate(prevp, domain, ruleset, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(prevp) == pattern,

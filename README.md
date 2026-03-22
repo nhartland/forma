@@ -46,8 +46,6 @@ Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
 
 ## Examples
 
-- [Example Gallery](examples/)
-
 ```lua
 -- Generate a square box to run the CA inside
 local domain = primitives.square(80,20)
@@ -98,15 +96,16 @@ use:
 
 Documentation is hosted [here](https://nhartland.github.io/forma/).
 
-Generating the documentation requires
+To regenerate the documentation locally:
 
-- [LDoc](https://github.com/stevedonovan/LDoc)
+```Shell
+    lua docs/extract.lua
+    mkdocs build
+```
 
-Simply running
-
-    ldoc --style=./ --output contents --dir docs .
-
-in the root directory should generate all the required pages.
+This requires [lua-language-server](https://github.com/LuaLS/lua-language-server),
+[dkjson](https://luarocks.org/modules/dhkolf/dkjson), and
+[MkDocs Material](https://squidfunk.github.io/mkdocs-material/).
 
 ## Testing
 

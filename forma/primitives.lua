@@ -1,33 +1,34 @@
 --- Primitive (line, rectangle and circle) patterns.
--- This module provides convenience functions for the generation of basic
--- `pattern` shapes. So far including lines, squares/rectangles and circle
--- rasters.
---
--- @usage
--- -- Draw some squares
--- local square_pattern = primitives.square(5)      -- 5x5
--- local rectangle_pattern = primitives.square(3,5) -- 3x5
---
--- -- Draw a line
--- local line = primitives.line(cell.new(0,0), cell.new(10,10))
---
--- -- Draw a circle about (0,0) with radius 5
--- local circle = primitives.circle(5)
---
--- @module forma.primitives
+--- This module provides convenience functions for the generation of basic
+--- `pattern` shapes. So far including lines, squares/rectangles and circle
+--- rasters.
+---
+--- ```lua
+--- -- Draw some squares
+--- local square_pattern = primitives.square(5)      -- 5x5
+--- local rectangle_pattern = primitives.square(3,5) -- 3x5
+---
+--- -- Draw a line
+--- local line = primitives.line(cell.new(0,0), cell.new(10,10))
+---
+--- -- Draw a circle about (0,0) with radius 5
+--- local circle = primitives.circle(5)
+--- ```
+---@class forma.primitives
 local primitives = {}
 
 local cell       = require('forma.cell')
 local pattern    = require('forma.pattern')
 
-----------------------------------------------------------------------------
---- Geometry primitives
--- @section primitives
-
 --- Generate a square pattern.
--- @param x size in x
--- @param y size in y (default `y = x`)
--- @return square forma.pattern of size `{x,y}`
+---
+--- ```lua
+--- local sq = primitives.square(5)
+--- local rect = primitives.square(3, 5)
+--- ```
+---@param x number size in x
+---@param y? number size in y (default `y = x`)
+---@return forma.pattern pattern square pattern of size `{x, y}`
 function primitives.square(x, y)
     y = y ~= nil and y or x
     assert(type(x) == "number",
@@ -46,10 +47,14 @@ function primitives.square(x, y)
 end
 
 --- Generate a line pattern.
--- According to Bresenham's line algorithm.
--- @param start  a forma.cell denoting the start of the line
--- @param finish a forma.cell denoting the end of the line
--- @return a pattern consisting of a line between `start` and `finish`
+--- According to Bresenham's line algorithm.
+---
+--- ```lua
+--- local line = primitives.line(cell.new(0, 0), cell.new(10, 10))
+--- ```
+---@param start forma.cell a cell denoting the start of the line
+---@param finish forma.cell a cell denoting the end of the line
+---@return forma.pattern pattern a pattern consisting of a line between `start` and `finish`
 function primitives.line(start, finish)
     assert(getmetatable(start) == cell, "primitives.line requires a cell as the first argument")
     assert(getmetatable(finish) == cell, "primitives.line requires a cell as the second argument")
@@ -91,18 +96,23 @@ function primitives.line(start, finish)
 end
 
 --- Draw a quadratic bezier curve.
--- Uses an algorithm from rosettacode.org.
--- This function returns both a pattern consisting of the drawn bezier curve,
--- and a list of points along the curve. This may be important in case the
--- curve back-tracks over existing cells, which cannot be represented in a
--- forma `pattern`. The full pattern consists of `N` of these points, joined
--- by bresenham line segments.
--- @param start   a forma.cell denoting the start of the curve
--- @param control a forma.cell denoting the control point of the curve
--- @param finish  a forma.cell denoting the end of the curve
--- @param N (optional) number of line-segments to construct the curve with
--- @return a pattern consisting of a bezier curve between `start` and `finish`, controlled by `control`
--- @return an ordered list of cells consisting of points along the curve.
+--- Uses an algorithm from rosettacode.org.
+--- This function returns both a pattern consisting of the drawn bezier curve,
+--- and a list of points along the curve. This may be important in case the
+--- curve back-tracks over existing cells, which cannot be represented in a
+--- forma `pattern`. The full pattern consists of `N` of these points, joined
+--- by bresenham line segments.
+---
+--- ```lua
+--- local curve, points = primitives.quad_bezier(
+---     cell.new(0, 0), cell.new(5, 10), cell.new(10, 0))
+--- ```
+---@param start forma.cell a cell denoting the start of the curve
+---@param control forma.cell a cell denoting the control point of the curve
+---@param finish forma.cell a cell denoting the end of the curve
+---@param N? integer number of line-segments to construct the curve with (default: 20)
+---@return forma.pattern pattern a pattern consisting of the bezier curve
+---@return forma.cell[] points an ordered list of cells consisting of points along the curve
 function primitives.quad_bezier(start, control, finish, N)
     if N == nil then N = 20 end
     assert(getmetatable(start) == cell, "primitives.quad_bezier requires a cell as the first argument")
@@ -142,9 +152,13 @@ function primitives.quad_bezier(start, control, finish, N)
 end
 
 --- Generate a circle pattern.
--- Bresenham algorithm.
--- @param r the radius of the circle to be drawn
--- @return circular forma.pattern of radius `r` and origin `(0,0)`
+--- Bresenham algorithm.
+---
+--- ```lua
+--- local circle = primitives.circle(5)
+--- ```
+---@param r number the radius of the circle to be drawn
+---@return forma.pattern pattern circular pattern of radius `r` and origin `(0,0)`
 function primitives.circle(r)
     assert(type(r) == 'number', 'primitives.circle requires a number for the radius')
     assert(r > 0, 'primitives.circle requires a positive number for the radius')

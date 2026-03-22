@@ -1,14 +1,12 @@
---- Ray tracing algorithms
--- Algorithms for identifying visible segments of a pattern from a single cell.
--- This can be used for 'field of view' applications.
---
--- Sources:
---
--- `http://www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html`
--- `http://www.roguebasin.com/index.php?title=LOS_using_strict_definition`
---
--- @module forma.raycasting
-
+--- Ray tracing algorithms.
+--- Algorithms for identifying visible segments of a pattern from a single cell.
+--- This can be used for 'field of view' applications.
+---
+--- Sources:
+---
+--- - `http://www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html`
+--- - `http://www.roguebasin.com/index.php?title=LOS_using_strict_definition`
+---@class forma.raycasting
 local ray = {}
 
 local cell    = require('forma.cell')
@@ -46,14 +44,14 @@ local function cast_xy(x0, y0, x1, y1, domain)
 end
 
 --- Casts a ray from a start to an end cell.
--- Returns {true/false} if the cast is successful/blocked.
--- Adapted from:
---
--- `http://www.roguebasin.com/index.php?title=LOS_using_strict_definition`
--- @param v0 starting cell of ray
--- @param v1 end cell of ray
--- @param domain the domain in which we are casting
--- @return true or false depending on whether the ray was successfully cast
+--- Returns true/false if the cast is successful/blocked.
+--- Adapted from:
+--- `http://www.roguebasin.com/index.php?title=LOS_using_strict_definition`
+---
+---@param v0 forma.cell starting cell of ray
+---@param v1 forma.cell end cell of ray
+---@param domain forma.pattern the domain in which we are casting
+---@return boolean success true or false depending on whether the ray was successfully cast
 function ray.cast(v0, v1, domain)
     assert(getmetatable(v0) == cell, "ray.cast requires a cell as the first argument")
     assert(getmetatable(v1) == cell, "ray.cast requires a cell as the second argument")
@@ -62,11 +60,12 @@ function ray.cast(v0, v1, domain)
 end
 
 --- Casts rays from a start cell across an octant.
--- @param v0 starting cell of ray
--- @param domain the domain in which we are casting
--- @param oct the octant identifier (integer between 1 and 8)
--- @param ray_length the maximum length of the ray
--- @return the pattern illuminated by the ray casting
+---
+---@param v0 forma.cell starting cell of ray
+---@param domain forma.pattern the domain in which we are casting
+---@param oct integer the octant identifier (integer between 1 and 8)
+---@param ray_length number the maximum length of the ray
+---@return forma.pattern pattern the pattern illuminated by the ray casting
 function ray.cast_octant(v0, domain, oct, ray_length)
     assert(getmetatable(v0) == cell, "ray.cast_octant requires a cell as the first argument")
     assert(getmetatable(domain) == pattern, "ray.cast_octant requires a pattern as the second argument")
@@ -100,11 +99,15 @@ function ray.cast_octant(v0, domain, oct, ray_length)
     return lit_pattern
 end
 
---- Casts rays from a starting cell in all directions
--- @param v0 starting cell of ray
--- @param domain the domain in which we are casting
--- @param ray_length the maximum length of the ray
--- @return the pattern illuminated by the ray casting
+--- Casts rays from a starting cell in all directions.
+---
+--- ```lua
+--- local visible = ray.cast_360(cell.new(5, 5), domain, 10)
+--- ```
+---@param v0 forma.cell starting cell of ray
+---@param domain forma.pattern the domain in which we are casting
+---@param ray_length number the maximum length of the ray
+---@return forma.pattern pattern the pattern illuminated by the ray casting
 function ray.cast_360(v0, domain, ray_length)
     assert(getmetatable(v0) == cell, "ray.cast_360 requires a cell as the first argument")
     assert(getmetatable(domain) == pattern, "ray.cast_360 requires a pattern as the second argument")
