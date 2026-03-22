@@ -21,12 +21,15 @@ jobs:
       - uses: leafo/gh-actions-luarocks@v5
       - run: luarocks install dkjson
 
-      # LuaLS (no dedicated action exists)
+      # LuaLS 
       - name: Install lua-language-server
+        env:
+          LLS_VERSION: "3.17.1"
         run: |
-          LLS_VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]+')
+          mkdir -p "$HOME/.local/lls"
           curl -sL "https://github.com/LuaLS/lua-language-server/releases/download/${LLS_VERSION}/lua-language-server-${LLS_VERSION}-linux-x64.tar.gz" \
-            | tar xz -C /usr/local
+            | tar xz -C "$HOME/.local/lls"
+          echo "$HOME/.local/lls/bin" >> "$GITHUB_PATH"
 
       # MkDocs
       - uses: actions/setup-python@v5
