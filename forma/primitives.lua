@@ -17,8 +17,8 @@
 ---@class forma.primitives
 local primitives = {}
 
-local cell       = require('forma.cell')
-local pattern    = require('forma.pattern')
+local cell    = require('forma.cell')
+local pattern = require('forma.pattern')
 
 --- Generate a square pattern.
 ---
@@ -143,9 +143,7 @@ function primitives.quad_bezier(start, control, finish, N)
     for i = 1, #line_points - 1, 1 do
         local line = primitives.line(line_points[i], line_points[i + 1])
         for x, y in line:cell_coordinates() do
-            if not bezier:has_cell(x, y) then
-                bezier:insert(x, y)
-            end
+            bezier:insert(x, y, false)
         end
     end
     return bezier, line_points

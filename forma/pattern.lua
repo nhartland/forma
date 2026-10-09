@@ -166,24 +166,32 @@ end
 ---@param ip forma.pattern pattern to modify
 ---@param x integer x-coordinate of the new cell
 ---@param y integer y-coordinate of the new cell
----@return forma.pattern ip the updated pattern (for cascading calls)
-function pattern.insert(ip, x, y)
+---@param strict? boolean fail on duplicate cell (default: true)
+---@return forma.pattern ip the updated pattern
+function pattern.insert(ip, x, y, strict)
     assert(floor(x) == x, 'pattern.insert requires an integer for the x coordinate')
     assert(floor(y) == y, 'pattern.insert requires an integer for the y coordinate')
 
     local key = coordinates_to_key(x, y)
-    assert(ip.cellmap[key] == nil, "pattern.insert cannot duplicate cells")
-    local new_index = #ip.cellkey + 1
-    ip.cellkey[new_index] = key
-    ip.cellmap[key] = new_index
+    if ip.cellmap[key] == nil then
+        local new_index = #ip.cellkey + 1
+        ip.cellkey[new_index] = key
+        ip.cellmap[key] = new_index
 
-    -- Reset pattern extent.
-    ip.max.x = max(ip.max.x, x)
-    ip.max.y = max(ip.max.y, y)
-    ip.min.x = min(ip.min.x, x)
-    ip.min.y = min(ip.min.y, y)
+        -- Reset pattern extent.
+        ip.max.x = max(ip.max.x, x)
+        ip.max.y = max(ip.max.y, y)
+        ip.min.x = min(ip.min.x, x)
+        ip.min.y = min(ip.min.y, y)
 
-    return ip
+        return ip
+    else
+        if strict ~= false then
+            error('pattern.insert cannot duplicate cells', 2)
+        else
+            return ip
+        end
+    end
 end
 
 --- Recalculates the bounding box of the pattern from its cells.
@@ -399,9 +407,7 @@ function pattern.union(...)
         local v = patterns[i]
         assert(getmetatable(v) == pattern, "pattern.union requires a pattern as an argument")
         for x, y in v:cell_coordinates() do
-            if total:has_cell(x, y) == false then
-                total:insert(x, y)
-            end
+            total:insert(x, y, false)
         end
     end
     return total
@@ -1031,9 +1037,7 @@ function pattern.convex_hull(ip)
     local function add_line(p1, p2)
         local line = primitives.line(p1, p2)
         for x, y in line:cell_coordinates() do
-            if not chull:has_cell(x, y) then
-                chull:insert(x, y)
-            end
+            chull:insert(x, y, false)
         end
     end
     for i = 1, #hull_points - 1, 1 do
@@ -1161,9 +1165,7 @@ function pattern.dilate(ip, nbh)
             local offset = nbh[j]
             local nx = x + offset.x
             local ny = y + offset.y
-            if not np:has_cell(nx, ny) then
-                np:insert(nx, ny)
-            end
+            np:insert(nx, ny, false)
         end
     end
     return np
@@ -1529,14 +1531,10 @@ function pattern.voronoi_relax(seeds, domain, measure, max_ite)
             if tesselation[iseg]:size() > 0 then
                 local cent = tesselation[iseg]:centroid()
                 if domain:has_cell(cent.x, cent.y) then
-                    if not next_seeds:has_cell(cent.x, cent.y) then
-                        next_seeds:insert(cent.x, cent.y)
-                    end
+                    next_seeds:insert(cent.x, cent.y, false)
                 else
                     local med = tesselation[iseg]:medoid()
-                    if not next_seeds:has_cell(med.x, med.y) then
-                        next_seeds:insert(med.x, med.y)
-                    end
+                    next_seeds:insert(med.x, med.y, false)
                 end
             end
         end
