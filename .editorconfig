@@ -1,0 +1,9 @@
+root = true
+
+[*.lua]
+indent_style = space
+indent_size = 4
+quote_style = none
+align_continuous_assign_statement = true
+align_continuous_line_space = 1
+align_chain_expr = true
