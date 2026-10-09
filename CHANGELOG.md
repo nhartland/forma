@@ -13,9 +13,8 @@
   algorithm that accepts a configurable neighbourhood parameter for connectivity
   (e.g., Moore or von Neumann).
 - Introduced `pattern.print` method along the lines of `multipattern.print`.
-- Adjusted `pattern.find_central_packing_position` to accept a custom center.
+- Adjusted `pattern.find_central_packing_position` to accept a custom centre.
 - Introduced `pattern.bounding_box_density` and
-  `pattern.bounding_box_asymmetry`.
 
 ## Bugfix
 
@@ -27,6 +26,8 @@
 - Added missing `multipattern` to global lazy import in `forma/init.lua`.
 - Updated Lua version constraint in rockspec from `< 5.4` to `< 5.5` to support
   Lua 5.4.
+- Adjusted noise utils to properly used 1-based indexing as the used shuffling
+  expects.
 
 ## Misc
 
@@ -48,6 +49,8 @@
 - Removed `forma.utils.zhang_suen` module.
 - Migrated from LDoc to MKDocs for documentation
 - Converted fully from LDoc to LuaLS annotations
+- Introduced a `strict` option for pattern.insert to avoid the
+  `if not has_cell then insert` structure.
 
 # 1.0
 
