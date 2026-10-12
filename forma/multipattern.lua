@@ -54,7 +54,8 @@ end
 function multipattern.merge(...)
     local multipatterns = { ... }
     if #multipatterns == 1 then
-        if type(multipatterns[1]) == 'table' then
+        -- Handle case where the input is a table of multipatterns
+        if type(multipatterns[1]) == 'table' and getmetatable(multipatterns[1]) == nil then
             multipatterns = multipatterns[1]
         end
     end

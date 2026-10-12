@@ -395,7 +395,8 @@ end
 ---@return forma.pattern pattern a new pattern that is the union of the provided patterns
 function pattern.union(...)
     local patterns = { ... }
-    if #patterns == 1 and type(patterns[1]) == 'table' then
+    -- Handle case where the input is a table of patterns
+    if #patterns == 1 and type(patterns[1]) == 'table' and getmetatable(patterns[1]) == nil then
         patterns = patterns[1]
     end
 

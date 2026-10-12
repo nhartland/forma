@@ -28,6 +28,8 @@
   Lua 5.4.
 - Adjusted noise utils to properly used 1-based indexing as the used shuffling
   expects.
+- Fixed bug where `pattern.union` and `multipattern.merge` would fail with only
+  a single pattern/multipattern as input.
 
 ## Misc
 
