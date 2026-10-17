@@ -57,6 +57,7 @@ local cell          = require('forma.cell')
 local neighbourhood = require('forma.neighbourhood')
 local rutils        = require('forma.utils.random')
 local multipattern  = require('forma.multipattern')
+local transform     = require('forma.transform')
 local symmetry      = require('forma.symmetry')
 
 -- Pattern indexing.
@@ -787,7 +788,7 @@ end
 --- Returns a new pattern transformed by an operation.
 ---
 --- ```lua
---- local p_transformed = p:transform(forma.symmetry.operation.rot90)
+--- local p_transformed = p:transform(forma.symmetry.elements.rot90)
 --- ```
 ---@param ip forma.pattern pattern to transform
 ---@param g forma.transform the transformation to apply
@@ -851,6 +852,9 @@ end
 
 --- Returns a new pattern that is a vertical reflection of the original.
 ---
+--- This function differs from a straight vertical reflection in that it
+--- shifts the resulting pattern into the bounding box of the original.
+---
 --- ```lua
 --- local p_vreflected = p:vreflect()
 --- ```
@@ -858,15 +862,19 @@ end
 ---@return forma.pattern pattern a vertically reflected pattern
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
-    local np = pattern.new()
-    for vx, vy in ip:cell_coordinates() do
-        local new_y = ip.min.y + ip.max.y - vy
-        np:insert(vx, new_y)
-    end
-    return np
+    if ip:size() == 0 then return pattern.new() end
+    -- Reflect then translate to close the bounding box gap
+    return ip:transform(
+        transform.translate(0, ip.min.y + ip.max.y) *
+        symmetry.elements.vreflect
+    )
 end
 
 --- Returns a new pattern that is a horizontal reflection of the original.
+---
+--- Similarly to `pattern:vreflect`, this function differs from a straight
+--- horizontal reflection in that it shifts the resulting pattern into the
+--- bounding box of the original.
 ---
 --- ```lua
 --- local p_hreflected = p:hreflect()
@@ -875,12 +883,12 @@ end
 ---@return forma.pattern pattern a horizontally reflected pattern
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
-    local np = pattern.new()
-    for vx, vy in ip:cell_coordinates() do
-        local new_x = ip.min.x + ip.max.x - vx
-        np:insert(new_x, vy)
-    end
-    return np
+    if ip:size() == 0 then return pattern.new() end
+    -- Reflect then translate to close the bounding box gap
+    return ip:transform(
+        transform.translate(ip.min.x + ip.max.x, 0) *
+        symmetry.elements.hreflect
+    )
 end
 
 -- @section Sampling
