@@ -103,8 +103,8 @@ function pattern.new(prototype)
     np.min = cell.new(math.huge, math.huge)
 
     -- Characters to be used with tostring metamethod.
-    np.offchar = '0'
-    np.onchar  = '1'
+    np.offchar = ' '
+    np.onchar  = 'x'
 
     np.cellkey = {} -- Table consisting of a list of coordinate keys.
     np.cellmap = {} -- Spatial hash of coordinate key to its index in cellkey.
@@ -169,20 +169,21 @@ end
 ---@param strict? boolean fail on duplicate cell (default: true)
 ---@return forma.pattern ip the updated pattern
 function pattern.insert(ip, x, y, strict)
-    assert(floor(x) == x, 'pattern.insert requires an integer for the x coordinate')
-    assert(floor(y) == y, 'pattern.insert requires an integer for the y coordinate')
+    local _x, _y = floor(x), floor(y)
+    assert(x == _x, 'pattern.insert requires an integer for the x coordinate')
+    assert(y == _y, 'pattern.insert requires an integer for the y coordinate')
 
-    local key = coordinates_to_key(x, y)
+    local key = coordinates_to_key(_x, _y)
     if ip.cellmap[key] == nil then
         local new_index = #ip.cellkey + 1
         ip.cellkey[new_index] = key
         ip.cellmap[key] = new_index
 
         -- Reset pattern extent.
-        ip.max.x = max(ip.max.x, x)
-        ip.max.y = max(ip.max.y, y)
-        ip.min.x = min(ip.min.x, x)
-        ip.min.y = min(ip.min.y, y)
+        ip.max.x = max(ip.max.x, _x)
+        ip.max.y = max(ip.max.y, _y)
+        ip.min.x = min(ip.min.x, _x)
+        ip.min.y = min(ip.min.y, _y)
 
         return ip
     else
@@ -276,6 +277,25 @@ end
 function pattern.size(ip)
     assert(getmetatable(ip) == pattern, "pattern.size requires a pattern as the first argument")
     return #ip.cellkey
+end
+
+--- Computes a string hash of the pattern.
+--- Optionally normalises the pattern (setting it's origin to 0) before hashing
+---
+---@param ip forma.pattern pattern to hash
+---@param opts? {normal?: boolean} options table
+---@return string hash the resulting canonical hash
+function pattern.hash(ip, opts)
+    if ip:size() == 0 then return '' end
+    opts = opts or { normal = false }
+    -- If the normal flag is set to true, shift all coordinates such that the origin is at 0,0
+    local offset = opts.normal and (
+        coordinates_to_key(ip.min.x, ip.min.y) - coordinates_to_key(0, 0)
+    ) or 0
+    local keys = {}
+    for i = 1, #ip.cellkey do keys[i] = ip.cellkey[i] - offset end
+    table.sort(keys)
+    return table.concat(keys, '.')
 end
 
 -- @section Utilities
@@ -763,7 +783,7 @@ function pattern.translate(ip, sx, sy)
     return sp
 end
 
---- Normalizes the pattern by translating it so that its minimum coordinate is (0,0).
+--- Normalises the pattern by translating it such that its minimum coordinate is (0,0).
 ---
 --- ```lua
 --- local p_norm = p:normalise()

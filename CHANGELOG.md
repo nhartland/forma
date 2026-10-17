@@ -15,6 +15,9 @@
 - Introduced `pattern.print` method along the lines of `multipattern.print`.
 - Adjusted `pattern.find_central_packing_position` to accept a custom centre.
 - Introduced `pattern.bounding_box_density` and
+  `pattern.bounding_box_asymmetry`.
+- Introduced `pattern.hash` to compute a string hash of a pattern, optionally
+  normalised.
 
 ## Bugfix
 
