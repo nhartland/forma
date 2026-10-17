@@ -57,6 +57,7 @@ local cell          = require('forma.cell')
 local neighbourhood = require('forma.neighbourhood')
 local rutils        = require('forma.utils.random')
 local multipattern  = require('forma.multipattern')
+local symmetry      = require('forma.symmetry')
 
 -- Pattern indexing.
 -- Enables the syntax sugar pattern:method.
@@ -783,6 +784,23 @@ function pattern.translate(ip, sx, sy)
     return sp
 end
 
+--- Returns a new pattern transformed by an operation.
+---
+--- ```lua
+--- local p_transformed = p:transform(forma.symmetry.operation.rot90)
+--- ```
+---@param ip forma.pattern pattern to transform
+---@param g forma.transform the transformation to apply
+---@return forma.pattern pattern a new pattern transformed by 'g'
+function pattern.transform(ip, g)
+    assert(getmetatable(ip) == pattern, "pattern.transform requires a pattern as the first argument")
+    local sp = pattern.new()
+    for tx, ty in ip:cell_coordinates() do
+        sp:insert(g(tx, ty))
+    end
+    return sp
+end
+
 --- Normalises the pattern by translating it such that its minimum coordinate is (0,0).
 ---
 --- ```lua
@@ -828,11 +846,7 @@ end
 ---@return forma.pattern pattern a rotated pattern
 function pattern.rotate(ip)
     assert(getmetatable(ip) == pattern, "pattern.rotate requires a pattern as the first argument")
-    local np = pattern.new()
-    for x, y in ip:cell_coordinates() do
-        np:insert(y, -x)
-    end
-    return np
+    return ip:transform(symmetry.elements.rot90)
 end
 
 --- Returns a new pattern that is a vertical reflection of the original.
