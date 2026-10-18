@@ -36,22 +36,24 @@ local elements = {
 local group = {}
 group.__index = group
 
-local function identify(test_elements)
-    for _, H in pairs(groups) do
-        if #(H.elements) == #test_elements
-            and H:contains(test_elements) then
-            return H.name
-        end
-    end
-    return nil
-end
-
 -- TODO: annotations
 function group.new(e, name)
-    return setmetatable({
-        name = name or identify(e),
-        elements = e
+    local G = setmetatable({
+        elements = e,
+        name = name
     }, group)
+
+    -- No name set, attempt to identify it with an existing group
+    if G.name == nil then
+        for _, H in pairs(groups) do
+            -- Groups match, label the new group with the existing label
+            if G == H then
+                G.name = H.name
+                break
+            end
+        end
+    end
+    return G
 end
 
 -- Check if a group contains all of a list of elements
