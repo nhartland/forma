@@ -69,21 +69,21 @@ local MAX_COORDINATE  = 65536
 local COORDINATE_SPAN = 2 * MAX_COORDINATE + 1
 
 --- Generates the cellmap key from coordinates.
----@param x number the x-coordinate
----@param y number the y-coordinate
----@return number key a unique key representing the cell
+---@param x integer the x-coordinate
+---@param y integer the y-coordinate
+---@return integer key a unique key representing the cell
 local function coordinates_to_key(x, y)
     return (x + MAX_COORDINATE) * COORDINATE_SPAN + (y + MAX_COORDINATE)
 end
 
 --- Generates the coordinates from the key.
----@param key number the spatial hash key
----@return number x the x-coordinate
----@return number y the y-coordinate
+---@param key integer the spatial hash key
+---@return integer x the x-coordinate
+---@return integer y the y-coordinate
 local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
-    return xp - MAX_COORDINATE, yp - MAX_COORDINATE
+    return math.floor(xp - MAX_COORDINATE), math.floor(yp - MAX_COORDINATE)
 end
 
 -- @section Basic
@@ -297,7 +297,7 @@ function pattern.hash(ip, opts)
     local keys = {}
     for i = 1, #ip.cellkey do keys[i] = ip.cellkey[i] - offset end
     table.sort(keys)
-    return table.concat(keys, '.')
+    return table.concat(keys, '-')
 end
 
 -- @section Utilities
