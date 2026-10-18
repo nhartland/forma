@@ -17,8 +17,11 @@
 ---@class forma.primitives
 local primitives = {}
 
-local cell    = require('forma.cell')
-local pattern = require('forma.pattern')
+local cell          = require('forma.cell')
+local pattern       = require('forma.pattern')
+local symmetry      = require('forma.symmetry')
+local multipattern  = require('forma.multipattern')
+local neighbourhood = require('forma.neighbourhood')
 
 --- Generate a square pattern.
 ---
@@ -183,6 +186,51 @@ function primitives.circle(r)
     until (x == 0)
 
     return cp
+end
+
+--- Generate a multipattern of all n-forms
+---
+--- Depending on the neighbourhood these could be:
+---  von Neumann (default): polyominos
+---  Moore: polyplets
+---
+--- ```lua
+--- local free_polyominos = primitives.polyforms(5, nbh.von_neumann(), symmetry.groups.D4)
+--- local fixed_polyominos = primitives.polyforms(5, nbh.von_neumann(), symmetry.groups.C1)
+--- local one_sided_polyominos = primitives.polyforms(5, nbh.von_neumann(), symmetry.groups.C4)
+--- ```
+---@param n integer the order of the polyform to be generated
+---@param nbh? forma.neighbourhood the neighbourhood to be considered
+---@param G? forma.symmetry.group a symmetry group to deduplicate the polyforms by
+---@return forma.multipattern pattern a multipattern of polyforms
+function primitives.polyforms(n, nbh, G)
+    -- By default do not deduplicate polyforms, use the trivial group
+    G = G or symmetry.groups.C1
+    -- By default use the von Neumann neighbourhood -> generates polyominos
+    nbh = nbh or neighbourhood.von_neumann()
+    assert(type(n) == 'number', "primitives.polyforms requires an integer as the first argument")
+    assert(math.floor(n) == n, "primitives.polyforms requires an integer as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "primitives.polyforms requires a neighbourhood as the second argument")
+    assert(getmetatable(G) == symmetry.group, "primitives.polyforms requires a group as the third argument")
+    local candidates = { primitives.square(1) }
+    for _ = 2, n, 1 do
+        local new_candidates = {}
+        local hashes = {}
+        for _, candidate in ipairs(candidates) do
+            local candidate_edges = candidate:exterior_hull(nbh)
+            for x, y in candidate_edges:cell_coordinates() do
+                local new_pattern, new_hash = candidate:clone()
+                    :insert(x, y)
+                    :canonical_form(G)
+                if hashes[new_hash] == nil then
+                    table.insert(new_candidates, new_pattern)
+                    hashes[new_hash] = true
+                end
+            end
+        end
+        candidates = new_candidates
+    end
+    return multipattern.new(candidates)
 end
 
 return primitives

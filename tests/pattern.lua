@@ -3,6 +3,7 @@ local lu            = require('luaunit')
 local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local neighbourhood = require("forma.neighbourhood")
+local symmetry      = require("forma.symmetry")
 
 TestPattern = {}
 
@@ -623,4 +624,23 @@ function TestPattern:testPrint()
     -- we expect exactly one line, and that line must be "*"
     lu.assertEquals(#out, 1)
     lu.assertEquals(out[1], '*')
+end
+
+-- Test the orbit-stabiliser theorem
+function TestPattern:testOrbitStabiliser()
+    local polyominos = primitives.polyforms(5)
+    for _, polyomino in ipairs(polyominos.components) do
+        local orbit = polyomino:orbit(symmetry.groups.C4)
+        local stabiliser = polyomino:stabiliser(symmetry.groups.C4)
+        lu.assertEquals(orbit:n_components() * #stabiliser, #(symmetry.groups.C4.elements))
+    end
+end
+
+-- Test the pattern symmetriser
+function TestPattern:testSymmetrise()
+    local polyominos = primitives.polyforms(5)
+    for _, polyomino in ipairs(polyominos.components) do
+        local symmetrised = polyomino:symmetrise(symmetry.groups.D4)
+        lu.assertEquals(#symmetrised:stabiliser(symmetry.groups.D4), #(symmetry.groups.D4.elements))
+    end
 end

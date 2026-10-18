@@ -577,6 +577,85 @@ function pattern.shuffled_coordinates(ip, rng)
     end
 end
 
+-- @section Symmetry
+
+--- Generate the orbit of a pattern according to a group of transforms.
+---
+--- By default the resulting multipattern is deduplicated up to translations.
+--- In other words, all elements of the orbit are distinct after normalisation.
+--- This behaviour can be modified by passing opts = {normal = false}.
+---
+---@param ip forma.pattern input pattern to generate an orbit around
+---@param G forma.symmetry.group the symmetry group defining the orbit
+---@param opts? {normal?: boolean} options table
+---@return forma.multipattern
+function pattern.orbit(ip, G, opts)
+    assert(getmetatable(ip) == pattern, "pattern.orbit requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.orbit requires a group as the second argument")
+    local normal = not opts or opts.normal ~= false
+    local mp = multipattern.new()
+    local hashes = {}
+    for _, e in ipairs(G.elements) do
+        local np = ip:transform(e)
+        local hash = np:hash { normal = normal }
+        if hashes[hash] == nil then
+            mp:insert(np)
+            hashes[hash] = true
+        end
+    end
+    return mp
+end
+
+--- Identify the group elements under which the pattern is symmetric
+---
+---@param ip forma.pattern input pattern to compute the symmetric group elements
+---@param G forma.symmetry.group the symmetry group to be considered
+---@return forma.transform[]
+function pattern.stabiliser(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.stabiliser requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.stabiliser requires a group as the second argument")
+    local ipn = ip:normalise()
+    local symmetries = {}
+    for _, g in ipairs(G.elements) do
+        if ip:transform(g):normalise() == ipn then
+            table.insert(symmetries, g)
+        end
+    end
+    return symmetries
+end
+
+--- Symmetrise a pattern according to a group of symmetries
+---
+---@param ip forma.pattern input pattern to symmetrise
+---@param G forma.symmetry.group the symmetry group to be considered
+---@return forma.pattern
+function pattern.symmetrise(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.symmetrise requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.symmetrise requires a group as the second argument")
+    return ip:orbit(G, { normal = false }):union_all()
+end
+
+--- Compute the canonical form of a pattern given a symmetry group
+---
+---@param ip forma.pattern input pattern
+---@param G forma.symmetry.group the symmetry group to be considered
+---@return forma.pattern a canonical form of the input pattern
+---@return string a canonical hash of the input pattern
+function pattern.canonical_form(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.canonical_form requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.canonical_form requires a group as the second argument")
+    local cform = ip
+    local hash = ip:hash { normal = true }
+    for _, c in ipairs(ip:orbit(G).components) do
+        local test_hash = c:hash { normal = true }
+        if test_hash < hash then
+            hash = test_hash
+            cform = c
+        end
+    end
+    return cform:normalise(), hash
+end
+
 -- @section Metamethods
 
 --- Renders the pattern as a string.
