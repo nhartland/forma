@@ -17,14 +17,14 @@ local transform = require('forma.transform')
 
 -- Elements of square lattice symmetry groups
 local elements = {
-    id        = transform.new(1, 0, 0, 1),
-    rot90     = transform.new(0, 1, -1, 0),
-    rot180    = transform.new(-1, 0, 0, -1),
-    rot270    = transform.new(0, -1, 1, 0),
-    vreflect  = transform.new(1, 0, 0, -1),
-    dreflect  = transform.new(0, 1, 1, 0),
-    hreflect  = transform.new(-1, 0, 0, 1),
-    adreflect = transform.new(0, -1, -1, 0),
+    id        = transform.new("id", 1, 0, 0, 1),
+    rot90     = transform.new("rot90", 0, 1, -1, 0),
+    rot180    = transform.new("rot180", -1, 0, 0, -1),
+    rot270    = transform.new("rot270", 0, -1, 1, 0),
+    vreflect  = transform.new("vreflect", 1, 0, 0, -1),
+    hreflect  = transform.new("hreflect", -1, 0, 0, 1),
+    dreflect  = transform.new("dreflect", 0, 1, 1, 0),
+    adreflect = transform.new("adreflect", 0, -1, -1, 0),
 }
 
 

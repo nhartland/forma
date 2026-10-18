@@ -13,6 +13,7 @@
 ---      : the tranform matrix
 ---
 ---@class forma.transform
+---@field name string
 ---@field a integer
 ---@field b integer
 ---@field c integer
@@ -30,6 +31,7 @@ transform.__index = transform
 --- -- The identity transform
 --- local I = transform.new(1,0,0,1)
 --- ```
+---@param name string
 ---@param a integer
 ---@param b integer
 ---@param c integer
@@ -37,7 +39,7 @@ transform.__index = transform
 ---@param _tx? integer
 ---@param _ty? integer
 ---@return forma.transform o new transform Ax + t
-function transform.new(a, b, c, d, _tx, _ty)
+function transform.new(name, a, b, c, d, _tx, _ty)
     local tx = _tx or 0
     local ty = _ty or 0
     assert(math.floor(a) == a, "forma.transform.new: requires an integer for a")
@@ -47,6 +49,7 @@ function transform.new(a, b, c, d, _tx, _ty)
     assert(math.floor(tx) == tx, "forma.transform.new: requires an integer for tx")
     assert(math.floor(ty) == ty, "forma.transform.new: requires an integer for ty")
     local op = {
+        name = name,
         a = a,
         b = b,
         c = c,
@@ -73,7 +76,7 @@ end
 function transform.translate(tx, ty)
     assert(math.floor(tx) == tx, "forma.transform.translate: requires an integer for tx")
     assert(math.floor(ty) == ty, "forma.transform.translate: requires an integer for ty")
-    return transform.new(1, 0, 0, 1, tx, ty)
+    return transform.new("translate(" .. tx .. "," .. ty .. ")", 1, 0, 0, 1, tx, ty)
 end
 
 --- Apply a transform to a vector.
@@ -83,13 +86,24 @@ end
 --- ```lua
 --- local vpx, vpy = o(v.x, v.y)
 --- ```
----@param o forma.transform
+---@param g forma.transform
 ---@param x integer first coordinate of the vector
 ---@param y integer second coordinate of the vector
 ---@return integer xp transformed first coordinate
 ---@return integer yp transformed second coordinate
-function transform.__call(o, x, y)
-    return o.a * x + o.b * y + o.tx, o.c * x + o.d * y + o.ty
+function transform.__call(g, x, y)
+    return g.a * x + g.b * y + g.tx, g.c * x + g.d * y + g.ty
+end
+
+--- Render the transform to a string
+---
+--- ```lua
+--- local print(g)
+--- ```
+---@param g forma.transform the transform to print
+---@return string name the name of the transform
+function transform.__tostring(g)
+    return "T[" .. g.name .. "]"
 end
 
 --- Compose two transforms into a single transform
@@ -107,7 +121,7 @@ function transform.__mul(g, h)
     local c = g.c * h.a + g.d * h.c
     local d = g.c * h.b + g.d * h.d
 
-    return transform.new(a, b, c, d, tx, ty)
+    return transform.new(g.name .. '.' .. h.name, a, b, c, d, tx, ty)
 end
 
 --- Equality check of two transformations
