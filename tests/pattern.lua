@@ -632,15 +632,20 @@ function TestPattern:testOrbitStabiliser()
     for _, polyomino in ipairs(polyominos.components) do
         local orbit = polyomino:orbit(symmetry.groups.C4)
         local stabiliser = polyomino:stabiliser(symmetry.groups.C4)
-        lu.assertEquals(orbit:n_components() * #stabiliser, #(symmetry.groups.C4.elements))
+        lu.assertEquals(orbit:n_components() * #(stabiliser.elements), #(symmetry.groups.C4.elements))
     end
 end
 
 -- Test the pattern symmetriser
 function TestPattern:testSymmetrise()
     local polyominos = primitives.polyforms(5)
+    local D4 = symmetry.groups.D4
     for _, polyomino in ipairs(polyominos.components) do
-        local symmetrised = polyomino:symmetrise(symmetry.groups.D4)
-        lu.assertEquals(#symmetrised:stabiliser(symmetry.groups.D4), #(symmetry.groups.D4.elements))
+        local stabiliser = (
+            polyomino
+            :symmetrise(D4)
+            :stabiliser(D4)
+        )
+        lu.assertTrue(stabiliser == D4)
     end
 end

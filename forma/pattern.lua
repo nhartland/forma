@@ -610,7 +610,7 @@ end
 ---
 ---@param ip forma.pattern input pattern to compute the symmetric group elements
 ---@param G forma.symmetry.group the symmetry group to be considered
----@return forma.transform[]
+---@return forma.symmetry.group the stabiliser of the pattern
 function pattern.stabiliser(ip, G)
     assert(getmetatable(ip) == pattern, "pattern.stabiliser requires a pattern as the first argument")
     assert(getmetatable(G) == symmetry.group, "pattern.stabiliser requires a group as the second argument")
@@ -621,7 +621,7 @@ function pattern.stabiliser(ip, G)
             table.insert(symmetries, g)
         end
     end
-    return symmetries
+    return symmetry.group.new(symmetries)
 end
 
 --- Symmetrise a pattern according to a group of symmetries
