@@ -33,6 +33,7 @@
   expects.
 - Fixed bug where `pattern.union` and `multipattern.merge` would fail with only
   a single pattern/multipattern as input.
+- Fixed `pattern.medoid` to correctly use Euclidean distances by default.
 
 ## Misc
 
