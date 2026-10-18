@@ -720,7 +720,7 @@ end
 function pattern.medoid(ip, measure)
     assert(getmetatable(ip) == pattern, "pattern.medoid requires a pattern as the first argument")
     assert(ip:size() > 0, 'pattern.medoid requires a filled pattern!')
-    measure = measure or cell.euclidean2
+    measure = measure or cell.euclidean
     local ncells = ip:size()
     local cell_list = ip:cell_list()
     local distance = {}
