@@ -15,65 +15,73 @@
 --- Wallpaper groups can be formed by composing D4 with translations
 local transform = require('forma.transform')
 
+-- TODO: annotations
+
 -- Forward declare
 local groups
 
--- Elements of square lattice symmetry groups
-local elements = {
-    id        = transform.new("id", 1, 0, 0, 1),
-    rot90     = transform.new("rot90", 0, 1, -1, 0),
-    rot180    = transform.new("rot180", -1, 0, 0, -1),
-    rot270    = transform.new("rot270", 0, -1, 1, 0),
-    vreflect  = transform.new("vreflect", 1, 0, 0, -1),
-    hreflect  = transform.new("hreflect", -1, 0, 0, 1),
-    dreflect  = transform.new("dreflect", 0, 1, 1, 0),
-    adreflect = transform.new("adreflect", 0, -1, -1, 0),
-}
-
 ---@class forma.symmetry.group
----@field name string
+---@field name string|nil
 ---@field elements forma.transform[]
 local group = {}
 group.__index = group
 
--- TODO: annotations
-function group.new(e, name)
-    local G = setmetatable({
-        elements = e,
-        name = name
-    }, group)
 
-    -- No name set, attempt to identify it with an existing group
-    if G.name == nil then
-        for _, H in pairs(groups) do
-            -- Groups match, label the new group with the existing label
-            if G == H then
-                G.name = H.name
-                break
-            end
+local function identify_group(G)
+    for _, H in pairs(groups) do
+        -- Groups match, label the new group with the existing label
+        if G == H then
+            return H.name
         end
     end
+    return nil
+end
+
+local function validate_group(G)
+    assert(#G.elements > 0, "forma.group.new cannot take an empty list as argument")
+    for i, g in ipairs(G.elements) do
+        for j, h in ipairs(G.elements) do
+            if i ~= j then
+                assert(g ~= h, "forma.group.new only accepts a distinct list of transformations")
+            end
+            assert(G:contains(g * h), "forma.group.new: Attempted group construction does not close")
+        end
+    end
+    -- Attempt to identify the new group with an existing one
+    G.name = G.name or identify_group(G)
     return G
 end
 
--- Check if a group contains all of a list of elements
-function group.contains(G, test_elements)
-    if #test_elements > #(G.elements) then return false end
-    for _, h in ipairs(test_elements) do
-        local match = false
-        for _, g in ipairs(G.elements) do
-            if g == h then
-                match = true
-                break
-            end
+function group.new(e, name)
+    return validate_group(
+        setmetatable({
+            elements = e,
+            name = name
+        }, group)
+    )
+end
+
+-- Check if a group contains an element
+function group.contains(G, h)
+    for _, g in ipairs(G.elements) do
+        if g == h then
+            return true
         end
-        if not match then return false end
+    end
+    return false
+end
+
+-- Check if a group is a subgroup of another
+function group.is_subgroup_of(G, H)
+    if #(G.elements) > #(H.elements) then return false end
+    for _, g in ipairs(G.elements) do
+        if not H:contains(g) then return false end
     end
     return true
 end
 
 function group.__eq(G, H)
-    return G:contains(H.elements) and H:contains(G.elements)
+    return G:is_subgroup_of(H) and H:is_subgroup_of(G)
 end
 
 function group.__tostring(G)
@@ -87,6 +95,18 @@ function group.__tostring(G)
         return "G[" .. table.concat(names, '-') .. "]"
     end
 end
+
+-- Elements of square lattice symmetry groups
+local elements = {
+    id        = transform.new("id", 1, 0, 0, 1),
+    rot90     = transform.new("rot90", 0, 1, -1, 0),
+    rot180    = transform.new("rot180", -1, 0, 0, -1),
+    rot270    = transform.new("rot270", 0, -1, 1, 0),
+    vreflect  = transform.new("vreflect", 1, 0, 0, -1),
+    hreflect  = transform.new("hreflect", -1, 0, 0, 1),
+    dreflect  = transform.new("dreflect", 0, 1, 1, 0),
+    adreflect = transform.new("adreflect", 0, -1, -1, 0),
+}
 
 -- Symmetry groups of the lattice
 groups = {
