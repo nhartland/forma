@@ -25,7 +25,9 @@ transform.__index = transform
 
 --- Create a new transform.
 ---
---- The transformation matrix A must have nonzero determinant.
+--- The transformation matrix A must have determinant of ±1.
+--- This is in order to ensure that the transformation preserves
+--- the overall number of activated cells.
 ---
 --- ```lua
 --- -- The identity transform
@@ -58,7 +60,10 @@ function transform.new(name, a, b, c, d, _tx, _ty)
         ty = ty
     }
     op = setmetatable(op, transform)
-    assert(a * d - b * c ~= 0, "forma.transform.new: linear part of the transform must have nonzero determinant")
+    assert(
+        math.abs(a * d - b * c) == 1,
+        "forma.transform.new: linear part of the transform must have determinant ± 1"
+    )
     return op
 end
 
@@ -67,16 +72,38 @@ end
 --- This function is a helper to create a simple translation.
 ---
 --- ```lua
---- -- The identity transform
 --- local g = transform.translate(5,6)
 --- ```
 ---@param tx integer
 ---@param ty integer
 ---@return forma.transform o new transform Ix + t
 function transform.translate(tx, ty)
-    assert(math.floor(tx) == tx, "forma.transform.translate: requires an integer for tx")
-    assert(math.floor(ty) == ty, "forma.transform.translate: requires an integer for ty")
+    assert(math.floor(tx) == tx, "transform.translate: requires an integer for tx" .. tx)
+    assert(math.floor(ty) == ty, "transform.transform: requires an integer for ty" .. ty)
     return transform.new("translate(" .. tx .. "," .. ty .. ")", 1, 0, 0, 1, tx, ty)
+end
+
+--- Transform about a specified point.
+---
+--- This function is helpful when trying to translate *about a point*, e.g
+--- rotation about the midpoint of a pattern. It transforms the origin to the
+--- to the given point, runs the transformation, then transforms back.
+---
+--- A quirk of the algebra means that this can handle half-integer translations, e,g
+---
+---     g:about(1.5,1.5),
+---
+--- perfectly well, enabling transformations about the midpoint of a pattern even
+--- when that falls in the centre of a cell.
+---
+--- ```lua
+--- -- The identity transform
+--- local g = transform.translate(5,6)
+--- ```
+function transform.about(g, x, y)
+    local nx = (g.a - 1) * x + g.b * y
+    local ny = g.c * x + (g.d - 1) * y
+    return transform.translate(-nx, -ny) * g
 end
 
 --- Apply a transform to a vector.
@@ -97,9 +124,6 @@ end
 
 --- Render the transform to a string
 ---
---- ```lua
---- local print(g)
---- ```
 ---@param g forma.transform the transform to print
 ---@return string name the name of the transform
 function transform.__tostring(g)
