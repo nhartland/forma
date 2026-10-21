@@ -106,6 +106,15 @@ function transform.about(g, x, y)
     return transform.translate(-nx, -ny) * g
 end
 
+function transform.anchor(g, ip)
+    local ax, ay = g(ip.min.x, ip.min.y)
+    local bx, by = g(ip.max.x, ip.max.y)
+    return transform.translate(
+        ip.min.x - math.min(ax, bx),
+        ip.min.y - math.min(ay, by)
+    ) * g
+end
+
 --- Apply a transform to a vector.
 ---
 --- Acts the transformation `o` on the vector `(x, y)`

@@ -282,20 +282,15 @@ function pattern.size(ip)
 end
 
 --- Computes a string hash of the pattern.
---- Optionally normalises the pattern (setting it's origin to 0) before hashing
 ---
 ---@param ip forma.pattern pattern to hash
----@param opts? {normal?: boolean} options table
----@return string hash the resulting canonical hash
-function pattern.hash(ip, opts)
+---@return string hash the resulting string hash
+function pattern.hash(ip)
     if ip:size() == 0 then return '' end
-    opts = opts or { normal = false }
-    -- If the normal flag is set to true, shift all coordinates such that the origin is at 0,0
-    local offset = opts.normal and (
-        coordinates_to_key(ip.min.x, ip.min.y) - coordinates_to_key(0, 0)
-    ) or 0
     local keys = {}
-    for i = 1, #ip.cellkey do keys[i] = ip.cellkey[i] - offset end
+    for i = 1, #ip.cellkey do
+        keys[i] = ip.cellkey[i]
+    end
     table.sort(keys)
     return table.concat(keys, '-')
 end
@@ -583,21 +578,24 @@ end
 ---
 --- By default the resulting multipattern is deduplicated up to translations.
 --- In other words, all elements of the orbit are distinct after normalisation.
---- This behaviour can be modified by passing opts = {normal = false}.
+--- This behaviour can be modified by passing opts = {anchor = false}.
 ---
 ---@param ip forma.pattern input pattern to generate an orbit around
 ---@param G forma.symmetry.group the symmetry group defining the orbit
----@param opts? {normal?: boolean} options table
+---@param opts? {anchor?: boolean} options table
 ---@return forma.multipattern
 function pattern.orbit(ip, G, opts)
     assert(getmetatable(ip) == pattern, "pattern.orbit requires a pattern as the first argument")
     assert(getmetatable(G) == symmetry.group, "pattern.orbit requires a group as the second argument")
-    local normal = not opts or opts.normal ~= false
+    if opts == nil then opts = { anchor = true } end
     local mp = multipattern.new()
     local hashes = {}
-    for _, e in ipairs(G.elements) do
-        local np = ip:transform(e)
-        local hash = np:hash { normal = normal }
+    for _, g in ipairs(G.elements) do
+        -- Transform the pattern, anchored if needed
+        local np = ip:transform(
+            opts.anchor and g:anchor(ip) or g
+        )
+        local hash = np:hash()
         if hashes[hash] == nil then
             mp:insert(np)
             hashes[hash] = true
@@ -632,28 +630,36 @@ end
 function pattern.symmetrise(ip, G)
     assert(getmetatable(ip) == pattern, "pattern.symmetrise requires a pattern as the first argument")
     assert(getmetatable(G) == symmetry.group, "pattern.symmetrise requires a group as the second argument")
-    return ip:orbit(G, { normal = false }):union_all()
+    return ip:orbit(G, { anchor = false }):union_all()
 end
 
---- Compute the canonical form of a pattern given a symmetry group
+--- Compute the canonical form of a pattern given a symmetry group.
+---
+--- The canonical form means picking one form amongst the possible versions of
+--- the pattern under a set of transformations (typically rotations). The exact
+--- choice here doesn't matter so much as that the choice is consistent.
+---
+--- Here the set of transformations are provided by a symmetry group.
+---
+--- Important note: The canonical form returned here is always normalised, e.g
+--- it starts at (0,0).
 ---
 ---@param ip forma.pattern input pattern
 ---@param G forma.symmetry.group the symmetry group to be considered
 ---@return forma.pattern a canonical form of the input pattern
----@return string a canonical hash of the input pattern
 function pattern.canonical_form(ip, G)
     assert(getmetatable(ip) == pattern, "pattern.canonical_form requires a pattern as the first argument")
     assert(getmetatable(G) == symmetry.group, "pattern.canonical_form requires a group as the second argument")
     local cform = ip
-    local hash = ip:hash { normal = true }
+    local hash = cform:hash()
     for _, c in ipairs(ip:orbit(G).components) do
-        local test_hash = c:hash { normal = true }
+        local test_hash = c:hash()
         if test_hash < hash then
             hash = test_hash
             cform = c
         end
     end
-    return cform:normalise(), hash
+    return cform:normalise()
 end
 
 -- @section Metamethods

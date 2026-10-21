@@ -73,7 +73,6 @@ function TestPattern:testHash()
     lu.assertFalse(self.pattern_3:hash() == self.pattern_5:hash())
     -- Same pattern at different coordinates
     lu.assertFalse(self.pattern_2:translate(1, 1):hash() == self.pattern_2:hash())
-    lu.assertTrue(self.pattern_2:translate(1, 1):hash { normal = true } == self.pattern_2:hash())
 end
 
 function TestPattern:testUnion()

@@ -219,9 +219,10 @@ function primitives.polyforms(n, nbh, G)
         for _, candidate in ipairs(candidates) do
             local candidate_edges = candidate:exterior_hull(nbh)
             for x, y in candidate_edges:cell_coordinates() do
-                local new_pattern, new_hash = candidate:clone()
+                local new_pattern = candidate:clone()
                     :insert(x, y)
                     :canonical_form(G)
+                local new_hash = new_pattern:hash()
                 if hashes[new_hash] == nil then
                     table.insert(new_candidates, new_pattern)
                     hashes[new_hash] = true
