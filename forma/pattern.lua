@@ -576,6 +576,11 @@ end
 
 --- Generate the orbit of a pattern according to a group of transforms.
 ---
+--- The `orbit` is the set of `images` of the input pattern under each of the
+--- transformations provided. As an example, if we use the `C4` group the orbit
+--- is the pattern rotated four times at 90-degree intervals.
+---
+---
 --- By default the resulting multipattern is deduplicated up to translations.
 --- In other words, all elements of the orbit are distinct after normalisation.
 --- This behaviour can be modified by passing opts = {anchor = false}.
