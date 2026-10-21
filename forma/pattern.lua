@@ -574,37 +574,22 @@ end
 
 -- @section Symmetry
 
---- Generate the orbit of a pattern according to a group of transforms.
+--- Generate the images of a pattern under group transformations.
 ---
---- The `orbit` is the set of `images` of the input pattern under each of the
---- transformations provided. As an example, if we use the `C4` group the orbit
---- is the pattern rotated four times at 90-degree intervals.
+--- The images of a pattern are the result of applying each of the
+--- transformations in the supplied group to the input pattern. As an example,
+--- if we use the `C4` group the images are the pattern rotated four times at
+--- 90-degree intervals.
 ---
----
---- By default the resulting multipattern is deduplicated up to translations.
---- In other words, all elements of the orbit are distinct after normalisation.
---- This behaviour can be modified by passing opts = {anchor = false}.
----
----@param ip forma.pattern input pattern to generate an orbit around
----@param G forma.symmetry.group the symmetry group defining the orbit
----@param opts? {anchor?: boolean} options table
+---@param ip forma.pattern input pattern to generate images for
+---@param G forma.symmetry.group the symmetry group defining the transformations
 ---@return forma.multipattern
-function pattern.orbit(ip, G, opts)
-    assert(getmetatable(ip) == pattern, "pattern.orbit requires a pattern as the first argument")
-    assert(getmetatable(G) == symmetry.group, "pattern.orbit requires a group as the second argument")
-    if opts == nil then opts = { anchor = true } end
+function pattern.images(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.images requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.images requires a group as the second argument")
     local mp = multipattern.new()
-    local hashes = {}
     for _, g in ipairs(G.elements) do
-        -- Transform the pattern, anchored if needed
-        local np = ip:transform(
-            opts.anchor and g:anchor(ip) or g
-        )
-        local hash = np:hash()
-        if hashes[hash] == nil then
-            mp:insert(np)
-            hashes[hash] = true
-        end
+        mp:insert(ip:transform(g))
     end
     return mp
 end
@@ -635,7 +620,7 @@ end
 function pattern.symmetrise(ip, G)
     assert(getmetatable(ip) == pattern, "pattern.symmetrise requires a pattern as the first argument")
     assert(getmetatable(G) == symmetry.group, "pattern.symmetrise requires a group as the second argument")
-    return ip:orbit(G, { anchor = false }):union_all()
+    return ip:images(G):union_all()
 end
 
 --- Compute the canonical form of a pattern given a symmetry group.
@@ -655,16 +640,19 @@ end
 function pattern.canonical_form(ip, G)
     assert(getmetatable(ip) == pattern, "pattern.canonical_form requires a pattern as the first argument")
     assert(getmetatable(G) == symmetry.group, "pattern.canonical_form requires a group as the second argument")
-    local cform = ip
-    local hash = cform:hash()
-    for _, c in ipairs(ip:orbit(G).components) do
+    local cform, hash
+    for _, c in ipairs(
+        ip:images(G)
+        :apply('normalise')
+        .components
+    ) do
         local test_hash = c:hash()
-        if test_hash < hash then
+        if cform == nil or (test_hash < hash) then
             hash = test_hash
             cform = c
         end
     end
-    return cform:normalise()
+    return cform
 end
 
 -- @section Metamethods

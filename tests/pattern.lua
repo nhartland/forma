@@ -625,11 +625,17 @@ function TestPattern:testPrint()
     lu.assertEquals(out[1], '*')
 end
 
--- Test the orbit-stabiliser theorem
+-- Satisfy the orbit-stabiliser theorem
 function TestPattern:testOrbitStabiliser()
     local polyominos = primitives.polyforms(5)
     for _, polyomino in ipairs(polyominos.components) do
-        local orbit = polyomino:orbit(symmetry.groups.C4)
+        -- The orbit is the set of distinct (up to translation) images
+        local orbit = (
+            polyomino
+            :images(symmetry.groups.C4)
+            :apply('normalise')
+            :distinct()
+        )
         local stabiliser = polyomino:stabiliser(symmetry.groups.C4)
         lu.assertEquals(orbit:n_components() * #(stabiliser.elements), #(symmetry.groups.C4.elements))
     end

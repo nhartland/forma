@@ -45,6 +45,12 @@ function TestMultipattern:testMerge()
     lu.assertEquals(mp3:union_all(), self.p1 + self.p2 + self.p3)
 end
 
+function TestMultipattern:testDistinct()
+    local mp1 = multipattern.new({ self.p1, self.p1, self.p2 })
+    local mp2 = mp1:distinct()
+    lu.assertEquals(#mp2.components, 2)
+end
+
 function TestMultipattern:testInsert()
     local mp = multipattern.new({ self.p1, self.p2 }):insert(self.p3)
     lu.assertEquals(#mp.components, 3)

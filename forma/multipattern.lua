@@ -186,6 +186,26 @@ function multipattern.union_all(mp)
     end
 end
 
+--- Return only the distinct components of a multipattern.
+---
+--- ```lua
+--- local combined = mp:distinct()
+--- ```
+---@param mp forma.multipattern the multipattern to deduplicate
+---@return forma.multipattern multipattern a multipattern containly only distinct components
+function multipattern.distinct(mp)
+    local is_present = {}
+    local nmp = multipattern.new()
+    for _, pat in ipairs(mp.components) do
+        local hash = pat:hash()
+        if is_present[hash] ~= true then
+            nmp:insert(pat)
+            is_present[hash] = true
+        end
+    end
+    return nmp
+end
+
 --- Print a multipattern.
 --- Prints a multipattern to `io.output`. If provided, a table of subpattern labels
 --- can be used, with one entry per subpattern.
