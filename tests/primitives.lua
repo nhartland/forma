@@ -81,18 +81,18 @@ function TestPrimitives:testBezier()
     end
 end
 
--- Test polyforms -----------------------------------------------------
+-- Test animals -----------------------------------------------------
 function TestPrimitives:testPolyominos()
     -- Expected number of polyominos of each size
     local fixed_cardinality = { 1, 2, 6, 19, 63, 216 }
     local free_cardinality  = { 1, 1, 2, 5, 12, 35 }
     for n = 1, 6, 1 do
         lu.assertEquals(
-            primitives.polyforms(n):n_components(),
+            primitives.animals(n):n_components(),
             fixed_cardinality[n]
         )
         lu.assertEquals(
-            primitives.polyforms(n, nil, symmetry.groups.D4):n_components(),
+            primitives.animals(n, nil, symmetry.groups.D4):n_components(),
             free_cardinality[n]
         )
     end
@@ -104,11 +104,11 @@ function TestPrimitives:testPolyplets()
     local free_cardinality  = { 1, 2, 5, 22, 94, 524 }
     for n = 1, 6, 1 do
         lu.assertEquals(
-            primitives.polyforms(n, neighbourhood.moore()):n_components(),
+            primitives.animals(n, neighbourhood.moore()):n_components(),
             fixed_cardinality[n]
         )
         lu.assertEquals(
-            primitives.polyforms(n, neighbourhood.moore(), symmetry.groups.D4):n_components(),
+            primitives.animals(n, neighbourhood.moore(), symmetry.groups.D4):n_components(),
             free_cardinality[n]
         )
     end

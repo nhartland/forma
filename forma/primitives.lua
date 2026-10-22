@@ -188,30 +188,30 @@ function primitives.circle(r)
     return cp
 end
 
---- Generate a multipattern of all n-forms
+--- Generate a set of lattice animals.
 ---
 --- Depending on the neighbourhood these could be:
 ---  von Neumann (default): polyominos
 ---  Moore: polyplets
 ---
 --- ```lua
---- local free_polyominos = primitives.polyforms(5, nbh.von_neumann(), symmetry.groups.D4)
---- local fixed_polyominos = primitives.polyforms(5, nbh.von_neumann(), symmetry.groups.C1)
---- local one_sided_polyominos = primitives.polyforms(5, nbh.von_neumann(), symmetry.groups.C4)
+--- local free_polyominos = primitives.animals(5, nbh.von_neumann(), symmetry.groups.D4)
+--- local fixed_polyominos = primitives.animals(5, nbh.von_neumann(), symmetry.groups.C1)
+--- local one_sided_polyominos = primitives.animals(5, nbh.von_neumann(), symmetry.groups.C4)
 --- ```
----@param n integer the order of the polyform to be generated
+---@param n integer the order of the lattice animal to be generated
 ---@param nbh? forma.neighbourhood the neighbourhood to be considered
----@param G? forma.symmetry.group a symmetry group to deduplicate the polyforms by
----@return forma.multipattern pattern a multipattern of polyforms
-function primitives.polyforms(n, nbh, G)
-    -- By default do not deduplicate polyforms, use the trivial group
+---@param G? forma.symmetry.group a symmetry group to deduplicate the animals by
+---@return forma.multipattern pattern a multipattern of animals
+function primitives.animals(n, nbh, G)
+    -- By default do not deduplicate animals, use the trivial group
     G = G or symmetry.groups.C1
     -- By default use the von Neumann neighbourhood -> generates polyominos
     nbh = nbh or neighbourhood.von_neumann()
-    assert(type(n) == 'number', "primitives.polyforms requires an integer as the first argument")
-    assert(math.floor(n) == n, "primitives.polyforms requires an integer as the first argument")
-    assert(getmetatable(nbh) == neighbourhood, "primitives.polyforms requires a neighbourhood as the second argument")
-    assert(getmetatable(G) == symmetry.group, "primitives.polyforms requires a group as the third argument")
+    assert(type(n) == 'number', "primitives.animals requires an integer as the first argument")
+    assert(math.floor(n) == n, "primitives.animals requires an integer as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "primitives.animals requires a neighbourhood as the second argument")
+    assert(getmetatable(G) == symmetry.group, "primitives.animals requires a group as the third argument")
     local candidates = { primitives.square(1) }
     for _ = 2, n, 1 do
         local new_candidates = {}

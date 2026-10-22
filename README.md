@@ -17,10 +17,17 @@ suited (but not limited) to the generation of roguelike environments.
 
 ## Features
 
-- **A spatial-hashing pattern** class with sparse set storage for fast lookup, insertion, and removal of active cells.
-- **Pattern manipulators** such as union, subtraction, intersection, XOR, rotation, reflection, dilation, erosion, opening, closing and morphological gradient.
-- **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares and Bezier curves.
-- A **multipattern** class for handling collections of patterns with batch operations.
+- **A spatial-hashing pattern** class with sparse set storage for fast lookup,
+  insertion, and removal of active cells.
+- **Pattern transformations** such as rotation, reflection, translation, about
+  arbitrary points and combined into various symmetry groups of the grid.
+- **Pattern manipulators** such as union, subtraction, intersection, XOR,
+  dilation, erosion, opening, closing and morphological gradient.
+- **Rasterisation algorithms** for 2D primitives, e.g lines, circles, squares
+  and Bezier curves.
+- **Lattice Animal** generators for shapes like polyominoes or polyplets.
+- A **multipattern** class for handling collections of patterns with batch
+  operations.
 - A **raycasting** tool for computing visible areas from a source cell.
 - A very flexible **cellular automata** implementation with
   - Synchronous and asynchronous updates
@@ -41,8 +48,8 @@ suited (but not limited) to the generation of roguelike environments.
 Results can be nested to produce complex patterns, and all of these methods are
 able to use custom distance measures and definitions of the cellular
 **neighbourhood** (e.g
-[Moore](https://en.wikipedia.org/wiki/Moore_neighborhood), [von
-Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
+[Moore](https://en.wikipedia.org/wiki/Moore_neighborhood),
+[von Neumann](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood)).
 
 ## Examples
 
@@ -81,9 +88,10 @@ connected_components:print(nil, domain)
 
 ## Installation
 
-**forma** is compatible with Lua 5.1, 5.2, 5.3, 5.4 and LuaJIT 2.0, 2.1. The library
-is written in pure Lua, no compilation is required. Including the project is as
-simple as including the `forma` directory in your project or Lua path.
+**forma** is compatible with Lua 5.1, 5.2, 5.3, 5.4 and LuaJIT 2.0, 2.1. The
+library is written in pure Lua, no compilation is required. Including the
+project is as simple as including the `forma` directory in your project or Lua
+path.
 
 The easiest way to do this is via LuaRocks. To install the latest stable version
 use:
@@ -103,7 +111,8 @@ To regenerate the documentation locally:
     mkdocs build
 ```
 
-This requires [lua-language-server](https://github.com/LuaLS/lua-language-server),
+This requires
+[lua-language-server](https://github.com/LuaLS/lua-language-server),
 [dkjson](https://luarocks.org/modules/dhkolf/dkjson), and
 [MkDocs Material](https://squidfunk.github.io/mkdocs-material/).
 
