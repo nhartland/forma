@@ -643,7 +643,7 @@ function pattern.canonical_form(ip, G)
     local cform, hash
     for _, c in ipairs(
         ip:images(G)
-        :apply('normalise')
+        :map(pattern.normalise)
         .components
     ) do
         local test_hash = c:hash()

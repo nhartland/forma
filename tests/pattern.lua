@@ -633,7 +633,7 @@ function TestPattern:testOrbitStabiliser()
         local orbit = (
             polyomino
             :images(symmetry.groups.C4)
-            :apply('normalise')
+            :map(pattern.normalise)
             :distinct()
         )
         local stabiliser = polyomino:stabiliser(symmetry.groups.C4)
