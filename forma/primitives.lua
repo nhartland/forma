@@ -208,7 +208,7 @@ function primitives.animals(n, nbh, G)
     G = G or symmetry.groups.C1
     -- By default use the von Neumann neighbourhood -> generates polyominos
     nbh = nbh or neighbourhood.von_neumann()
-    assert(type(n) == 'number', "primitives.animals requires an integer as the first argument")
+    assert(n > 0 and type(n) == 'number', "primitives.animals requires a positive integer as the first argument")
     assert(math.floor(n) == n, "primitives.animals requires an integer as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "primitives.animals requires a neighbourhood as the second argument")
     assert(getmetatable(G) == symmetry.group, "primitives.animals requires a group as the third argument")

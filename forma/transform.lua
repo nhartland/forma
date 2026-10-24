@@ -31,7 +31,7 @@ transform.__index = transform
 ---
 --- ```lua
 --- -- The identity transform
---- local I = transform.new(1,0,0,1)
+--- local I = transform.new("identity", 1,0,0,1)
 --- ```
 ---@param name string
 ---@param a integer
@@ -78,8 +78,8 @@ end
 ---@param ty integer
 ---@return forma.transform o new transform Ix + t
 function transform.translate(tx, ty)
-    assert(math.floor(tx) == tx, "transform.translate: requires an integer for tx" .. tx)
-    assert(math.floor(ty) == ty, "transform.transform: requires an integer for ty" .. ty)
+    assert(math.floor(tx) == tx, "transform.translate: requires an integer for tx " .. tx)
+    assert(math.floor(ty) == ty, "transform.translate: requires an integer for ty " .. ty)
     return transform.new("translate(" .. tx .. "," .. ty .. ")", 1, 0, 0, 1, tx, ty)
 end
 
@@ -97,9 +97,12 @@ end
 --- when that falls in the centre of a cell.
 ---
 --- ```lua
---- -- The identity transform
---- local g = transform.translate(5,6)
+--- local g = transform.translate(5,6):about(1,1)
 --- ```
+---@param g forma.transform
+---@param x integer first coordinate to transform about
+---@param y integer second coordinate to transform about
+---@return forma.transform
 function transform.about(g, x, y)
     local nx = (g.a - 1) * x + g.b * y
     local ny = g.c * x + (g.d - 1) * y
