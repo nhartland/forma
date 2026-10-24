@@ -83,7 +83,7 @@ end
 local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
-    return math.floor(xp - MAX_COORDINATE), math.floor(yp - MAX_COORDINATE)
+    return floor(xp - MAX_COORDINATE), floor(yp - MAX_COORDINATE)
 end
 
 -- @section Basic
@@ -978,7 +978,7 @@ end
 function pattern.sample(ip, ncells, rng)
     assert(getmetatable(ip) == pattern, "pattern.sample requires a pattern as the first argument")
     assert(type(ncells) == 'number', "pattern.sample requires an integer number of cells as the second argument")
-    assert(math.floor(ncells) == ncells, "pattern.sample requires an integer number of cells as the second argument")
+    assert(floor(ncells) == ncells, "pattern.sample requires an integer number of cells as the second argument")
     assert(ncells > 0, "pattern.sample requires at least one sample to be requested")
     assert(ncells <= ip:size(), "pattern.sample requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
@@ -1563,7 +1563,7 @@ function pattern.perlin(ip, freq, depth, thresholds, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(ip) == pattern, "pattern.perlin requires a pattern as the first argument")
     assert(type(freq) == "number", "pattern.perlin requires a numerical frequency value.")
-    assert(math.floor(depth) == depth, "pattern.perlin requires an integer sampling depth.")
+    assert(floor(depth) == depth, "pattern.perlin requires an integer sampling depth.")
     assert(type(thresholds) == "table", "pattern.perlin requires a table of requested thresholds.")
     for _, th in ipairs(thresholds) do
         assert(th >= 0 and th <= 1, "pattern.perlin requires thresholds between 0 and 1.")

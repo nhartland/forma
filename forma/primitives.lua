@@ -208,30 +208,26 @@ function primitives.animals(n, nbh, G)
     G = G or symmetry.groups.C1
     -- By default use the von Neumann neighbourhood -> generates polyominos
     nbh = nbh or neighbourhood.von_neumann()
-    assert(n > 0 and type(n) == 'number', "primitives.animals requires a positive integer as the first argument")
+    assert(type(n) == 'number' and n > 0, "primitives.animals requires a positive integer as the first argument")
     assert(math.floor(n) == n, "primitives.animals requires an integer as the first argument")
     assert(getmetatable(nbh) == neighbourhood, "primitives.animals requires a neighbourhood as the second argument")
     assert(getmetatable(G) == symmetry.group, "primitives.animals requires a group as the third argument")
-    local candidates = { primitives.square(1) }
+    local animals = multipattern.new({ primitives.square(1) })
     for _ = 2, n, 1 do
-        local new_candidates = {}
-        local hashes = {}
-        for _, candidate in ipairs(candidates) do
-            local candidate_edges = candidate:exterior_hull(nbh)
-            for x, y in candidate_edges:cell_coordinates() do
-                local new_pattern = candidate:clone()
+        local new_animals = multipattern.new()
+        for _, animal in ipairs(animals.components) do
+            local edges = animal:exterior_hull(nbh)
+            for x, y in edges:cell_coordinates() do
+                new_animals:insert(
+                    animal:clone()
                     :insert(x, y)
                     :canonical_form(G)
-                local new_hash = new_pattern:hash()
-                if hashes[new_hash] == nil then
-                    table.insert(new_candidates, new_pattern)
-                    hashes[new_hash] = true
-                end
+                )
             end
         end
-        candidates = new_candidates
+        animals = new_animals:distinct()
     end
-    return multipattern.new(candidates)
+    return animals
 end
 
 return primitives
