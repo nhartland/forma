@@ -865,12 +865,16 @@ end
 --- local p_translated = p:translate(2, 3)
 --- ```
 ---@param ip forma.pattern pattern to translate
----@param sx integer translation along the x-axis
----@param sy integer translation along the y-axis
+---@param tx integer translation along the x-axis
+---@param ty integer translation along the y-axis
 ---@return forma.pattern pattern a new pattern shifted by (sx, sy)
-function pattern.translate(ip, sx, sy)
+function pattern.translate(ip, tx, ty)
     assert(getmetatable(ip) == pattern, "pattern.translate requires a pattern as the first argument")
-    return ip:transform(transform.translate(sx, sy))
+    local sp = pattern.new()
+    for ix, iy in ip:cell_coordinates() do
+        sp:insert(ix + tx, iy + ty)
+    end
+    return sp
 end
 
 --- Normalises the pattern by translating it such that its minimum coordinate is (0,0).
@@ -882,7 +886,7 @@ end
 ---@return forma.pattern pattern a new normalized pattern
 function pattern.normalise(ip)
     assert(getmetatable(ip) == pattern, "pattern.normalise requires a pattern as the first argument")
-    return ip:transform(transform.translate(-ip.min.x, -ip.min.y))
+    return ip:translate(-ip.min.x, -ip.min.y)
 end
 
 --- Returns an enlarged version of the pattern.
