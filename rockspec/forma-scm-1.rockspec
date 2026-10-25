@@ -22,7 +22,7 @@ and more.
     license = "MIT"
 }
 dependencies = {
-    "lua >= 5.1", "lua < 5.5"
+    "lua >= 5.1", "lua < 5.6"
 }
 build = {
     type = "builtin",
@@ -53,5 +53,5 @@ test = {
     flags = { "-v" }
 }
 test_dependencies = {
-    "luaunit ==3.4"
+    "luaunit ==3.5"
 }
