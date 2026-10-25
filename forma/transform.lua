@@ -102,8 +102,8 @@ end
 --- local g = transform.translate(5,6):about(1,1)
 --- ```
 ---@param g forma.transform
----@param x integer first coordinate to transform about
----@param y integer second coordinate to transform about
+---@param x number first coordinate to transform about
+---@param y number second coordinate to transform about
 ---@return forma.transform
 function transform.about(g, x, y)
     local nx = (g.a - 1) * x + g.b * y
