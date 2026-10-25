@@ -57,8 +57,8 @@ function TestSubPatterns:testConnectedComponents()
     }):translate(100, -100)
     local moore_components = pattern.connected_components(test_pattern, neighbourhood.moore())
     local vn_components    = pattern.connected_components(test_pattern, neighbourhood.von_neumann())
-    lu.assertEquals(moore_components:n_components(), 1)
-    lu.assertEquals(vn_components:n_components(), 5)
+    lu.assertEquals(#moore_components, 1)
+    lu.assertEquals(#vn_components, 5)
 end
 
 --  Interior holes ----------------------------------------------------------------
@@ -78,12 +78,12 @@ function TestSubPatterns:testInteriorHoles()
     }):translate(100, -100)
     local moore_subpatterns = pattern.interior_holes(test_pattern, neighbourhood.moore())
     local vn_subpatterns    = pattern.interior_holes(test_pattern, neighbourhood.von_neumann())
-    lu.assertEquals(moore_subpatterns:n_components(), 1)
-    lu.assertEquals(vn_subpatterns:n_components(), 2)
-    lu.assertFalse(self:check_for_overlap(vn_subpatterns.components))
+    lu.assertEquals(#moore_subpatterns, 1)
+    lu.assertEquals(#vn_subpatterns, 2)
+    lu.assertFalse(self:check_for_overlap(vn_subpatterns))
     -- Check that neighbourhood defaults to vN, and edge diagonal case
     local test_circle = primitives.circle(1)
-    lu.assertEquals(pattern.interior_holes(test_circle):n_components(), 1)
+    lu.assertEquals(#pattern.interior_holes(test_circle), 1)
 end
 
 --  Perlin noise ----------------------------------------------------------------
@@ -156,7 +156,7 @@ end
 function TestSubPatterns:testBinarySpacePartition()
     -- Testing on a square test pattern. The returned subpatterns should all
     -- have fewer than 10 active cells.
-    local partitions   = pattern.bsp(self.square, 10).components
+    local partitions   = pattern.bsp(self.square, 10)
     local total_points = 0
     local resum        = pattern.new()
     for _, partition in ipairs(partitions) do
@@ -176,7 +176,7 @@ function TestSubPatterns:testCategories()
     -- Loop through a couple of example neighbourhoods
     local measures = { neighbourhood.moore(), neighbourhood.von_neumann() }
     for _, measure in ipairs(measures) do
-        local c_subpatterns = pattern.neighbourhood_categories(sample, measure).components
+        local c_subpatterns = pattern.neighbourhood_categories(sample, measure)
         -- Ensure each category pattern only contains correctly categorised points
         for cat, seg in ipairs(c_subpatterns) do
             for icell in seg:cells() do
@@ -246,19 +246,19 @@ function TestSubPatterns:testThinning()
 
     -- Thinning preserves connectivity
     local components = pattern.connected_components(rect_thinned, neighbourhood.moore())
-    lu.assertEquals(components:n_components(), 1)
+    lu.assertEquals(#components, 1)
 end
 
 -- Voronoi tesselation ---------------------------------------------------------------
 function TestSubPatterns:commonVoronoi(voronoi_multipattern, seeds, measure)
     -- Check for the correct number of subpatterns, and that there are no overlaps
-    lu.assertEquals(voronoi_multipattern:n_components(), seeds:size())
-    lu.assertFalse(self:check_for_overlap(voronoi_multipattern.components))
+    lu.assertEquals(#voronoi_multipattern, seeds:size())
+    lu.assertFalse(self:check_for_overlap(voronoi_multipattern))
 
     -- Check that, for every cell in every subpattern, the closest seed for
     -- that subpattern intersects with it (should define a voronoi
     -- tesselation).
-    for _, sp in ipairs(voronoi_multipattern.components) do
+    for _, sp in ipairs(voronoi_multipattern) do
         -- Loop over all cells in this segment
         for sp_cell in sp:cells() do
             -- Find the closest seed to this cell

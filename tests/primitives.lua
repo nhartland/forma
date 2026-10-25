@@ -14,7 +14,7 @@ function TestPrimitives:testCircle()
         local circle_raster = primitives.circle(i)
         -- Check that all holes are less than i from centre
         local inside_circle = pattern.interior_holes(circle_raster)
-        lu.assertEquals(inside_circle:n_components(), 1) -- Should only be one hole
+        lu.assertEquals(#inside_circle, 1) -- Should only be one hole
         for pt in inside_circle[1]:cells() do
             lu.assertTrue(cell.euclidean(pt, cell.new(0, 0)) < i)
         end

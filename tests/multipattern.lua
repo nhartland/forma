@@ -28,20 +28,16 @@ end
 function TestMultipattern:testNew()
     -- Create a multipattern from a list of patterns
     local mp = multipattern.new({ self.p1, self.p2 })
-    lu.assertEquals(#mp.components, 2)
-    lu.assertEquals(#mp.components, mp:n_components())
-    lu.assertTrue(mp.components[1] == self.p1)
-    lu.assertTrue(mp.components[2] == self.p2)
-    -- Test indexing
-    lu.assertTrue(mp[1] == mp.components[1])
-    lu.assertTrue(mp[2] == mp.components[2])
+    lu.assertEquals(#mp, 2)
+    lu.assertTrue(mp[1] == self.p1)
+    lu.assertTrue(mp[2] == self.p2)
 end
 
 function TestMultipattern:testMerge()
     local mp1 = multipattern.new({ self.p1, self.p2 })
     local mp2 = multipattern.new({ self.p3 })
     local mp3 = multipattern.merge(mp1, mp2)
-    lu.assertEquals(#mp3.components, 3)
+    lu.assertEquals(#mp3, 3)
     lu.assertEquals(mp3:union_all(), self.p1 + self.p2 + self.p3)
 end
 
@@ -53,7 +49,7 @@ end
 
 function TestMultipattern:testInsert()
     local mp = multipattern.new({ self.p1, self.p2 }):insert(self.p3)
-    lu.assertEquals(#mp.components, 3)
+    lu.assertEquals(#mp, 3)
     lu.assertEquals(mp:union_all(), self.p1 + self.p2 + self.p3)
 end
 
@@ -72,7 +68,7 @@ function TestMultipattern:testFilter()
     -- Suppose we only keep patterns with size == 3
     local mp = multipattern.new({ self.p1, self.p2, self.p3 })
     local filtered = mp:filter(function(pat) return pat:size() == 3 end)
-    lu.assertEquals(#filtered.components, 1) -- only p3 has size=3
+    lu.assertEquals(#filtered, 1) -- only p3 has size=3
     lu.assertTrue(filtered[1] == self.p3)
 end
 
@@ -105,7 +101,7 @@ function TestMultipattern:testApplyMP()
     })
     -- The above multipattern should have 6 connected components
     local cc_mp = mp:apply("connected_components")
-    lu.assertEquals(cc_mp:n_components(), 6)
+    lu.assertEquals(#cc_mp, 6)
 end
 
 function TestMultipattern:testUnionAll()
@@ -132,7 +128,7 @@ function TestMultipattern:testClone()
     local m1 = domain:bsp(10)
     local m2 = m1:clone()
 
-    lu.assertEquals(m1:n_components(), m2:n_components())
+    lu.assertEquals(#m1, #m2)
     lu.assertTrue(m1:union_all() == m2:union_all())
     lu.assertTrue(domain == m2:union_all())
 end
