@@ -34,8 +34,6 @@
   vertical or horizontal lines.
 - Fixed bug in sorting in convex hull finding.
 - Added missing `multipattern` to global lazy import in `forma/init.lua`.
-- Updated Lua version constraint in rockspec from `< 5.4` to `< 5.6` to support
-  Lua 5.4 and 5.5.
 - Adjusted noise utils to properly used 1-based indexing as the used shuffling
   expects.
 - Fixed bug where `pattern.union` and `multipattern.merge` would fail with only
@@ -64,6 +62,9 @@
 - Converted fully from LDoc to LuaLS annotations
 - Introduced a `strict` option for pattern.insert to avoid the
   `if not has_cell then insert` structure.
+- Fixed luaunit at v3.5
+- Updated Lua version constraint in rockspec from `< 5.4` to `< 5.6` to support
+  Lua 5.4 and 5.5.
 
 # 1.0
 
