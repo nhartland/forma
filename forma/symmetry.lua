@@ -15,8 +15,6 @@
 --- Wallpaper groups can be formed by composing D4 with translations
 local transform = require('forma.transform')
 
--- TODO: annotations
-
 -- Forward declare
 local groups
 
@@ -52,6 +50,10 @@ local function validate_group(G)
     return G
 end
 
+--- Create a new group of transformations.
+---@param e forma.transform[] group elements
+---@param name string name of the group
+---@return forma.symmetry.group
 function group.new(e, name)
     return validate_group(
         setmetatable({
@@ -61,7 +63,10 @@ function group.new(e, name)
     )
 end
 
--- Check if a group contains an element
+--- Check if a group contains an element.
+---@param G forma.symmetry.group
+---@param h forma.transform
+---@return boolean contains true if h belongs to G
 function group.contains(G, h)
     for _, g in ipairs(G.elements) do
         if g == h then
@@ -71,7 +76,10 @@ function group.contains(G, h)
     return false
 end
 
--- Check if a group is a subgroup of another
+--- Check if a group is a subgroup of another.
+---@param G forma.symmetry.group
+---@param H forma.symmetry.group
+---@return boolean contains true if G subgroups H
 function group.is_subgroup_of(G, H)
     if #(G.elements) > #(H.elements) then return false end
     for _, g in ipairs(G.elements) do
@@ -80,10 +88,17 @@ function group.is_subgroup_of(G, H)
     return true
 end
 
+--- Check if two groups are the same.
+---@param G forma.symmetry.group
+---@param H forma.symmetry.group
+---@return boolean equals true if G == H
 function group.__eq(G, H)
     return G:is_subgroup_of(H) and H:is_subgroup_of(G)
 end
 
+--- Represent a group as a string.
+---@param G forma.symmetry.group
+---@return string
 function group.__tostring(G)
     if G.name ~= nil then
         return "G[" .. G.name .. "]"
@@ -97,6 +112,7 @@ function group.__tostring(G)
 end
 
 -- Elements of square lattice symmetry groups
+---@type forma.transform[]
 local elements = {
     id        = transform.new("id", 1, 0, 0, 1),
     rot90     = transform.new("rot90", 0, 1, -1, 0),
@@ -108,7 +124,8 @@ local elements = {
     adreflect = transform.new("adreflect", 0, -1, -1, 0),
 }
 
--- Symmetry groups of the lattice
+--- Symmetry groups of the lattice
+---@type forma.symmetry.group[]
 groups = {
     -- Trivial group
     C1 = group.new({ elements.id }, "C1"),

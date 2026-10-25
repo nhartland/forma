@@ -858,7 +858,7 @@ function pattern.transform(ip, g)
     return sp
 end
 
---- Returns a new pattern translated by a vector (sx, sy).
+--- Returns a new pattern translated by a vector.
 ---
 --- ```lua
 --- local p_translated = p:translate(2, 3)
