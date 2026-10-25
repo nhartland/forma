@@ -180,7 +180,7 @@ end
 function multipattern.distinct(mp)
     local is_present = {}
     local nmp = multipattern.new()
-    for _, pat in ipairs(mp.components) do
+    for _, pat in ipairs(mp) do
         local hash = pat:hash()
         if is_present[hash] ~= true then
             nmp:insert(pat)

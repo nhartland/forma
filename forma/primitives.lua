@@ -215,7 +215,7 @@ function primitives.animals(n, nbh, G)
     local animals = multipattern.new({ primitives.square(1) })
     for _ = 2, n, 1 do
         local new_animals = multipattern.new()
-        for _, animal in ipairs(animals.components) do
+        for _, animal in ipairs(animals) do
             local edges = animal:exterior_hull(nbh)
             for x, y in edges:cell_coordinates() do
                 new_animals:insert(

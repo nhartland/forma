@@ -88,11 +88,11 @@ function TestPrimitives:testPolyominos()
     local free_cardinality  = { 1, 1, 2, 5, 12, 35 }
     for n = 1, 6, 1 do
         lu.assertEquals(
-            primitives.animals(n):n_components(),
+            #primitives.animals(n),
             fixed_cardinality[n]
         )
         lu.assertEquals(
-            primitives.animals(n, nil, symmetry.groups.D4):n_components(),
+            #primitives.animals(n, nil, symmetry.groups.D4),
             free_cardinality[n]
         )
     end
@@ -104,11 +104,11 @@ function TestPrimitives:testPolyplets()
     local free_cardinality  = { 1, 2, 5, 22, 94, 524 }
     for n = 1, 6, 1 do
         lu.assertEquals(
-            primitives.animals(n, neighbourhood.moore()):n_components(),
+            #primitives.animals(n, neighbourhood.moore()),
             fixed_cardinality[n]
         )
         lu.assertEquals(
-            primitives.animals(n, neighbourhood.moore(), symmetry.groups.D4):n_components(),
+            #primitives.animals(n, neighbourhood.moore(), symmetry.groups.D4),
             free_cardinality[n]
         )
     end

@@ -644,7 +644,6 @@ function pattern.canonical_form(ip, G)
     for _, c in ipairs(
         ip:images(G)
         :map(pattern.normalise)
-        .components
     ) do
         local test_hash = c:hash()
         if cform == nil or (test_hash < hash) then

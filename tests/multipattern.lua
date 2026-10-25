@@ -44,7 +44,7 @@ end
 function TestMultipattern:testDistinct()
     local mp1 = multipattern.new({ self.p1, self.p1, self.p2 })
     local mp2 = mp1:distinct()
-    lu.assertEquals(#mp2.components, 2)
+    lu.assertEquals(#mp2, 2)
 end
 
 function TestMultipattern:testInsert()
