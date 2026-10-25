@@ -1548,7 +1548,7 @@ function pattern.voronoi_relax(seeds, domain, measure, max_ite)
     for ite = 1, max_ite, 1 do
         local tesselation = pattern.voronoi(current_seeds, domain, measure)
         local next_seeds  = pattern.new()
-        for iseg = 1, tesselation:n_components(), 1 do
+        for iseg = 1, #tesselation, 1 do
             if tesselation[iseg]:size() > 0 then
                 local cent = tesselation[iseg]:centroid()
                 if domain:has_cell(cent.x, cent.y) then

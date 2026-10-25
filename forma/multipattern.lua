@@ -3,20 +3,9 @@
 --- class aims to provide a convenient collection with some
 --- common methods for handling them.
 ---@class forma.multipattern
----@field components forma.pattern[] the list of sub-patterns
+---@field [integer] forma.pattern the sub-patterns, indexed from 1
 local multipattern = {}
-
-
--- Multipattern indexing
--- For enabling syntax sugar multipattern:method
--- This retains the ability to index by number.
-multipattern.__index = function(mp, key)
-    if type(key) == "number" then
-        return mp.components[key]
-    else
-        return multipattern[key]
-    end
-end
+multipattern.__index = multipattern
 
 
 --- Create a new multipattern from a list of patterns.
@@ -28,9 +17,10 @@ end
 ---@param components? forma.pattern[] an array of pattern objects
 ---@return forma.multipattern mp a new multipattern containing those patterns
 function multipattern.new(components)
-    local mp = {
-        components = components or {}
-    }
+    local mp = {}
+    for i, v in ipairs(components or {}) do
+        mp[i] = v
+    end
     mp = setmetatable(mp, multipattern)
     return mp
 end
@@ -41,7 +31,7 @@ end
 ---@return forma.multipattern clone the cloned multipattern
 function multipattern.clone(mp)
     local components = {}
-    for i, p in ipairs(mp.components) do
+    for i, p in ipairs(mp) do
         components[i] = p:clone()
     end
     return multipattern.new(components)
@@ -52,6 +42,7 @@ end
 ---@param ... forma.multipattern a table of multipatterns or a list of multipattern arguments
 ---@return forma.multipattern mp a new multipattern consisting of the set of all input components
 function multipattern.merge(...)
+    ---@type forma.multipattern[]
     local multipatterns = { ... }
     if #multipatterns == 1 then
         -- Handle case where the input is a table of multipatterns
@@ -65,7 +56,7 @@ function multipattern.merge(...)
     local total = multipattern.new()
     for _, v in ipairs(multipatterns) do
         assert(getmetatable(v) == multipattern, "multipattern.merge requires multipatterns as arguments")
-        for _, p in ipairs(v.components) do
+        for _, p in ipairs(v) do
             total:insert(p)
         end
     end
@@ -79,17 +70,8 @@ end
 ---@return forma.multipattern mp the multipattern
 function multipattern.insert(mp, ip)
     assert(getmetatable(mp) == multipattern, "multipattern.insert requires a multipattern as the first argument")
-    table.insert(mp.components, ip)
+    table.insert(mp, ip)
     return mp
-end
-
---- Count the number of components in a multipattern.
----
----@param mp forma.multipattern the multipattern to count
----@return integer count the number of components
-function multipattern.n_components(mp)
-    assert(getmetatable(mp) == multipattern, "multipattern.n_components requires a multipattern as the first argument")
-    return #mp.components
 end
 
 --- Map a function over all patterns in this multipattern.
@@ -105,7 +87,7 @@ end
 function multipattern.map(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.map requires a multipattern as an argument")
     local new_components = {}
-    for i, pat in ipairs(mp.components) do
+    for i, pat in ipairs(mp) do
         new_components[i] = fn(pat, i)
     end
     return multipattern.new(new_components)
@@ -123,7 +105,7 @@ end
 function multipattern.filter(mp, fn)
     assert(getmetatable(mp) == multipattern, "multipattern.filter requires a multipattern as an argument")
     local new_components = {}
-    for _, pat in ipairs(mp.components) do
+    for _, pat in ipairs(mp) do
         if fn(pat) then
             new_components[#new_components + 1] = pat
         end
@@ -150,12 +132,12 @@ function multipattern.apply(mp, method, ...)
     assert(getmetatable(mp) == multipattern, "multipattern.apply requires a multipattern as an argument")
     local pattern_mt = require('forma.pattern')
     local new_components = {}
-    for _, pat in ipairs(mp.components) do
+    for _, pat in ipairs(mp) do
         local m = pat[method]
         assert(type(m) == "function", "No method named '" .. tostring(method) .. "' on pattern")
         local return_value = m(pat, ...)
         if getmetatable(return_value) == multipattern then
-            for _, v in ipairs(return_value.components) do
+            for _, v in ipairs(return_value) do
                 table.insert(new_components, v)
             end
         elseif getmetatable(return_value) == pattern_mt then
@@ -168,8 +150,7 @@ function multipattern.apply(mp, method, ...)
 end
 
 --- Union all sub-patterns into a single pattern.
---- Folds over the sub-patterns with the union (`+`) operator,
---- returning a single `pattern`.
+--- Collects the cells of every sub-pattern into a single `pattern`.
 ---
 --- ```lua
 --- local combined = mp:union_all()
@@ -179,11 +160,14 @@ end
 function multipattern.union_all(mp)
     -- Require here to avoid circular dependency.
     local pattern = require('forma.pattern')
-    if mp:n_components() == 0 then
-        return pattern.new()
-    else
-        return pattern.union(mp.components)
+    local total = pattern.new()
+    for _, ip in ipairs(mp) do
+        assert(getmetatable(ip) == pattern, "multipattern.union_all requires a multipattern of patterns")
+        for x, y in ip:cell_coordinates() do
+            total:insert(x, y, false)
+        end
     end
+    return total
 end
 
 --- Print a multipattern.
@@ -198,7 +182,7 @@ function multipattern.print(mp, chars, domain)
     domain = domain or mp:union_all()
     assert(domain:size() > 0, "multipattern.print: domain must have at least one cell")
 
-    local n = mp:n_components()
+    local n = #mp
     -- If no dictionary is supplied generate a new one (starting from '0')
     if chars == nil then
         local start_char = 47
@@ -215,7 +199,7 @@ function multipattern.print(mp, chars, domain)
         local row = {}
         for j = domain.min.x, domain.max.x, 1 do
             local token = ' '
-            for k, v in ipairs(mp.components) do
+            for k, v in ipairs(mp) do
                 if v:has_cell(j, i) then token = chars[k] end
             end
             row[#row + 1] = token
