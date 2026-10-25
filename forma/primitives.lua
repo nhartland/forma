@@ -129,9 +129,9 @@ function primitives.quad_bezier(start, control, finish, N)
     local line_points = { cell.new(x1, y1) }
     for i = 1, N, 1 do
         local t = i / N;
-        local a = math.pow((1.0 - t), 2.0)
-        local b = 2.0 * t * (1.0 - t);
-        local c = math.pow(t, 2.0);
+        local a = (1.0 - t) ^ 2.0
+        local b = 2.0 * t * (1.0 - t)
+        local c = t ^ 2.0
         local x = math.floor(a * x1 + b * x2 + c * x3 + 0.5)
         local y = math.floor(a * y1 + b * y2 + c * y3 + 0.5)
         local new_point = cell.new(x, y)
