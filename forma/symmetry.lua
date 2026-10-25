@@ -1,18 +1,8 @@
 --- Symmetries of the 2-d square lattice
 ---
 --- This module describes the various symmetries available to patterns in `forma`,
---- at the level of individual transforms and symmetry groups.
----
---- The main symmetry groups available are
----
----     D4: The dihedral group (rotations + reflections)
----     C4: The cyclic group of order 4 (rotations)
----
----     Two forms of the Klein four-group
----     V4a: Axis reflections
----     V4d: Diagonal reflections
----
---- Wallpaper groups can be formed by composing D4 with translations
+--- at the level of individual transforms and point groups.
+
 local transform = require('forma.transform')
 
 -- Forward declare
@@ -124,7 +114,7 @@ local elements = {
     adreflect = transform.new("adreflect", 0, -1, -1, 0),
 }
 
---- Symmetry groups of the lattice
+--- Point groups of the lattice
 ---@type table<string, forma.symmetry.group>
 groups = {
     -- Trivial group
@@ -141,20 +131,6 @@ groups = {
         elements.rot180,
         elements.rot270
     }, "C4"),
-    -- Klein four-group (axis reflections)
-    V4a = group.new({
-        elements.id,
-        elements.rot180,
-        elements.hreflect,
-        elements.vreflect
-    }, "V4a"),
-    -- Klein four-group (diagonal reflections)
-    V4d = group.new({
-        elements.id,
-        elements.rot180,
-        elements.dreflect,
-        elements.adreflect
-    }, "V4d"),
     -- Dihedral mirror groups
     D1h = group.new({
         elements.id,
@@ -164,14 +140,30 @@ groups = {
         elements.id,
         elements.vreflect
     }, "D1v"),
+    -- Diagonal reflection
     D1d = group.new({
         elements.id,
         elements.dreflect
     }, "D1d"),
+    -- Anti-diagonal reflection
     D1ad = group.new({
         elements.id,
         elements.adreflect
     }, "D1ad"),
+    -- Axis reflections
+    D2a = group.new({
+        elements.id,
+        elements.rot180,
+        elements.hreflect,
+        elements.vreflect
+    }, "D2a"),
+    -- Diagonal reflections
+    D2d = group.new({
+        elements.id,
+        elements.rot180,
+        elements.dreflect,
+        elements.adreflect
+    }, "D2d"),
     -- Dihedral group (rotations + all reflections)
     D4 = group.new({
         elements.id,
