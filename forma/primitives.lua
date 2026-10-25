@@ -17,8 +17,11 @@
 ---@class forma.primitives
 local primitives = {}
 
-local cell    = require('forma.cell')
-local pattern = require('forma.pattern')
+local cell          = require('forma.cell')
+local pattern       = require('forma.pattern')
+local symmetry      = require('forma.symmetry')
+local multipattern  = require('forma.multipattern')
+local neighbourhood = require('forma.neighbourhood')
 
 --- Generate a square pattern.
 ---
@@ -183,6 +186,48 @@ function primitives.circle(r)
     until (x == 0)
 
     return cp
+end
+
+--- Generate a set of lattice animals.
+---
+--- Depending on the neighbourhood these could be:
+---  von Neumann (default): polyominos
+---  Moore: polyplets
+---
+--- ```lua
+--- local free_polyominos = primitives.animals(5, nbh.von_neumann(), symmetry.groups.D4)
+--- local fixed_polyominos = primitives.animals(5, nbh.von_neumann(), symmetry.groups.C1)
+--- local one_sided_polyominos = primitives.animals(5, nbh.von_neumann(), symmetry.groups.C4)
+--- ```
+---@param n integer the order of the lattice animal to be generated
+---@param nbh? forma.neighbourhood the neighbourhood to be considered
+---@param G? forma.symmetry.group a symmetry group to deduplicate the animals by
+---@return forma.multipattern pattern a multipattern of animals
+function primitives.animals(n, nbh, G)
+    -- By default do not deduplicate animals, use the trivial group
+    G = G or symmetry.groups.C1
+    -- By default use the von Neumann neighbourhood -> generates polyominos
+    nbh = nbh or neighbourhood.von_neumann()
+    assert(type(n) == 'number' and n > 0, "primitives.animals requires a positive integer as the first argument")
+    assert(math.floor(n) == n, "primitives.animals requires an integer as the first argument")
+    assert(getmetatable(nbh) == neighbourhood, "primitives.animals requires a neighbourhood as the second argument")
+    assert(getmetatable(G) == symmetry.group, "primitives.animals requires a group as the third argument")
+    local animals = multipattern.new({ primitives.square(1) })
+    for _ = 2, n, 1 do
+        local new_animals = multipattern.new()
+        for _, animal in ipairs(animals) do
+            local edges = animal:exterior_hull(nbh)
+            for x, y in edges:cell_coordinates() do
+                new_animals:insert(
+                    animal:clone()
+                    :insert(x, y)
+                    :canonical_form(G)
+                )
+            end
+        end
+        animals = new_animals:distinct()
+    end
+    return animals
 end
 
 return primitives

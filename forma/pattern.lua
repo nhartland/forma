@@ -57,6 +57,8 @@ local cell          = require('forma.cell')
 local neighbourhood = require('forma.neighbourhood')
 local rutils        = require('forma.utils.random')
 local multipattern  = require('forma.multipattern')
+local transform     = require('forma.transform')
+local symmetry      = require('forma.symmetry')
 
 -- Pattern indexing.
 -- Enables the syntax sugar pattern:method.
@@ -67,21 +69,21 @@ local MAX_COORDINATE  = 65536
 local COORDINATE_SPAN = 2 * MAX_COORDINATE + 1
 
 --- Generates the cellmap key from coordinates.
----@param x number the x-coordinate
----@param y number the y-coordinate
----@return number key a unique key representing the cell
+---@param x integer the x-coordinate
+---@param y integer the y-coordinate
+---@return integer key a unique key representing the cell
 local function coordinates_to_key(x, y)
     return (x + MAX_COORDINATE) * COORDINATE_SPAN + (y + MAX_COORDINATE)
 end
 
 --- Generates the coordinates from the key.
----@param key number the spatial hash key
----@return number x the x-coordinate
----@return number y the y-coordinate
+---@param key integer the spatial hash key
+---@return integer x the x-coordinate
+---@return integer y the y-coordinate
 local function key_to_coordinates(key)
     local yp = (key % COORDINATE_SPAN)
     local xp = (key - yp) / COORDINATE_SPAN
-    return xp - MAX_COORDINATE, yp - MAX_COORDINATE
+    return floor(xp - MAX_COORDINATE), floor(yp - MAX_COORDINATE)
 end
 
 -- @section Basic
@@ -280,22 +282,17 @@ function pattern.size(ip)
 end
 
 --- Computes a string hash of the pattern.
---- Optionally normalises the pattern (setting it's origin to 0) before hashing
 ---
 ---@param ip forma.pattern pattern to hash
----@param opts? {normal?: boolean} options table
----@return string hash the resulting canonical hash
-function pattern.hash(ip, opts)
+---@return string hash the resulting string hash
+function pattern.hash(ip)
     if ip:size() == 0 then return '' end
-    opts = opts or { normal = false }
-    -- If the normal flag is set to true, shift all coordinates such that the origin is at 0,0
-    local offset = opts.normal and (
-        coordinates_to_key(ip.min.x, ip.min.y) - coordinates_to_key(0, 0)
-    ) or 0
     local keys = {}
-    for i = 1, #ip.cellkey do keys[i] = ip.cellkey[i] - offset end
+    for i = 1, #ip.cellkey do
+        keys[i] = ip.cellkey[i]
+    end
     table.sort(keys)
-    return table.concat(keys, '.')
+    return table.concat(keys, '-')
 end
 
 -- @section Utilities
@@ -575,6 +572,88 @@ function pattern.shuffled_coordinates(ip, rng)
     end
 end
 
+-- @section Symmetry
+
+--- Generate the images of a pattern under group transformations.
+---
+--- The images of a pattern are the result of applying each of the
+--- transformations in the supplied group to the input pattern. As an example,
+--- if we use the `C4` group the images are the pattern rotated four times at
+--- 90-degree intervals.
+---
+---@param ip forma.pattern input pattern to generate images for
+---@param G forma.symmetry.group the symmetry group defining the transformations
+---@return forma.multipattern
+function pattern.images(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.images requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.images requires a group as the second argument")
+    local mp = multipattern.new()
+    for _, g in ipairs(G.elements) do
+        mp:insert(ip:transform(g))
+    end
+    return mp
+end
+
+--- Identify the group elements under which the pattern is symmetric
+---
+---@param ip forma.pattern input pattern to compute the symmetric group elements
+---@param G forma.symmetry.group the symmetry group to be considered
+---@return forma.symmetry.group the stabiliser of the pattern
+function pattern.stabiliser(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.stabiliser requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.stabiliser requires a group as the second argument")
+    local ipn = ip:normalise()
+    local symmetries = {}
+    for _, g in ipairs(G.elements) do
+        if ip:transform(g):normalise() == ipn then
+            table.insert(symmetries, g)
+        end
+    end
+    return symmetry.group.new(symmetries)
+end
+
+--- Symmetrise a pattern according to a group of symmetries
+---
+---@param ip forma.pattern input pattern to symmetrise
+---@param G forma.symmetry.group the symmetry group to be considered
+---@return forma.pattern
+function pattern.symmetrise(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.symmetrise requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.symmetrise requires a group as the second argument")
+    return ip:images(G):union_all()
+end
+
+--- Compute the canonical form of a pattern given a symmetry group.
+---
+--- The canonical form means picking one form amongst the possible versions of
+--- the pattern under a set of transformations (typically rotations). The exact
+--- choice here doesn't matter so much as that the choice is consistent.
+---
+--- Here the set of transformations are provided by a symmetry group.
+---
+--- Important note: The canonical form returned here is always normalised, e.g
+--- it starts at (0,0).
+---
+---@param ip forma.pattern input pattern
+---@param G forma.symmetry.group the symmetry group to be considered
+---@return forma.pattern a canonical form of the input pattern
+function pattern.canonical_form(ip, G)
+    assert(getmetatable(ip) == pattern, "pattern.canonical_form requires a pattern as the first argument")
+    assert(getmetatable(G) == symmetry.group, "pattern.canonical_form requires a group as the second argument")
+    local cform, hash
+    for _, c in ipairs(
+        ip:images(G)
+        :map(pattern.normalise)
+    ) do
+        local test_hash = c:hash()
+        if cform == nil or (test_hash < hash) then
+            hash = test_hash
+            cform = c
+        end
+    end
+    return cform
+end
+
 -- @section Metamethods
 
 --- Renders the pattern as a string.
@@ -761,24 +840,38 @@ end
 
 -- @section Transformations
 
---- Returns a new pattern translated by a vector (sx, sy).
+--- Returns a new pattern transformed by an operation.
+---
+--- ```lua
+--- local p_transformed = p:transform(forma.symmetry.elements.rot90)
+--- ```
+---@param ip forma.pattern pattern to transform
+---@param g forma.transform the transformation to apply
+---@return forma.pattern pattern a new pattern transformed by 'g'
+function pattern.transform(ip, g)
+    assert(getmetatable(ip) == pattern, "pattern.transform requires a pattern as the first argument")
+    assert(getmetatable(g) == transform, "pattern.transform: requires a transform as the second argument")
+    local sp = pattern.new()
+    for tx, ty in ip:cell_coordinates() do
+        sp:insert(g(tx, ty))
+    end
+    return sp
+end
+
+--- Returns a new pattern translated by a vector.
 ---
 --- ```lua
 --- local p_translated = p:translate(2, 3)
 --- ```
 ---@param ip forma.pattern pattern to translate
----@param sx integer translation along the x-axis
----@param sy integer translation along the y-axis
+---@param tx integer translation along the x-axis
+---@param ty integer translation along the y-axis
 ---@return forma.pattern pattern a new pattern shifted by (sx, sy)
-function pattern.translate(ip, sx, sy)
+function pattern.translate(ip, tx, ty)
     assert(getmetatable(ip) == pattern, "pattern.translate requires a pattern as the first argument")
-    assert(floor(sx) == sx, 'pattern.translate requires an integer for the x coordinate')
-    assert(floor(sy) == sy, 'pattern.translate requires an integer for the y coordinate')
     local sp = pattern.new()
-    for tx, ty in ip:cell_coordinates() do
-        local nx = tx + sx
-        local ny = ty + sy
-        sp:insert(nx, ny)
+    for ix, iy in ip:cell_coordinates() do
+        sp:insert(ix + tx, iy + ty)
     end
     return sp
 end
@@ -828,14 +921,13 @@ end
 ---@return forma.pattern pattern a rotated pattern
 function pattern.rotate(ip)
     assert(getmetatable(ip) == pattern, "pattern.rotate requires a pattern as the first argument")
-    local np = pattern.new()
-    for x, y in ip:cell_coordinates() do
-        np:insert(y, -x)
-    end
-    return np
+    return ip:transform(symmetry.elements.rot90)
 end
 
 --- Returns a new pattern that is a vertical reflection of the original.
+---
+--- This function differs from a straight vertical reflection in that it
+--- shifts the resulting pattern into the bounding box of the original.
 ---
 --- ```lua
 --- local p_vreflected = p:vreflect()
@@ -844,15 +936,20 @@ end
 ---@return forma.pattern pattern a vertically reflected pattern
 function pattern.vreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.vreflect requires a pattern as the first argument")
-    local np = pattern.new()
-    for vx, vy in ip:cell_coordinates() do
-        local new_y = ip.min.y + ip.max.y - vy
-        np:insert(vx, new_y)
-    end
-    return np
+    if ip:size() == 0 then return pattern.new() end
+    -- Compute midpoint of the pattern
+    local midpoint = (ip.max.y + ip.min.y) / 2
+    -- Transform about the midpoint
+    return ip:transform(
+        symmetry.elements.vreflect:about(0, midpoint)
+    )
 end
 
 --- Returns a new pattern that is a horizontal reflection of the original.
+---
+--- Similarly to `pattern:vreflect`, this function differs from a straight
+--- horizontal reflection in that it shifts the resulting pattern into the
+--- bounding box of the original.
 ---
 --- ```lua
 --- local p_hreflected = p:hreflect()
@@ -861,12 +958,13 @@ end
 ---@return forma.pattern pattern a horizontally reflected pattern
 function pattern.hreflect(ip)
     assert(getmetatable(ip) == pattern, "pattern.hreflect requires a pattern as the first argument")
-    local np = pattern.new()
-    for vx, vy in ip:cell_coordinates() do
-        local new_x = ip.min.x + ip.max.x - vx
-        np:insert(new_x, vy)
-    end
-    return np
+    if ip:size() == 0 then return pattern.new() end
+    -- Compute the midpoint of the pattern
+    local midpoint = (ip.max.x + ip.min.x) / 2
+    -- Transform about the midpoint
+    return ip:transform(
+        symmetry.elements.hreflect:about(midpoint, 0)
+    )
 end
 
 -- @section Sampling
@@ -883,7 +981,7 @@ end
 function pattern.sample(ip, ncells, rng)
     assert(getmetatable(ip) == pattern, "pattern.sample requires a pattern as the first argument")
     assert(type(ncells) == 'number', "pattern.sample requires an integer number of cells as the second argument")
-    assert(math.floor(ncells) == ncells, "pattern.sample requires an integer number of cells as the second argument")
+    assert(floor(ncells) == ncells, "pattern.sample requires an integer number of cells as the second argument")
     assert(ncells > 0, "pattern.sample requires at least one sample to be requested")
     assert(ncells <= ip:size(), "pattern.sample requires a domain larger than the number of requested samples")
     if rng == nil then rng = math.random end
@@ -1468,7 +1566,7 @@ function pattern.perlin(ip, freq, depth, thresholds, rng)
     if rng == nil then rng = math.random end
     assert(getmetatable(ip) == pattern, "pattern.perlin requires a pattern as the first argument")
     assert(type(freq) == "number", "pattern.perlin requires a numerical frequency value.")
-    assert(math.floor(depth) == depth, "pattern.perlin requires an integer sampling depth.")
+    assert(floor(depth) == depth, "pattern.perlin requires an integer sampling depth.")
     assert(type(thresholds) == "table", "pattern.perlin requires a table of requested thresholds.")
     for _, th in ipairs(thresholds) do
         assert(th >= 0 and th <= 1, "pattern.perlin requires thresholds between 0 and 1.")

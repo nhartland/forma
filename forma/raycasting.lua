@@ -72,6 +72,7 @@ function ray.cast_octant(v0, domain, oct, ray_length)
     assert(type(oct) == 'number', "ray.cast_octant requires a number as the third argument")
     assert(type(ray_length) == 'number', "ray.cast_octant requires a number as the fourth argument")
     local function transformOctant(r, c)
+        -- TODO: convert to use symmetry group elements
         if oct == 1 then return r, -c end
         if oct == 2 then return r, c end
         if oct == 3 then return c, r end

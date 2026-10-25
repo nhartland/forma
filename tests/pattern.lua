@@ -3,6 +3,7 @@ local lu            = require('luaunit')
 local pattern       = require("forma.pattern")
 local primitives    = require("forma.primitives")
 local neighbourhood = require("forma.neighbourhood")
+local symmetry      = require("forma.symmetry")
 
 TestPattern = {}
 
@@ -72,7 +73,6 @@ function TestPattern:testHash()
     lu.assertFalse(self.pattern_3:hash() == self.pattern_5:hash())
     -- Same pattern at different coordinates
     lu.assertFalse(self.pattern_2:translate(1, 1):hash() == self.pattern_2:hash())
-    lu.assertTrue(self.pattern_2:translate(1, 1):hash { normal = true } == self.pattern_2:hash())
 end
 
 function TestPattern:testUnion()
@@ -623,4 +623,34 @@ function TestPattern:testPrint()
     -- we expect exactly one line, and that line must be "*"
     lu.assertEquals(#out, 1)
     lu.assertEquals(out[1], '*')
+end
+
+-- Satisfy the orbit-stabiliser theorem
+function TestPattern:testOrbitStabiliser()
+    local polyominos = primitives.animals(5)
+    for _, polyomino in ipairs(polyominos) do
+        -- The orbit is the set of distinct (up to translation) images
+        local orbit = (
+            polyomino
+            :images(symmetry.groups.C4)
+            :map(pattern.normalise)
+            :distinct()
+        )
+        local stabiliser = polyomino:stabiliser(symmetry.groups.C4)
+        lu.assertEquals(#orbit * #(stabiliser.elements), #(symmetry.groups.C4.elements))
+    end
+end
+
+-- Test the pattern symmetriser
+function TestPattern:testSymmetrise()
+    local polyominos = primitives.animals(5)
+    local D4 = symmetry.groups.D4
+    for _, polyomino in ipairs(polyominos) do
+        local stabiliser = (
+            polyomino
+            :symmetrise(D4)
+            :stabiliser(D4)
+        )
+        lu.assertTrue(stabiliser == D4)
+    end
 end
