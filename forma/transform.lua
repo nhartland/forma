@@ -89,12 +89,14 @@ end
 --- rotation about the midpoint of a pattern. It transforms the origin to the
 --- to the given point, runs the transformation, then transforms back.
 ---
---- A quirk of the algebra means that this can handle half-integer translations, e,g
+--- A quirk of the algebra means that this can (dependent on the transform)
+--- handle half-integer translations, e,g
 ---
 ---     g:about(1.5,1.5),
 ---
---- perfectly well, enabling transformations about the midpoint of a pattern even
---- when that falls in the centre of a cell.
+--- enabling transformations about the midpoint of a pattern even when that
+--- falls in the centre of a cell. This requires that the resulting transform
+--- maps origin cells to another cell location.
 ---
 --- ```lua
 --- local g = transform.translate(5,6):about(1,1)
@@ -106,7 +108,9 @@ end
 function transform.about(g, x, y)
     local nx = (g.a - 1) * x + g.b * y
     local ny = g.c * x + (g.d - 1) * y
-    return transform.translate(-nx, -ny) * g
+    assert(math.floor(nx) == nx and math.floor(ny) == ny,
+        "transform.about: " .. g.name .. " about (" .. x .. "," .. y .. ") does not map the lattice onto itself")
+    return transform.translate(-math.floor(nx), -math.floor(ny)) * g
 end
 
 --- Apply a transform to a vector.
