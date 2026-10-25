@@ -52,7 +52,7 @@ end
 
 --- Create a new group of transformations.
 ---@param e forma.transform[] group elements
----@param name string name of the group
+---@param name? string|nil name of the group
 ---@return forma.symmetry.group
 function group.new(e, name)
     return validate_group(
@@ -79,7 +79,7 @@ end
 --- Check if a group is a subgroup of another.
 ---@param G forma.symmetry.group
 ---@param H forma.symmetry.group
----@return boolean contains true if G subgroups H
+---@return boolean subgroups true if G subgroups H
 function group.is_subgroup_of(G, H)
     if #(G.elements) > #(H.elements) then return false end
     for _, g in ipairs(G.elements) do
@@ -112,7 +112,7 @@ function group.__tostring(G)
 end
 
 -- Elements of square lattice symmetry groups
----@type forma.transform[]
+---@type table<string, forma.transform>
 local elements = {
     id        = transform.new("id", 1, 0, 0, 1),
     rot90     = transform.new("rot90", 0, 1, -1, 0),
@@ -125,7 +125,7 @@ local elements = {
 }
 
 --- Symmetry groups of the lattice
----@type forma.symmetry.group[]
+---@type table<string, forma.symmetry.group>
 groups = {
     -- Trivial group
     C1 = group.new({ elements.id }, "C1"),
